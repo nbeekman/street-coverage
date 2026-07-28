@@ -10,7 +10,7 @@ export default function App() {
   const state = useNetwork()
   const rides = useRides()
   const coverage = useCoverage()
-  const [showRides, setShowRides] = useState(false)
+  const [showRides, setShowRides] = useState(true)
   const [showCoverage, setShowCoverage] = useState(true)
   const { units, toggle: toggleUnits } = useUnits()
 

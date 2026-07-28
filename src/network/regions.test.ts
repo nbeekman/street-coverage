@@ -15,12 +15,23 @@ describe('REGIONS', () => {
   })
 
   it('has unique osm ids', () => {
-    const keys = REGIONS.map((r) => `${r.osmKind}:${r.osmId}`)
+    // Polygon regions carry osmId 0 as a placeholder -- they are defined by
+    // their ring, not by an OSM element -- so only real ids must be distinct.
+    const keys = REGIONS.filter((r) => r.osmKind !== 'polygon').map(
+      (r) => `${r.osmKind}:${r.osmId}`,
+    )
     expect(new Set(keys).size).toBe(keys.length)
   })
 
-  it('defines exactly fourteen metro-core regions', () => {
-    expect(regionsInGroup('metro-core')).toHaveLength(14)
+  it('gives every polygon region a ring and no osm id', () => {
+    for (const r of REGIONS.filter((x) => x.osmKind === 'polygon')) {
+      expect(r.osmId).toBe(0)
+      expect(r.polygon?.length ?? 0).toBeGreaterThanOrEqual(3)
+    }
+  })
+
+  it('defines exactly eighteen metro-core regions', () => {
+    expect(regionsInGroup('metro-core')).toHaveLength(18)
   })
 
   it('pins Denver to relation 1411339', () => {
@@ -32,7 +43,12 @@ describe('REGIONS', () => {
 
   it('includes every way-boundary region in metro-core', () => {
     const ways = regionsInGroup('metro-core').filter((r) => r.osmKind === 'way')
-    expect(ways.map((r) => r.id).sort()).toEqual(['bow-mar', 'columbine', 'ken-caryl'])
+    expect(ways.map((r) => r.id).sort()).toEqual([
+      'bow-mar',
+      'cherry-creek-state-park',
+      'columbine',
+      'ken-caryl',
+    ])
   })
 })
 

@@ -258,3 +258,60 @@ edge and no more.
   segment-level map matching is the upgrade path.
 - **Dual carriageways read as half-ridden forever.** A divided road is two OSM ways and
   riding one direction leaves the other unhit. Not solved in M3.
+
+### East-metro gap, found by eye and confirmed by measurement
+
+Coverage showed the Cherry Creek Trail fragmenting and the reservoir loop missing entirely,
+while the ride overlay drew both continuously. Traces do not depend on the network, so the
+difference isolated the cause: **17,976 of 151,382 ride points sat more than 60 m from any
+network node.** In the reservoir area specifically, 46% of sampled ride points had no network
+node within 25 m — p75 321 m, p90 871 m, max 2,295 m. Nothing existed to credit.
+
+Four regions closed it: Glendale (relation 112942), Holly Hills (relation 9569979), Cherry
+Creek State Park (**way** 224202720, a protected area rather than a municipality) and a tight
+polygon for the unincorporated Arapahoe corridor between them.
+
+| | Before | After |
+|---|---:|---:|
+| Regions | 14 | 18 |
+| Denominator | 9,224 km | 9,420 km |
+| Covered | 329 km | 348 km |
+| **Headline** | 3.56% | **3.70%** |
+
+The headline *rose* despite a larger denominator: the added regions were disproportionately
+ridden. Cherry Creek State Park alone reads 21.26%.
+
+Aurora was deliberately excluded. It would add a few thousand km of mostly-unridden
+residential streets and depress the number without reflecting where these rides go.
+
+**Still unexplained, and out of scope:** ~1,180 orphan points near 39.71, -104.97 lie inside
+Denver, which *is* fetched. That stretch of the Cherry Creek Trail is tagged `footway`, which
+the rideable filter excludes on purpose — including footways would more than double the
+denominator with sidewalks.
+
+## All rides, everywhere
+
+The importer previously rejected 25 rides as out-of-region. It now keeps them: a ride in Iowa
+is still a ride, and it costs only the bytes of its geometry. Coverage is unaffected — a
+rebuild produced a byte-identical 3.70%, confirming that out-of-region traces credit nothing.
+
+| | Metro only | All rides |
+|---|---:|---:|
+| Rides | 165 | **190** |
+| Distance | 3,955 km | **5,433 km** |
+| Points | 151,382 | 209,328 |
+| Snapshot | 2.42 MB | 3.35 MB |
+| Bbox | Denver metro | −106.45 to −88.91 lon |
+
+190 + 35 virtual = 225, so the archive still reconciles exactly. Zwift stays rejected.
+
+### Rendering the whole country
+
+| View | FPS |
+|---|---:|
+| Metro, coverage + rides | 50 |
+| Continental, network on screen | **6** |
+| Continental, network off screen | 60 |
+
+The network layer has no level-of-detail or culling, so all 52,491 runs rasterize even when
+the metro occupies 40 px. This is the clearest thing for M7 to fix.

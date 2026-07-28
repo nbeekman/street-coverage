@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-07-28T20:36:46.322Z",
+  "generatedAt": "2026-07-28T21:00:26.478Z",
   "regions": [
     {
       "id": "denver",
@@ -84,6 +84,15 @@
       "bytes": 137632
     },
     {
+      "id": "cherry-creek-corridor",
+      "name": "Cherry Creek corridor (unincorporated)",
+      "group": "metro-core",
+      "wayCount": 938,
+      "positionCount": 7177,
+      "totalMeters": 107502.75306961921,
+      "bytes": 127030
+    },
+    {
       "id": "englewood",
       "name": "Englewood",
       "group": "metro-core",
@@ -111,6 +120,15 @@
       "bytes": 39692
     },
     {
+      "id": "cherry-creek-state-park",
+      "name": "Cherry Creek State Park",
+      "group": "metro-core",
+      "wayCount": 263,
+      "positionCount": 4888,
+      "totalMeters": 60701.069554529524,
+      "bytes": 81631
+    },
+    {
       "id": "morrison",
       "name": "Morrison",
       "group": "metro-core",
@@ -118,6 +136,24 @@
       "positionCount": 1696,
       "totalMeters": 32019.769788866026,
       "bytes": 29233
+    },
+    {
+      "id": "glendale",
+      "name": "Glendale",
+      "group": "metro-core",
+      "wayCount": 154,
+      "positionCount": 918,
+      "totalMeters": 13080.557295456978,
+      "bytes": 16694
+    },
+    {
+      "id": "holly-hills",
+      "name": "Holly Hills",
+      "group": "metro-core",
+      "wayCount": 50,
+      "positionCount": 539,
+      "totalMeters": 14161.982748633045,
+      "bytes": 9278
     },
     {
       "id": "bow-mar",

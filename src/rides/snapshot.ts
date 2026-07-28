@@ -7,8 +7,12 @@ import type { Ride } from './types.ts'
  *
  * A change to the default clip distance counts as a meaning change: the same
  * layout would describe a different denominator once M3 computes coverage.
+ *
+ * v2: the dataset now includes rides outside the metro. Same layout, but
+ * rideCount and totalMeters describe all riding rather than metro riding, and
+ * the bbox can span the country.
  */
-export const RIDES_SNAPSHOT_VERSION = 1
+export const RIDES_SNAPSHOT_VERSION = 2
 
 export type RidesBuffers = {
   /** Flat [lon, lat, ...] Float64. */
@@ -23,6 +27,8 @@ export type RidesManifest = {
   version: number
   generatedAt: string
   rideCount: number
+  /** Of rideCount, how many fall outside the metro and score no coverage. */
+  outOfRegionCount: number
   pointCount: number
   totalMeters: number
   /** Meters clipped from each end. Part of what the data means. */

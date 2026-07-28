@@ -2,7 +2,7 @@
 
 Ride every street in the Denver metro. The map fills in as you do.
 
-The network renders, rides import, and coverage computes: **3.56% of 9,224 km** so far.
+The network renders, rides import, and coverage computes: **3.70% of 9,420 km** so far.
 
 ## Setup
 
@@ -61,6 +61,11 @@ Ride traces are **never committed** — `data/rides/` and `public/rides/` are gi
 because they are personal location data. A fresh clone shows the street network and no
 rides until you re-import.
 
+**Every ride is imported, including rides far outside the metro.** RAGBRAI, Summit County
+and travel rides all draw on the map; they simply score no coverage, because there is no
+network out there to credit. The manifest records how many fall outside so the panel can say
+so. Pass `--metro-only` to reject them instead.
+
 **Privacy clipping** removes the first and last 500 m of every ride (`--clip-meters` to
 change), and runs inside the importer so unclipped coordinates never reach disk. The cost
 is real and permanent: streets within 500 m of any ride start may never reach 100%.
@@ -69,9 +74,9 @@ is real and permanent: streets within 500 m of any ride start may never reach 10
 
 - **Virtual rides** — Zwift sets `subSport: virtualActivity`, and its coordinates are in
   the Solomon Sea, ~13,000 km from Denver.
-- **Out-of-region** — the trace bbox does not intersect the metro-core regions. These are
-  not errors; they are rides belonging to regions not yet fetched.
 - **No GPS** — trainer sessions.
+
+Out-of-region is no longer a rejection; see above.
 
 **Strava exports FIT, not GPX.** The 2026-07-28 archive was 225 files, 100% `.fit.gz`.
 FIT stores positions as *semicircles* and the Garmin SDK does not convert them, even with
@@ -87,7 +92,7 @@ npm run build:coverage -- --radius 15
 **What counts as ridden.** A node is *hit* when a ride point passed within **25 m**. A
 segment counts as ridden when **both** its endpoints are hit — the "both" is what stops a
 single stray GPS point from crediting a stretch never ridden. The headline percentage is
-ridden meters over total meters, so it reads as "3.56% of the metro's street distance".
+ridden meters over total meters, so it reads as "3.70% of the metro's street distance".
 
 Coverage output is **gitignored** for the same reason ride traces are: which streets someone
 has ridden is location data, and publishing it would undo the privacy clipping.

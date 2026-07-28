@@ -165,6 +165,12 @@ export default function StatsPanel({
             </span>
             <input type="checkbox" checked={showRides} onChange={onToggleRides} className="ml-2" />
           </label>
+          {rides.rides.manifest.outOfRegionCount > 0 && (
+            <div className="mt-1 text-xs text-neutral-500">
+              {rides.rides.manifest.outOfRegionCount} outside the metro — drawn, but
+              they score no coverage
+            </div>
+          )}
           {rides.rides.manifest.clipMeters > 0 && (
             <div className="mt-1 text-xs text-neutral-500">
               {formatShortDistance(rides.rides.manifest.clipMeters, units)}{' '}

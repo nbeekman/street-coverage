@@ -51,6 +51,18 @@ export function bboxesIntersect(a: Bbox, b: Bbox): boolean {
 const VIRTUAL_SUB_SPORTS = new Set(['virtualactivity'])
 const VIRTUAL_MANUFACTURERS = new Set(['zwift'])
 
+export type ClassifyOptions = {
+  /**
+   * Reject tracks outside the region bbox.
+   *
+   * Default false: a ride in Iowa is still a ride, and the rider wants to zoom
+   * out and see it. Out-of-region rides contribute nothing to coverage anyway
+   * -- there is no network out there to credit -- so keeping them costs only
+   * the bytes of their geometry.
+   */
+  requireRegion?: boolean
+}
+
 /**
  * Decide whether a track belongs in the dataset.
  *
@@ -58,7 +70,11 @@ const VIRTUAL_MANUFACTURERS = new Set(['zwift'])
  * checked before region so a Watopia Zwift ride reports "virtual", which is
  * the actionable reason, rather than "out-of-region".
  */
-export function classifyTrack(track: RawTrack, region: Bbox): RejectReason | null {
+export function classifyTrack(
+  track: RawTrack,
+  region: Bbox,
+  options: ClassifyOptions = {},
+): RejectReason | null {
   if (track.points.length === 0) return 'no-positions'
 
   const subSport = track.subSport?.toLowerCase()
@@ -72,7 +88,15 @@ export function classifyTrack(track: RawTrack, region: Bbox): RejectReason | nul
 
   const bbox = trackBbox(track.points)
   if (!bbox) return 'no-positions'
-  if (!bboxesIntersect(region, bbox)) return 'out-of-region'
+  if (options.requireRegion === true && !bboxesIntersect(region, bbox)) {
+    return 'out-of-region'
+  }
 
   return null
+}
+
+/** Whether a track touches the region. Recorded, not used to reject. */
+export function isInRegion(track: RawTrack, region: Bbox): boolean {
+  const bbox = trackBbox(track.points)
+  return bbox !== null && bboxesIntersect(region, bbox)
 }

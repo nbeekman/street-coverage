@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "regionId": "glendale",
+  "regionName": "Glendale",
+  "group": "metro-core",
+  "osmId": 112942,
+  "osmKind": "relation",
+  "generatedAt": "2026-07-28T21:00:26.464Z",
+  "osmTimestamp": "2026-07-28T20:54:21Z",
+  "queryHash": "074526a515bcd677",
+  "bbox": {
+    "minLon": -104.9406889,
+    "minLat": 39.6947749,
+    "maxLon": -104.9270964,
+    "maxLat": 39.7110373
+  },
+  "wayCount": 154,
+  "positionCount": 918,
+  "uniqueNodeCount": 752,
+  "totalMeters": 13080.557295456978,
+  "classes": [
+    "primary",
+    "secondary",
+    "tertiary",
+    "residential",
+    "unclassified",
+    "living_street",
+    "cycleway",
+    "path",
+    "bridleway"
+  ],
+  "byteLengths": {
+    "positions": 14688,
+    "startIndices": 620,
+    "wayIds": 1232,
+    "classes": 154
+  }
+}

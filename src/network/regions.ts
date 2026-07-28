@@ -105,6 +105,22 @@ export const REGIONS: readonly Region[] = [
   { id: 'morrison',          name: 'Morrison',          osmId: 18499983,  osmKind: 'relation', group: 'metro-core' },
   { id: 'bow-mar',           name: 'Bow Mar',           osmId: 194060379, osmKind: 'way',      group: 'metro-core' },
 
+  // East-metro corridor, added 2026-07-28 after coverage showed the Cherry
+  // Creek Trail fragmenting and the reservoir loop missing entirely. Measured:
+  // 17,976 of 151,382 ride points sat more than 60 m from any network node,
+  // clustered here. Rides through this corridor drew as traces but could never
+  // be credited, because no way existed to credit.
+  //
+  // Aurora is deliberately NOT added. It would contribute a few thousand km of
+  // mostly-unridden residential streets and depress the headline without
+  // reflecting where these rides actually go.
+  { id: 'glendale',          name: 'Glendale',          osmId: 112942,    osmKind: 'relation', group: 'metro-core' },
+  { id: 'holly-hills',       name: 'Holly Hills',       osmId: 9569979,   osmKind: 'relation', group: 'metro-core' },
+  // A protected area rather than a municipality: the reservoir loop belongs to
+  // no town, which is why no boundary query reached it. Mapped as a way, so it
+  // needs map_to_area like the other way-based regions.
+  { id: 'cherry-creek-state-park', name: 'Cherry Creek State Park', osmId: 224202720, osmKind: 'way', group: 'metro-core' },
+
   { id: 'castle-rock',       name: 'Castle Rock',       osmId: 112343,    osmKind: 'relation', group: 'metro-outer' },
 
   { id: 'summit-county',     name: 'Summit County',     osmId: 441008,    osmKind: 'relation', group: 'mountain' },
@@ -132,6 +148,28 @@ export const REGIONS: readonly Region[] = [
       [39.73, -105.02],
       [39.52, -105.02],
       [39.52, -105.18],
+    ],
+  },
+
+  // The strip between Holly Hills and Cherry Creek State Park, where the trail
+  // runs through unincorporated Arapahoe County. Adding Glendale, Holly Hills
+  // and the park left orphan ride points clustered at ~39.67, -104.89 -- this
+  // ring closes that last gap.
+  //
+  // Kept deliberately tight. Pushing the eastern edge past -104.855 starts
+  // pulling in Aurora's residential grid, which is the bulk this scope was
+  // chosen to avoid.
+  {
+    id: 'cherry-creek-corridor',
+    name: 'Cherry Creek corridor (unincorporated)',
+    osmId: 0,
+    osmKind: 'polygon',
+    group: 'metro-core',
+    polygon: [
+      [39.690, -104.915],
+      [39.690, -104.855],
+      [39.650, -104.855],
+      [39.650, -104.915],
     ],
   },
 ]

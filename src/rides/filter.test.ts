@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Bbox } from '../geo/bounds'
 import type { RawTrack, TrackPoint } from './types'
-import { bboxesIntersect, classifyTrack, padBbox, trackBbox } from './filter'
+import { bboxesIntersect, classifyTrack, isInRegion, padBbox, trackBbox } from './filter'
 
 const METRO: Bbox = { minLon: -105.21, minLat: 39.49, maxLon: -104.58, maxLat: 39.91 }
 
@@ -67,11 +67,44 @@ describe('classifyTrack', () => {
     expect(classifyTrack(track(denver, { manufacturer: 'zwift' }), METRO)).toBe('virtual')
   })
 
-  it('rejects a ride outside the metro region', () => {
-    expect(classifyTrack(track(watopia), METRO)).toBe('out-of-region')
+  it('keeps a ride outside the metro by default', () => {
+    // A ride in Iowa is still a ride. It scores no coverage -- there is no
+    // network out there to credit -- but the rider wants to see it.
+    expect(classifyTrack(track(watopia), METRO)).toBeNull()
+  })
+
+  it('rejects a ride outside the metro when requireRegion is set', () => {
+    expect(classifyTrack(track(watopia), METRO, { requireRegion: true })).toBe(
+      'out-of-region',
+    )
+  })
+
+  it('still rejects a virtual ride even when out-of-region is allowed', () => {
+    // Zwift must never survive on the "keep everything" path.
+    expect(classifyTrack(track(watopia, { subSport: 'virtualActivity' }), METRO)).toBe(
+      'virtual',
+    )
   })
 
   it('checks virtual before region, so a Watopia Zwift ride reports virtual', () => {
-    expect(classifyTrack(track(watopia, { subSport: 'virtualActivity' }), METRO)).toBe('virtual')
+    expect(
+      classifyTrack(track(watopia, { subSport: 'virtualActivity' }), METRO, {
+        requireRegion: true,
+      }),
+    ).toBe('virtual')
+  })
+})
+
+describe('isInRegion', () => {
+  it('is true for a Denver ride', () => {
+    expect(isInRegion(track(denver), METRO)).toBe(true)
+  })
+
+  it('is false for a ride far away', () => {
+    expect(isInRegion(track(watopia), METRO)).toBe(false)
+  })
+
+  it('is false for a track with no points', () => {
+    expect(isInRegion(track([]), METRO)).toBe(false)
   })
 })

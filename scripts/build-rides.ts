@@ -59,6 +59,7 @@ async function main(): Promise<void> {
     version: RIDES_SNAPSHOT_VERSION,
     generatedAt: new Date().toISOString(),
     rideCount: rides.length,
+    outOfRegionCount: Number(meta.outOfRegion ?? 0),
     pointCount: buffers.startIndices[rides.length],
     totalMeters,
     clipMeters: meta.clipMeters,

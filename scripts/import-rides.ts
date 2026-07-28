@@ -2,7 +2,7 @@ import { gunzipSync } from 'node:zlib'
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import { basename, extname, join } from 'node:path'
 import { pathLengthMeters } from '../src/geo/haversine.ts'
-import { classifyTrack, padBbox, type RejectReason } from '../src/rides/filter.ts'
+import { classifyTrack, isInRegion, padBbox, type RejectReason } from '../src/rides/filter.ts'
 import { clipEnds } from '../src/rides/privacy.ts'
 import { resampleByDistance } from '../src/rides/resample.ts'
 import type { RawTrack } from '../src/rides/types.ts'
@@ -16,12 +16,19 @@ const DEFAULT_CLIP_METERS = 500
 const DEFAULT_RESAMPLE_METERS = 10
 const REGION_PAD_METERS = 5000
 
-type Args = { source: string; clipMeters: number; resampleMeters: number }
+type Args = {
+  source: string
+  clipMeters: number
+  resampleMeters: number
+  /** Restore the old behavior: reject rides outside the metro entirely. */
+  metroOnly: boolean
+}
 
 function parseArgs(argv: string[]): Args {
   let source = ''
   let clipMeters = DEFAULT_CLIP_METERS
   let resampleMeters = DEFAULT_RESAMPLE_METERS
+  let metroOnly = false
 
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--archive' || argv[i] === '--dir') source = argv[i + 1] ?? ''
@@ -30,6 +37,7 @@ function parseArgs(argv: string[]): Args {
       if (!Number.isFinite(n) || n < 0) throw new Error('--clip-meters expects a number >= 0')
       clipMeters = n
     }
+    if (argv[i] === '--metro-only') metroOnly = true
     if (argv[i] === '--resample-meters') {
       const n = Number(argv[i + 1])
       if (!Number.isFinite(n) || n < 0) throw new Error('--resample-meters expects a number >= 0')
@@ -38,7 +46,7 @@ function parseArgs(argv: string[]): Args {
   }
 
   if (!source) throw new Error('Specify --dir <path> pointing at a directory of activity files')
-  return { source, clipMeters, resampleMeters }
+  return { source, clipMeters, resampleMeters, metroOnly }
 }
 
 /** Union bbox of the metro-core regions, padded. Rides outside it are not ours. */
@@ -88,7 +96,7 @@ async function parseFile(path: string, id: string): Promise<RawTrack | null> {
 }
 
 async function main(): Promise<void> {
-  const { source, clipMeters, resampleMeters } = parseArgs(process.argv.slice(2))
+  const { source, clipMeters, resampleMeters, metroOnly } = parseArgs(process.argv.slice(2))
   const region = await metroRegion()
   await mkdir(OUT_DIR, { recursive: true })
 
@@ -104,6 +112,7 @@ async function main(): Promise<void> {
     'too-short-after-clip': 0,
   }
   let imported = 0
+  let outOfRegion = 0
   let unsupported = 0
   let failed = 0
   let totalMeters = 0
@@ -124,11 +133,13 @@ async function main(): Promise<void> {
       continue
     }
 
-    const reason = classifyTrack(track, region)
+    const reason = classifyTrack(track, region, { requireRegion: metroOnly })
     if (reason) {
       rejected[reason]++
       continue
     }
+
+    const inRegion = isInRegion(track, region)
 
     // Clip BEFORE any write: unclipped coordinates never reach disk.
     const clipped = clipEnds(track.points, clipMeters)
@@ -147,17 +158,19 @@ async function main(): Promise<void> {
 
     await writeFile(
       join(OUT_DIR, `${id}.json`),
-      JSON.stringify({ id, startTime: track.startTime, points }),
+      JSON.stringify({ id, startTime: track.startTime, points, inRegion }),
     )
+    if (!inRegion) outOfRegion++
     imported++
   }
 
   await writeFile(
     join(OUT_DIR, '_meta.json'),
-    JSON.stringify({ clipMeters, resampleMeters, rejected, importedAt: new Date().toISOString() }, null, 2),
+    JSON.stringify({ clipMeters, resampleMeters, rejected, outOfRegion, metroOnly, importedAt: new Date().toISOString() }, null, 2),
   )
 
   console.log(`\nimported ${imported} rides, ${(totalMeters / 1000).toFixed(0)} km (clip ${clipMeters}m, resample ${resampleMeters}m)`)
+  if (outOfRegion > 0) console.log(`  of those, ${outOfRegion} are outside the metro -- they render but score no coverage`)
   console.log(
     `rejected: virtual ${rejected.virtual}, out-of-region ${rejected['out-of-region']}, ` +
       `no-positions ${rejected['no-positions']}, too-short-after-clip ${rejected['too-short-after-clip']}`,
