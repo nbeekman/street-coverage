@@ -10,13 +10,16 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "fetch:network": "node --disable-warning=ExperimentalWarning scripts/fetch-network.ts",
-    "build:snapshot": "node --disable-warning=ExperimentalWarning scripts/build-snapshot.ts"
+    "build:snapshot": "node --disable-warning=ExperimentalWarning scripts/build-snapshot.ts",
+    "import:rides": "node --disable-warning=ExperimentalWarning scripts/import-rides.ts",
+    "build:rides": "node --disable-warning=ExperimentalWarning scripts/build-rides.ts"
   },
   "dependencies": {
     "@deck.gl/core": "^9.3.7",
     "@deck.gl/layers": "^9.3.7",
     "@deck.gl/react": "^9.3.7",
     "@deck.gl/widgets": "^9.3.7",
+    "@garmin/fitsdk": "^21.208.0",
     "maplibre-gl": "^5.24.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

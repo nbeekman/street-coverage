@@ -10,3 +10,7 @@ data/raw
 # Worktrees live here and contain their own node_modules. Without this, a
 # `git add -A` from the primary checkout stages an entire nested checkout.
 .claude/worktrees/
+
+# Ride traces are personal location data. Never commit them.
+data/rides/
+public/rides/
