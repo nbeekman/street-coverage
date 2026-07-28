@@ -3,7 +3,7 @@ import { join } from 'node:path'
 import { bboxOf } from '../src/geo/bounds.ts'
 import { pathLengthMeters } from '../src/geo/haversine.ts'
 import { normalize, type OsmElement } from '../src/network/normalize.ts'
-import { HIGHWAY_CLASSES, regionById } from '../src/network/regions.ts'
+import { HIGHWAY_CLASSES, REGIONS, regionById } from '../src/network/regions.ts'
 import {
   SNAPSHOT_VERSION,
   packSnapshot,
@@ -32,14 +32,28 @@ type IndexEntry = {
   bytes: number
 }
 
-async function buildRegion(rawFile: string): Promise<IndexEntry> {
+async function buildRegion(
+  rawFile: string,
+  claimed: Set<number>,
+): Promise<IndexEntry> {
   const raw = JSON.parse(await readFile(join(RAW_DIR, rawFile), 'utf8')) as RawPayload
   const region = regionById(raw.regionId)
   if (!region) throw new Error(`Raw file references unknown region "${raw.regionId}"`)
 
   const network = normalize(raw.elements)
+
+  // Polygon regions overlap the boundary regions they surround, and a way on a
+  // shared border can fall in two boundaries. Assign each way to exactly one
+  // region by REGIONS order so the headline denominator cannot double-count.
+  const before = network.ways.length
+  network.ways = network.ways.filter((w) => !claimed.has(w.id))
+  const deduped = before - network.ways.length
+  for (const w of network.ways) claimed.add(w.id)
+
   if (network.ways.length === 0) {
-    throw new Error(`Region "${region.id}" normalized to zero ways`)
+    throw new Error(
+      `Region "${region.id}" has no ways left after dedup (${before} were all claimed by earlier regions)`,
+    )
   }
 
   const buffers = packSnapshot(network.ways)
@@ -99,7 +113,7 @@ async function buildRegion(rawFile: string): Promise<IndexEntry> {
   console.log(
     `ok  ${region.id.padEnd(18)} ways=${String(network.ways.length).padEnd(6)} ` +
       `verts=${String(manifest.positionCount).padEnd(7)} uniq=${String(network.uniqueNodeCount).padEnd(7)} ` +
-      `dropped=${String(network.droppedWays).padEnd(5)} ${km}km ${mb}MB`,
+      `dropped=${String(network.droppedWays).padEnd(5)} dedup=${String(deduped).padEnd(5)} ${km}km ${mb}MB`,
   )
 
   return {
@@ -125,8 +139,19 @@ async function main(): Promise<void> {
   }
 
   await mkdir(OUT_DIR, { recursive: true })
+
+  // REGIONS order is the dedup precedence: boundary regions claim their ways
+  // before any polygon catch-all sees them.
+  const present = new Set(files.map((f) => f.slice(0, -5)))
+  const ordered = REGIONS.filter((r) => present.has(r.id)).map((r) => `${r.id}.json`)
+  const unknown = files.filter((f) => !ordered.includes(f))
+  if (unknown.length > 0) {
+    throw new Error(`Raw files for regions not in the registry: ${unknown.join(', ')}`)
+  }
+
+  const claimed = new Set<number>()
   const entries: IndexEntry[] = []
-  for (const file of files) entries.push(await buildRegion(file))
+  for (const file of ordered) entries.push(await buildRegion(file, claimed))
 
   entries.sort((a, b) => b.wayCount - a.wayCount)
   await writeFile(

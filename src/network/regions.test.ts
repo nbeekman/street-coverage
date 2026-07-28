@@ -18,8 +18,8 @@ describe('REGIONS', () => {
     expect(new Set(keys).size).toBe(keys.length)
   })
 
-  it('defines exactly twelve metro-core regions', () => {
-    expect(regionsInGroup('metro-core')).toHaveLength(12)
+  it('defines exactly thirteen metro-core regions', () => {
+    expect(regionsInGroup('metro-core')).toHaveLength(13)
   })
 
   it('pins Denver to relation 1411339', () => {
@@ -73,6 +73,50 @@ describe('buildOverpassQuery', () => {
     for (const cls of HIGHWAY_CLASSES) {
       expect(q).toContain(cls)
     }
+  })
+
+  it('builds a poly: query for polygon regions', () => {
+    // Unincorporated county land belongs to no admin_level=8 boundary, so it
+    // can only be described by an explicit ring.
+    const q = buildOverpassQuery({
+      id: 'test-poly',
+      name: 'Test Poly',
+      osmId: 0,
+      osmKind: 'polygon',
+      group: 'metro-core',
+      polygon: [
+        [39.6, -105.2],
+        [39.7, -105.2],
+        [39.7, -105.05],
+        [39.6, -105.05],
+      ],
+    })
+    expect(q).toContain('way(poly:"39.6 -105.2 39.7 -105.2 39.7 -105.05 39.6 -105.05")')
+    expect(q).toContain('["access"!~"private"]')
+    expect(q).not.toContain('map_to_area')
+  })
+
+  it('rejects a polygon region with no usable ring', () => {
+    expect(() =>
+      buildOverpassQuery({
+        id: 'bad',
+        name: 'Bad',
+        osmId: 0,
+        osmKind: 'polygon',
+        group: 'metro-core',
+      }),
+    ).toThrow(/no usable ring/)
+  })
+
+  it('lists every polygon region after all boundary regions', () => {
+    // REGIONS order is the dedup precedence in build-snapshot. A polygon
+    // catch-all overlaps the boundaries it surrounds, so it must lose.
+    const firstPolygon = REGIONS.findIndex((r) => r.osmKind === 'polygon')
+    if (firstPolygon === -1) return
+    const boundariesAfter = REGIONS.slice(firstPolygon).filter(
+      (r) => r.osmKind !== 'polygon',
+    )
+    expect(boundariesAfter).toEqual([])
   })
 
   it('excludes private access and requests node geometry', () => {

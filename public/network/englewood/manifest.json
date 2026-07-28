@@ -5,19 +5,19 @@
   "group": "metro-core",
   "osmId": 7243979,
   "osmKind": "relation",
-  "generatedAt": "2026-07-28T16:12:40.836Z",
+  "generatedAt": "2026-07-28T16:16:58.917Z",
   "osmTimestamp": "2026-07-28T15:40:25Z",
   "queryHash": "62228fcf81259217",
   "bbox": {
-    "minLon": -105.0406808,
-    "minLat": 39.6150502,
+    "minLon": -105.034931,
+    "minLat": 39.6186832,
     "maxLon": -104.9594276,
-    "maxLat": 39.6822706
+    "maxLat": 39.6778534
   },
-  "wayCount": 984,
-  "positionCount": 8015,
+  "wayCount": 879,
+  "positionCount": 6720,
   "uniqueNodeCount": 6498,
-  "totalMeters": 250624.1306645075,
+  "totalMeters": 202405.36576227957,
   "classes": [
     "primary",
     "secondary",
@@ -28,9 +28,9 @@
     "cycleway"
   ],
   "byteLengths": {
-    "positions": 128240,
-    "startIndices": 3940,
-    "wayIds": 7872,
-    "classes": 984
+    "positions": 107520,
+    "startIndices": 3520,
+    "wayIds": 7032,
+    "classes": 879
   }
 }

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-28T16:12:41.057Z",
+  "generatedAt": "2026-07-28T16:16:58.938Z",
   "regions": [
     {
       "id": "denver",
@@ -15,10 +15,10 @@
       "id": "lakewood",
       "name": "Lakewood",
       "group": "metro-core",
-      "wayCount": 6728,
-      "positionCount": 53343,
-      "totalMeters": 1169666.0657203882,
-      "bytes": 940956
+      "wayCount": 6630,
+      "positionCount": 52657,
+      "totalMeters": 1148447.7035088018,
+      "bytes": 928706
     },
     {
       "id": "centennial",
@@ -33,28 +33,28 @@
       "id": "highlands-ranch",
       "name": "Highlands Ranch",
       "group": "metro-core",
-      "wayCount": 2837,
-      "positionCount": 28532,
-      "totalMeters": 649501.6674840796,
-      "bytes": 493397
+      "wayCount": 2826,
+      "positionCount": 28466,
+      "totalMeters": 648666.601900842,
+      "bytes": 492198
     },
     {
       "id": "littleton",
       "name": "Littleton",
       "group": "metro-core",
-      "wayCount": 2052,
-      "positionCount": 16321,
-      "totalMeters": 361818.2872180645,
-      "bytes": 287816
+      "wayCount": 2014,
+      "positionCount": 15880,
+      "totalMeters": 351397.1964641567,
+      "bytes": 280266
     },
     {
       "id": "greenwood-village",
       "name": "Greenwood Village",
       "group": "metro-core",
-      "wayCount": 1821,
-      "positionCount": 14726,
-      "totalMeters": 230443.49272979688,
-      "bytes": 259293
+      "wayCount": 1757,
+      "positionCount": 13967,
+      "totalMeters": 212248.393219325,
+      "bytes": 246317
     },
     {
       "id": "ken-caryl",
@@ -69,46 +69,55 @@
       "id": "columbine",
       "name": "Columbine",
       "group": "metro-core",
-      "wayCount": 1052,
-      "positionCount": 7198,
-      "totalMeters": 211408.24188585908,
-      "bytes": 128848
+      "wayCount": 1022,
+      "positionCount": 6923,
+      "totalMeters": 204176.38479499373,
+      "bytes": 124058
     },
     {
       "id": "englewood",
       "name": "Englewood",
       "group": "metro-core",
-      "wayCount": 984,
-      "positionCount": 8015,
-      "totalMeters": 250624.1306645075,
-      "bytes": 141036
+      "wayCount": 879,
+      "positionCount": 6720,
+      "totalMeters": 202405.36576227957,
+      "bytes": 118951
+    },
+    {
+      "id": "cherry-hills-village",
+      "name": "Cherry Hills Village",
+      "group": "metro-core",
+      "wayCount": 380,
+      "positionCount": 4789,
+      "totalMeters": 100989.4043278077,
+      "bytes": 81568
     },
     {
       "id": "sheridan",
       "name": "Sheridan",
       "group": "metro-core",
-      "wayCount": 304,
-      "positionCount": 2761,
-      "totalMeters": 57104.86006975701,
-      "bytes": 48132
+      "wayCount": 274,
+      "positionCount": 2126,
+      "totalMeters": 42000.00490494537,
+      "bytes": 37582
     },
     {
       "id": "morrison",
       "name": "Morrison",
       "group": "metro-core",
-      "wayCount": 165,
-      "positionCount": 1569,
-      "totalMeters": 33087.28807757926,
-      "bytes": 27253
+      "wayCount": 157,
+      "positionCount": 1416,
+      "totalMeters": 28790.830433228202,
+      "bytes": 24701
     },
     {
       "id": "bow-mar",
       "name": "Bow Mar",
       "group": "metro-core",
-      "wayCount": 49,
-      "positionCount": 731,
-      "totalMeters": 16262.573378090305,
-      "bytes": 12337
+      "wayCount": 38,
+      "positionCount": 640,
+      "totalMeters": 14156.548619259578,
+      "bytes": 10738
     }
   ]
 }
