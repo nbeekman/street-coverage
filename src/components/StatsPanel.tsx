@@ -9,16 +9,16 @@ import {
   type Units,
 } from '../units/units.ts'
 import UnitsToggle from './UnitsToggle.tsx'
+import ViewToggle from './ViewToggle.tsx'
+import type { ViewMode } from './viewMode.ts'
 import { useFps } from './useFps.ts'
 
 type Props = {
   state: NetworkState
   rides: RidesState
   coverage: CoverageState
-  showRides: boolean
-  onToggleRides: () => void
-  showCoverage: boolean
-  onToggleCoverage: () => void
+  mode: ViewMode
+  onModeChange: (mode: ViewMode) => void
   units: Units
   onToggleUnits: () => void
 }
@@ -27,10 +27,8 @@ export default function StatsPanel({
   state,
   rides,
   coverage,
-  showRides,
-  onToggleRides,
-  showCoverage,
-  onToggleCoverage,
+  mode,
+  onModeChange,
   units,
   onToggleUnits,
 }: Props) {
@@ -66,6 +64,33 @@ export default function StatsPanel({
           </div>
         </div>
         <UnitsToggle units={units} onToggle={onToggleUnits} />
+      </div>
+
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <ViewToggle
+          mode={mode}
+          onChange={onModeChange}
+          ridesAvailable={rides.status === 'ready' && rides.rides !== null}
+        />
+        <div className="flex items-center gap-3 text-xs text-neutral-400">
+          {mode === 'coverage' ? (
+            <>
+              <span className="flex items-center gap-1">
+                <span className="inline-block h-0.5 w-3 bg-[rgb(255,190,60)]" />
+                ridden
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block h-0.5 w-3 bg-[rgb(112,133,162)]" />
+                not yet
+              </span>
+            </>
+          ) : (
+            <span className="flex items-center gap-1">
+              <span className="inline-block h-0.5 w-3 bg-[rgb(255,60,70)]" />
+              ride traces
+            </span>
+          )}
+        </div>
       </div>
 
       {state.status === 'loading' && (
@@ -125,16 +150,7 @@ export default function StatsPanel({
 
       {coverage.status === 'ready' && coverage.coverage && totals && (
         <div className="mt-3 border-t border-white/20 pt-2">
-          <label className="flex cursor-pointer items-center justify-between text-xs">
-            <span>Coverage coloring</span>
-            <input
-              type="checkbox"
-              checked={showCoverage}
-              onChange={onToggleCoverage}
-              className="ml-2"
-            />
-          </label>
-          <div className="mt-1 text-xs text-neutral-500">
+          <div className="text-xs text-neutral-500">
             {totals.nodesHit.toLocaleString()} of {totals.uniqueNodeCount.toLocaleString()}{' '}
             nodes hit ·{' '}
             {totals.waysComplete.toLocaleString()} streets complete
@@ -158,13 +174,10 @@ export default function StatsPanel({
 
       {rides.status === 'ready' && rides.rides && (
         <div className="mt-3 border-t border-white/20 pt-2">
-          <label className="flex cursor-pointer items-center justify-between text-xs">
-            <span>
-              {rides.rides.manifest.rideCount.toLocaleString()} rides ·{' '}
-              {formatDistance(rides.rides.manifest.totalMeters, units)} {unit} ridden
-            </span>
-            <input type="checkbox" checked={showRides} onChange={onToggleRides} className="ml-2" />
-          </label>
+          <div className="text-xs">
+            {rides.rides.manifest.rideCount.toLocaleString()} rides ·{' '}
+            {formatDistance(rides.rides.manifest.totalMeters, units)} {unit} ridden
+          </div>
           {rides.rides.manifest.outOfRegionCount > 0 && (
             <div className="mt-1 text-xs text-neutral-500">
               {rides.rides.manifest.outOfRegionCount} outside the metro — drawn, but

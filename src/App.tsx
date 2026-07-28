@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import MapView from './components/MapView.tsx'
 import StatsPanel from './components/StatsPanel.tsx'
+import type { ViewMode } from './components/viewMode.ts'
 import { useCoverage } from './coverage/useCoverage.ts'
 import { useNetwork } from './network/useNetwork.ts'
 import { useRides } from './rides/useRides.ts'
@@ -10,8 +11,7 @@ export default function App() {
   const state = useNetwork()
   const rides = useRides()
   const coverage = useCoverage()
-  const [showRides, setShowRides] = useState(true)
-  const [showCoverage, setShowCoverage] = useState(true)
+  const [mode, setMode] = useState<ViewMode>('coverage')
   const { units, toggle: toggleUnits } = useUnits()
 
   if (state.status === 'error') {
@@ -42,18 +42,15 @@ export default function App() {
       <MapView
         regions={state.regions}
         rides={rides.rides}
-        showRides={showRides}
         coverage={coverage.coverage}
-        showCoverage={showCoverage}
+        mode={mode}
       />
       <StatsPanel
         state={state}
         rides={rides}
         coverage={coverage}
-        showRides={showRides}
-        onToggleRides={() => setShowRides((v) => !v)}
-        showCoverage={showCoverage}
-        onToggleCoverage={() => setShowCoverage((v) => !v)}
+        mode={mode}
+        onModeChange={setMode}
         units={units}
         onToggleUnits={toggleUnits}
       />

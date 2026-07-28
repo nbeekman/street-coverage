@@ -1,13 +1,7 @@
 export type Rgb = [number, number, number]
 export type Rgba = [number, number, number, number]
 
-/**
- * Ridden. Warm and bright so covered streets read as the figure.
- *
- * The ride-trace overlay uses the same hue with alpha, because both encode the
- * same fact -- "you were here". Two different warm colors for one meaning read
- * as two different meanings.
- */
+/** Ridden. Warm and bright so covered streets read as the figure. */
 export const RIDDEN_COLOR: Rgb = [255, 190, 60]
 
 /**
@@ -23,7 +17,13 @@ export const RIDDEN_COLOR: Rgb = [255, 190, 60]
 export const UNRIDDEN_COLOR: Rgb = [112, 133, 162]
 
 /**
- * Ride traces: the ridden hue, semi-transparent so overlapping traces
- * accumulate and streets ridden many times read brighter.
+ * Ride traces: red, deliberately unlike anything else on the map.
+ *
+ * Coverage and traces are now mutually exclusive views rather than stacked
+ * layers, so the trace no longer needs to agree with RIDDEN_COLOR -- it needs
+ * to be unmistakably its own thing against the class colors and the basemap.
+ *
+ * Still semi-transparent, so overlapping traces accumulate and a corridor
+ * ridden many times reads brighter than a one-off.
  */
-export const RIDE_TRACE_COLOR: Rgba = [...RIDDEN_COLOR, 90]
+export const RIDE_TRACE_COLOR: Rgba = [255, 60, 70, 110]

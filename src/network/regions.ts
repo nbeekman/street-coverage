@@ -111,15 +111,19 @@ export const REGIONS: readonly Region[] = [
   // clustered here. Rides through this corridor drew as traces but could never
   // be credited, because no way existed to credit.
   //
-  // Aurora is deliberately NOT added. It would contribute a few thousand km of
-  // mostly-unridden residential streets and depress the headline without
-  // reflecting where these rides actually go.
   { id: 'glendale',          name: 'Glendale',          osmId: 112942,    osmKind: 'relation', group: 'metro-core' },
   { id: 'holly-hills',       name: 'Holly Hills',       osmId: 9569979,   osmKind: 'relation', group: 'metro-core' },
   // A protected area rather than a municipality: the reservoir loop belongs to
   // no town, which is why no boundary query reached it. Mapped as a way, so it
   // needs map_to_area like the other way-based regions.
+  //
+  // Listed before Aurora, which surrounds it, so the park keeps its own ways
+  // and stays a distinct row rather than being absorbed.
   { id: 'cherry-creek-state-park', name: 'Cherry Creek State Park', osmId: 224202720, osmKind: 'way', group: 'metro-core' },
+  // The whole east side, added 2026-07-28. It roughly doubles the unridden
+  // denominator and drops the headline -- the honest trade, since the metro
+  // does not stop at the edge of where these rides happen to have been.
+  { id: 'aurora',            name: 'Aurora',            osmId: 112875,    osmKind: 'relation', group: 'metro-core' },
 
   { id: 'castle-rock',       name: 'Castle Rock',       osmId: 112343,    osmKind: 'relation', group: 'metro-outer' },
 

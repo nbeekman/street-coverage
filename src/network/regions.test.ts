@@ -30,8 +30,15 @@ describe('REGIONS', () => {
     }
   })
 
-  it('defines exactly eighteen metro-core regions', () => {
-    expect(regionsInGroup('metro-core')).toHaveLength(18)
+  // A deliberate tripwire: adding or losing a metro-core region moves the
+  // headline denominator, so it should never happen silently.
+  it('defines exactly nineteen metro-core regions', () => {
+    expect(regionsInGroup('metro-core')).toHaveLength(19)
+  })
+
+  it('orders Cherry Creek State Park before Aurora, which surrounds it', () => {
+    const ids = REGIONS.map((r) => r.id)
+    expect(ids.indexOf('cherry-creek-state-park')).toBeLessThan(ids.indexOf('aurora'))
   })
 
   it('pins Denver to relation 1411339', () => {

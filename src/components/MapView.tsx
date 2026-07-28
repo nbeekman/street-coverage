@@ -10,6 +10,7 @@ import { createRideLayer } from '../layers/rideLayer.ts'
 import type { LoadedCoverage } from '../coverage/loadCoverage.ts'
 import type { LoadedRegion } from '../network/loadSnapshot.ts'
 import type { LoadedRides } from '../rides/loadRides.ts'
+import type { ViewMode } from './viewMode.ts'
 
 /** Free, no-token basemap. Attribution renders from the style itself. */
 const BASEMAP_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
@@ -40,33 +41,27 @@ function DeckOverlay({ layers }: { layers: Layer[] }) {
 type Props = {
   regions: LoadedRegion[]
   rides: LoadedRides | null
-  showRides: boolean
   coverage: LoadedCoverage | null
-  showCoverage: boolean
+  mode: ViewMode
 }
 
-export default function MapView({
-  regions,
-  rides,
-  showRides,
-  coverage,
-  showCoverage,
-}: Props) {
+export default function MapView({ regions, rides, coverage, mode }: Props) {
   // The id of the style's first symbol layer. Everything deck draws is
   // inserted before it, which puts every label above every generated line.
   const [labelLayerId, setLabelLayerId] = useState<string | undefined>(undefined)
 
   const layers = useMemo(() => {
-    // Coverage geometry is the same network, split at ridden/unridden
-    // boundaries, so the two layer sets are alternatives rather than a stack.
-    const base =
-      coverage && showCoverage
-        ? coverage.regions.map((region) => createCoverageLayer(region, labelLayerId))
-        : regions.map((region) => createNetworkLayer(region, labelLayerId))
+    // Coverage mode paints the network by what has been ridden. Rides mode
+    // falls back to class colors and draws the traces on top, so the two are
+    // genuinely alternative readings of the same streets.
+    if (mode === 'coverage' && coverage) {
+      return coverage.regions.map((region) => createCoverageLayer(region, labelLayerId))
+    }
 
+    const base = regions.map((region) => createNetworkLayer(region, labelLayerId))
     // Rides draw last so they sit above the network but still below labels.
-    return rides && showRides ? [...base, createRideLayer(rides, labelLayerId)] : base
-  }, [regions, rides, showRides, coverage, showCoverage, labelLayerId])
+    return rides && mode === 'rides' ? [...base, createRideLayer(rides, labelLayerId)] : base
+  }, [regions, rides, coverage, mode, labelLayerId])
 
   return (
     <Map
