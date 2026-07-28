@@ -77,6 +77,35 @@ is real and permanent: streets within 500 m of any ride start may never reach 10
 FIT stores positions as *semicircles* and the Garmin SDK does not convert them, even with
 `applyScaleAndOffset` — see `src/rides/semicircles.ts`.
 
+## Coverage
+
+```bash
+npm run build:coverage              # rides + network -> public/coverage (gitignored)
+npm run build:coverage -- --radius 15
+```
+
+**What counts as ridden.** A node is *hit* when a ride point passed within **25 m**. A
+segment counts as ridden when **both** its endpoints are hit — the "both" is what stops a
+single stray GPS point from crediting a stretch never ridden. The headline percentage is
+ridden metres over total metres, so it reads as "3.56% of the metro's street distance".
+
+Coverage output is **gitignored** for the same reason ride traces are: which streets someone
+has ridden is location data, and publishing it would undo the privacy clipping.
+
+**Traces are densified to 10 m before matching.** Coverage asks whether a ride *point* came
+within 25 m of a node, but the rider travelled the *line between* points. Real traces have a
+median gap of 23.5 m and a tail past 250 m, so a node mid-gap was missed despite being ridden
+over. Densifying recovered 11 km of genuine coverage — see `src/coverage/densify.ts`.
+
+**Ways are split into runs** of consecutive ridden or unridden segments, so a half-ridden
+street renders half bright at the point you turned off rather than as a uniform average.
+
+Three limits, none of them bugs:
+
+- Streets within 500 m of any ride start may never complete — that is the privacy clip.
+- A 25 m radius occasionally credits a parallel street. Denver block spacing reaches ~30 m.
+- Dual carriageways read as half-ridden forever; a divided road is two OSM ways.
+
 ## What counts as rideable
 
 Ordinary streets count with no extra qualification: `primary`, `secondary`, `tertiary`,

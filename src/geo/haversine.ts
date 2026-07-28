@@ -1,5 +1,14 @@
 /** IUGG mean Earth radius, meters. */
-const EARTH_RADIUS_M = 6371008.8
+export const EARTH_RADIUS_M = 6371008.8
+
+/**
+ * Metres per degree on the sphere `haversineMeters` uses.
+ *
+ * Exported so anything sizing a distance in degrees derives it from the same
+ * sphere. The ellipsoidal figure (111320 m at the equator) disagrees by 125 m
+ * per degree, which is enough to undersize a 25 m grid cell.
+ */
+export const METERS_PER_DEGREE = (Math.PI * EARTH_RADIUS_M) / 180
 const DEG_TO_RAD = Math.PI / 180
 
 export function haversineMeters(

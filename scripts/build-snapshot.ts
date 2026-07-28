@@ -1,32 +1,17 @@
-import { createHash } from 'node:crypto'
-import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { bboxOf } from '../src/geo/bounds.ts'
 import { pathLengthMeters } from '../src/geo/haversine.ts'
-import { normalize, type OsmElement } from '../src/network/normalize.ts'
-import {
-  HIGHWAY_CLASSES,
-  REGIONS,
-  buildOverpassQuery,
-  regionById,
-} from '../src/network/regions.ts'
+import { HIGHWAY_CLASSES } from '../src/network/regions.ts'
 import {
   SNAPSHOT_VERSION,
   packSnapshot,
   validateSnapshot,
   type SnapshotManifest,
 } from '../src/network/snapshot.ts'
+import { loadRegionSources, type RegionSource } from './networkSource.ts'
 
-const RAW_DIR = join(process.cwd(), 'data', 'raw')
 const OUT_DIR = join(process.cwd(), 'public', 'network')
-
-type RawPayload = {
-  regionId: string
-  fetchedAt: string
-  osmTimestamp: string
-  queryHash: string
-  elements: OsmElement[]
-}
 
 type IndexEntry = {
   id: string
@@ -38,57 +23,12 @@ type IndexEntry = {
   bytes: number
 }
 
-async function buildRegion(
-  rawFile: string,
-  claimed: Set<number>,
-): Promise<IndexEntry> {
-  const raw = JSON.parse(await readFile(join(RAW_DIR, rawFile), 'utf8')) as RawPayload
-  const region = regionById(raw.regionId)
-  if (!region) throw new Error(`Raw file references unknown region "${raw.regionId}"`)
-
-  // A failed --force leaves the previous raw file untouched, so a region can
-  // silently carry data fetched with an older query. The filter has already
-  // changed once (bike-legal path/bridleway); building a mixed snapshot set
-  // would corrupt the denominator with no visible symptom.
-  const expectedHash = createHash('sha256')
-    .update(buildOverpassQuery(region))
-    .digest('hex')
-    .slice(0, 16)
-  if (raw.queryHash !== expectedHash) {
-    throw new Error(
-      `Region "${region.id}" was fetched with a different query ` +
-        `(raw ${raw.queryHash}, current ${expectedHash}). ` +
-        `Re-run: npm run fetch:network -- --region ${region.id} --force`,
-    )
-  }
-
-  const network = normalize(raw.elements)
-
-  // Polygon regions overlap the boundary regions they surround, and a way on a
-  // shared border can fall in two boundaries. Assign each way to exactly one
-  // region by REGIONS order so the headline denominator cannot double-count.
-  const before = network.ways.length
-  network.ways = network.ways.filter((w) => !claimed.has(w.id))
-  const deduped = before - network.ways.length
-  for (const w of network.ways) claimed.add(w.id)
-
-  // normalize() counted nodes across every way it returned, including the ones
-  // dedup just removed. Recount over what actually ships, or a heavily-deduped
-  // region reports more unique nodes than it has vertices.
-  const retainedNodes = new Set<number>()
-  for (const w of network.ways) for (const ref of w.nodeRefs) retainedNodes.add(ref)
-  const uniqueNodeCount = retainedNodes.size
-
-  if (network.ways.length === 0) {
-    throw new Error(
-      `Region "${region.id}" has no ways left after dedup (${before} were all claimed by earlier regions)`,
-    )
-  }
-
-  const buffers = packSnapshot(network.ways)
+async function buildRegion(source: RegionSource): Promise<IndexEntry> {
+  const { region, ways, uniqueNodeCount } = source
+  const buffers = packSnapshot(ways)
 
   let totalMeters = 0
-  for (let i = 0; i < network.ways.length; i++) {
+  for (let i = 0; i < ways.length; i++) {
     totalMeters += pathLengthMeters(
       buffers.positions,
       buffers.startIndices[i],
@@ -104,11 +44,11 @@ async function buildRegion(
     osmId: region.osmId,
     osmKind: region.osmKind,
     generatedAt: new Date().toISOString(),
-    osmTimestamp: raw.osmTimestamp,
-    queryHash: raw.queryHash,
+    osmTimestamp: source.osmTimestamp,
+    queryHash: source.queryHash,
     bbox: bboxOf(buffers.positions),
-    wayCount: network.ways.length,
-    positionCount: buffers.startIndices[network.ways.length],
+    wayCount: ways.length,
+    positionCount: buffers.startIndices[ways.length],
     uniqueNodeCount,
     totalMeters,
     classes: [...HIGHWAY_CLASSES],
@@ -140,16 +80,16 @@ async function buildRegion(
   const km = (totalMeters / 1000).toFixed(0)
   const mb = (bytes / 1e6).toFixed(2)
   console.log(
-    `ok  ${region.id.padEnd(18)} ways=${String(network.ways.length).padEnd(6)} ` +
+    `ok  ${region.id.padEnd(18)} ways=${String(ways.length).padEnd(6)} ` +
       `verts=${String(manifest.positionCount).padEnd(7)} uniq=${String(uniqueNodeCount).padEnd(7)} ` +
-      `dropped=${String(network.droppedWays).padEnd(5)} dedup=${String(deduped).padEnd(5)} ${km}km ${mb}MB`,
+      `dropped=${String(source.droppedWays).padEnd(5)} dedup=${String(source.dedupedWays).padEnd(5)} ${km}km ${mb}MB`,
   )
 
   return {
     id: region.id,
     name: region.name,
     group: region.group,
-    wayCount: network.ways.length,
+    wayCount: ways.length,
     positionCount: manifest.positionCount,
     totalMeters,
     bytes,
@@ -157,35 +97,20 @@ async function buildRegion(
 }
 
 async function main(): Promise<void> {
-  let files: string[]
-  try {
-    files = (await readdir(RAW_DIR)).filter((f) => f.endsWith('.json')).sort()
-  } catch {
-    throw new Error(`No raw data at ${RAW_DIR}. Run "npm run fetch:network -- --group metro-core" first.`)
-  }
-  if (files.length === 0) {
-    throw new Error(`No raw data at ${RAW_DIR}. Run "npm run fetch:network -- --group metro-core" first.`)
-  }
-
   await mkdir(OUT_DIR, { recursive: true })
 
-  // REGIONS order is the dedup precedence: boundary regions claim their ways
-  // before any polygon catch-all sees them.
-  const present = new Set(files.map((f) => f.slice(0, -5)))
-  const ordered = REGIONS.filter((r) => present.has(r.id)).map((r) => `${r.id}.json`)
-  const unknown = files.filter((f) => !ordered.includes(f))
-  if (unknown.length > 0) {
-    throw new Error(`Raw files for regions not in the registry: ${unknown.join(', ')}`)
-  }
-
-  const claimed = new Set<number>()
+  const sources = await loadRegionSources()
   const entries: IndexEntry[] = []
-  for (const file of ordered) entries.push(await buildRegion(file, claimed))
+  for (const source of sources) entries.push(await buildRegion(source))
 
   entries.sort((a, b) => b.wayCount - a.wayCount)
   await writeFile(
     join(OUT_DIR, 'index.json'),
-    JSON.stringify({ version: SNAPSHOT_VERSION, generatedAt: new Date().toISOString(), regions: entries }, null, 2),
+    JSON.stringify(
+      { version: SNAPSHOT_VERSION, generatedAt: new Date().toISOString(), regions: entries },
+      null,
+      2,
+    ),
   )
 
   const totalWays = entries.reduce((s, e) => s + e.wayCount, 0)

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import MapView from './components/MapView.tsx'
 import StatsPanel from './components/StatsPanel.tsx'
+import { useCoverage } from './coverage/useCoverage.ts'
 import { useNetwork } from './network/useNetwork.ts'
 import { useRides } from './rides/useRides.ts'
 import { useUnits } from './units/useUnits.ts'
@@ -8,7 +9,9 @@ import { useUnits } from './units/useUnits.ts'
 export default function App() {
   const state = useNetwork()
   const rides = useRides()
-  const [showRides, setShowRides] = useState(true)
+  const coverage = useCoverage()
+  const [showRides, setShowRides] = useState(false)
+  const [showCoverage, setShowCoverage] = useState(true)
   const { units, toggle: toggleUnits } = useUnits()
 
   if (state.status === 'error') {
@@ -36,12 +39,21 @@ export default function App() {
 
   return (
     <div className="relative h-full w-full">
-      <MapView regions={state.regions} rides={rides.rides} showRides={showRides} />
+      <MapView
+        regions={state.regions}
+        rides={rides.rides}
+        showRides={showRides}
+        coverage={coverage.coverage}
+        showCoverage={showCoverage}
+      />
       <StatsPanel
         state={state}
         rides={rides}
+        coverage={coverage}
         showRides={showRides}
         onToggleRides={() => setShowRides((v) => !v)}
+        showCoverage={showCoverage}
+        onToggleCoverage={() => setShowCoverage((v) => !v)}
         units={units}
         onToggleUnits={toggleUnits}
       />

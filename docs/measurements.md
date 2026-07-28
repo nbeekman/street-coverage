@@ -168,3 +168,93 @@ Combined decode (network + rides) is 2,783 ms, up from 1,105 ms for the network 
 
 Not errors. These are rides outside the metro-core bbox — travel, RAGBRAI, and Summit
 County. They will import once their regions are added to the registry and fetched.
+
+---
+
+## M3 — coverage
+
+Computed 2026-07-28 at a 25 m match radius against the 165 imported rides.
+
+| Metric | Value |
+|---|---:|
+| **Headline — ridden street distance** | **3.56%** |
+| Covered | 329 km of 9,224 km |
+| Nodes hit | 16,241 of 369,823 (4.39%) |
+| Streets complete | 2,005 of 51,086 |
+| Runs after splitting | 52,235 |
+| Snapshot size | 7.33 MB |
+| Build time | 0.7 s |
+
+### Making 56 billion comparisons cheap
+
+369,823 network nodes against 484,778 ride points is 1.8×10¹¹ naive distance tests. A
+uniform grid sized at the match radius, built over the ride points and queried per node,
+reduces each query to the 9 cells that could possibly contain a match.
+
+| | Value |
+|---|---:|
+| Naive comparisons | 1.8 × 10¹¹ |
+| Grid cells occupied | 17,345 |
+| Whole-metro build | **0.7 s** |
+
+A test asserts the grid returns exactly what brute force returns over 3,000 random queries,
+so the optimisation is verified rather than assumed.
+
+### Two bugs the tests caught
+
+**Undersized grid cells.** Cell width came from the ellipsoidal 111,320 m per degree of
+longitude while `haversineMeters` measures on a sphere of radius 6,371,008.8 m — 111,194.9 m
+per degree. Cells came out 24.97 m for a 25 m radius. Undersized cells silently lose matches
+rather than failing loudly. Both axes now derive from the same sphere, plus a 1% margin.
+
+**Sparse traces under-reported coverage.** Coverage asks whether a ride *point* came within
+25 m of a node, but the rider travelled the *line between* points. The archive's traces have
+a median gap of 23.5 m, p90 of 38.6 m, and 9,634 gaps over 50 m — worst 262 m. A node mid-gap
+was missed despite being ridden straight over.
+
+| | Before densify | After |
+|---|---:|---:|
+| Ride points indexed | 151,382 | 484,778 |
+| Headline | 3.45% | **3.56%** |
+| Covered | 318 km | 329 km |
+| Nodes hit | 15,939 | 16,241 |
+| Streets complete | 1,879 | 2,005 |
+
+Densifying to ≤10 m spacing makes the point test approximate a line test to within 5 m.
+
+### Render cost
+
+| Layers | FPS |
+|---|---:|
+| Network only (51,086 paths) | 60 |
+| Network + rides | 43 |
+| **Coverage (52,235 runs)** | **48** |
+
+Splitting ways into runs adds ~1,150 paths over the plain network and costs ~12 fps against
+the network-only baseline, largely from the per-run colour and width accessors. Initial
+decode is 1,709 ms.
+
+### The three zeros are real
+
+Cherry Hills Village, Morrison, and Bow Mar all report 0.00%. Probing the nearest ride point
+to each confirms these are genuine, not a matching failure:
+
+| Region | Nearest ride point |
+|---|---:|
+| Morrison | ~64 m |
+| Cherry Hills Village | ~396 m |
+| Bow Mar | ~1,383 m |
+
+Centennial's 0.01% is consistent too — its nearest ride point is 3 m, so the rider clips one
+edge and no more.
+
+### Known limits
+
+- **Streets near home can never reach 100%.** M2 clips 500 m from both ends of every ride, so
+  those nodes have no points near them by construction. Accepted cost of not storing where
+  the rider lives.
+- **A 25 m radius will credit some streets ridden past.** Denver block spacing reaches ~30 m,
+  so a parallel street occasionally lights up. Inherent to node coverage at this radius;
+  segment-level map matching is the upgrade path.
+- **Dual carriageways read as half-ridden forever.** A divided road is two OSM ways and
+  riding one direction leaves the other unhit. Not solved in M3.

@@ -12,7 +12,8 @@
     "fetch:network": "node --disable-warning=ExperimentalWarning scripts/fetch-network.ts",
     "build:snapshot": "node --disable-warning=ExperimentalWarning scripts/build-snapshot.ts",
     "import:rides": "node --disable-warning=ExperimentalWarning scripts/import-rides.ts",
-    "build:rides": "node --disable-warning=ExperimentalWarning scripts/build-rides.ts"
+    "build:rides": "node --disable-warning=ExperimentalWarning scripts/build-rides.ts",
+    "build:coverage": "node --disable-warning=ExperimentalWarning scripts/build-coverage.ts"
   },
   "dependencies": {
     "@deck.gl/core": "^9.3.7",

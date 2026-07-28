@@ -1,3 +1,4 @@
+import type { CoverageState } from '../coverage/useCoverage.ts'
 import type { NetworkState } from '../network/useNetwork.ts'
 import type { RidesState } from '../rides/useRides.ts'
 import {
@@ -13,8 +14,11 @@ import { useFps } from './useFps.ts'
 type Props = {
   state: NetworkState
   rides: RidesState
+  coverage: CoverageState
   showRides: boolean
   onToggleRides: () => void
+  showCoverage: boolean
+  onToggleCoverage: () => void
   units: Units
   onToggleUnits: () => void
 }
@@ -22,8 +26,11 @@ type Props = {
 export default function StatsPanel({
   state,
   rides,
+  coverage,
   showRides,
   onToggleRides,
+  showCoverage,
+  onToggleCoverage,
   units,
   onToggleUnits,
 }: Props) {
@@ -32,11 +39,16 @@ export default function StatsPanel({
   const core = state.regions.filter((r) => r.group === 'metro-core')
   const totalWays = core.reduce((s, r) => s + r.manifest.wayCount, 0)
   const totalMeters = core.reduce((s, r) => s + r.manifest.totalMeters, 0)
-  const totalNodes = core.reduce((s, r) => s + r.manifest.uniqueNodeCount, 0)
 
-  // No numerator until M3 computes coverage; the denominator is real today.
-  const riddenMeters = 0
-  const percent = totalMeters === 0 ? 0 : (riddenMeters / totalMeters) * 100
+  const totals = coverage.coverage?.manifest.totals ?? null
+  const byRegion = new Map(
+    (coverage.coverage?.manifest.regions ?? []).map((r) => [r.regionId, r]),
+  )
+
+  // Until the coverage build has run there is no numerator, and showing
+  // anything other than zero would be a lie.
+  const coveredMeters = totals?.coveredMeters ?? 0
+  const percent = totalMeters === 0 ? 0 : (coveredMeters / totalMeters) * 100
 
   const unit = distanceLabel(units)
 
@@ -48,8 +60,9 @@ export default function StatsPanel({
             {percent.toFixed(2)}%
           </div>
           <div className="text-xs text-neutral-400">
-            of {formatDistance(totalMeters, units)} {unit} across {core.length}{' '}
-            metro-core regions
+            {formatDistance(coveredMeters, units)} of{' '}
+            {formatDistance(totalMeters, units)} {unit} across {core.length} metro-core
+            regions
           </div>
         </div>
         <UnitsToggle units={units} onToggle={onToggleUnits} />
@@ -66,30 +79,82 @@ export default function StatsPanel({
         <thead className="text-neutral-400">
           <tr>
             <th className="text-left font-normal">Region</th>
-            <th className="pl-3 text-right font-normal">Ways</th>
-            <th className="pl-3 text-right font-normal">Nodes</th>
-            <th className="pl-3 text-right font-normal">{unit}</th>
+            <th className="pl-2 text-right font-normal">Ways</th>
+            <th className="pl-2 text-right font-normal">{unit}</th>
+            <th className="pl-2 text-right font-normal">Ridden</th>
+            <th className="pl-2 text-right font-normal">%</th>
           </tr>
         </thead>
         <tbody>
-          {state.regions.map((r) => (
-            <tr key={r.id} className="border-t border-white/10">
-              <td className="py-0.5 text-left">{r.name}</td>
-              <td className="pl-3 text-right">{r.manifest.wayCount.toLocaleString()}</td>
-              <td className="pl-3 text-right">{r.manifest.uniqueNodeCount.toLocaleString()}</td>
-              <td className="pl-3 text-right">
-                {formatDistance(r.manifest.totalMeters, units)}
-              </td>
-            </tr>
-          ))}
+          {state.regions.map((r) => {
+            const c = byRegion.get(r.id)
+            const pct = c && c.totalMeters > 0 ? (c.coveredMeters / c.totalMeters) * 100 : 0
+            return (
+              <tr key={r.id} className="border-t border-white/10">
+                <td className="py-0.5 text-left">{r.name}</td>
+                <td className="pl-2 text-right">{r.manifest.wayCount.toLocaleString()}</td>
+                <td className="pl-2 text-right">
+                  {formatDistance(r.manifest.totalMeters, units)}
+                </td>
+                <td className="pl-2 text-right">
+                  {c ? formatDistance(c.coveredMeters, units, 1) : '—'}
+                </td>
+                <td
+                  className={
+                    pct > 0 ? 'pl-2 text-right text-amber-300' : 'pl-2 text-right text-neutral-600'
+                  }
+                >
+                  {c ? pct.toFixed(2) : '—'}
+                </td>
+              </tr>
+            )
+          })}
           <tr className="border-t border-white/30 font-semibold">
             <td className="py-0.5 text-left">Total</td>
-            <td className="pl-3 text-right">{totalWays.toLocaleString()}</td>
-            <td className="pl-3 text-right">{totalNodes.toLocaleString()}</td>
-            <td className="pl-3 text-right">{formatDistance(totalMeters, units)}</td>
+            <td className="pl-2 text-right">{totalWays.toLocaleString()}</td>
+            <td className="pl-2 text-right">{formatDistance(totalMeters, units)}</td>
+            <td className="pl-2 text-right">
+              {totals ? formatDistance(coveredMeters, units, 1) : '—'}
+            </td>
+            <td className="pl-2 text-right text-amber-300">
+              {totals ? percent.toFixed(2) : '—'}
+            </td>
           </tr>
         </tbody>
       </table>
+
+      {coverage.status === 'ready' && coverage.coverage && totals && (
+        <div className="mt-3 border-t border-white/20 pt-2">
+          <label className="flex cursor-pointer items-center justify-between text-xs">
+            <span>Coverage colouring</span>
+            <input
+              type="checkbox"
+              checked={showCoverage}
+              onChange={onToggleCoverage}
+              className="ml-2"
+            />
+          </label>
+          <div className="mt-1 text-xs text-neutral-500">
+            {totals.nodesHit.toLocaleString()} of {totals.uniqueNodeCount.toLocaleString()}{' '}
+            nodes hit ·{' '}
+            {totals.waysComplete.toLocaleString()} streets complete
+          </div>
+          <div className="text-xs text-neutral-500">
+            {formatShortDistance(coverage.coverage.manifest.radiusMeters, units)}{' '}
+            {shortDistanceLabel(units)} match radius
+          </div>
+        </div>
+      )}
+      {coverage.status === 'absent' && (
+        <div className="mt-3 border-t border-white/20 pt-2 text-xs text-neutral-500">
+          No coverage computed — run npm run build:coverage
+        </div>
+      )}
+      {coverage.status === 'error' && (
+        <div className="mt-3 border-t border-white/20 pt-2 text-xs text-red-300">
+          {coverage.error}
+        </div>
+      )}
 
       {rides.status === 'ready' && rides.rides && (
         <div className="mt-3 border-t border-white/20 pt-2">

@@ -14,3 +14,7 @@ data/raw
 # Ride traces are personal location data. Never commit them.
 data/rides/
 public/rides/
+
+# Coverage is derived from ride traces: which streets someone has ridden is
+# location data too, and publishing it would undo the privacy clipping.
+public/coverage/
