@@ -10,6 +10,27 @@
 
 **Spec:** `docs/superpowers/specs/2026-07-27-m1-network-render-design.md`
 
+## Progress
+
+Paused 2026-07-27 after Task 5. `HEAD` is green: 44 tests passing, clean tree.
+
+| Task | Status |
+|---|---|
+| 1. Project scaffold and toolchain | done |
+| 2. Geo primitives | done — 15 tests |
+| 3. Region registry and query builder | done — 11 tests |
+| 4. Normalize Overpass elements | done — 8 tests |
+| 5. Binary snapshot pack and unpack | done — 10 tests |
+| 6. Resilient Overpass client | **next — start at Step 1** |
+| 7–14 | not started |
+
+**To resume:** work in the `worktree-m1-network-render` branch and begin at Task 6,
+Step 1. Nothing is half-finished; Task 6's test file was written and then reverted so
+the suite would stay green across the pause, and its full contents are in Task 6 below.
+
+**Heads-up for Task 9:** the ten-region fetch is the slow, flaky part. Overpass failed
+6 of 10 probe queries during design. Budget real time for it and expect to re-run.
+
 ## Global Constraints
 
 - **TypeScript must be `~5.9.3`, NOT 7.x.** `typescript-eslint@8.65` declares `typescript >=4.8.4 <6.1.0`. TypeScript 7.0.2 is `latest` on npm and will break linting. Verified 2026-07-27.
