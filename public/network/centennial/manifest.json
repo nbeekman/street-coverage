@@ -1,23 +1,23 @@
 {
-  "version": 1,
+  "version": 2,
   "regionId": "centennial",
   "regionName": "Centennial",
   "group": "metro-core",
   "osmId": 112951,
   "osmKind": "relation",
-  "generatedAt": "2026-07-28T16:21:10.305Z",
-  "osmTimestamp": "2026-07-02T16:51:45Z",
-  "queryHash": "5fa55907018d2b49",
+  "generatedAt": "2026-07-28T17:00:54.629Z",
+  "osmTimestamp": "2026-07-28T16:34:04Z",
+  "queryHash": "923a2edd96aeb61d",
   "bbox": {
     "minLon": -104.9883892,
     "minLat": 39.5649593,
     "maxLon": -104.7254152,
     "maxLat": 39.638504
   },
-  "wayCount": 4882,
-  "positionCount": 55987,
-  "uniqueNodeCount": 49738,
-  "totalMeters": 868903.0745138221,
+  "wayCount": 5003,
+  "positionCount": 57225,
+  "uniqueNodeCount": 50794,
+  "totalMeters": 884700.2213357493,
   "classes": [
     "primary",
     "secondary",
@@ -25,12 +25,14 @@
     "residential",
     "unclassified",
     "living_street",
-    "cycleway"
+    "cycleway",
+    "path",
+    "bridleway"
   ],
   "byteLengths": {
-    "positions": 895792,
-    "startIndices": 19532,
-    "wayIds": 39056,
-    "classes": 4882
+    "positions": 915600,
+    "startIndices": 20016,
+    "wayIds": 40024,
+    "classes": 5003
   }
 }

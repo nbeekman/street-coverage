@@ -1,23 +1,23 @@
 {
-  "version": 1,
+  "version": 2,
   "regionId": "littleton",
   "regionName": "Littleton",
   "group": "metro-core",
   "osmId": 112959,
   "osmKind": "relation",
-  "generatedAt": "2026-07-28T16:21:10.438Z",
-  "osmTimestamp": "2026-07-28T15:15:06Z",
-  "queryHash": "c9c148e2a0b4ce83",
+  "generatedAt": "2026-07-28T17:00:54.712Z",
+  "osmTimestamp": "2026-07-28T16:36:07Z",
+  "queryHash": "aa90dea6e82f1664",
   "bbox": {
-    "minLon": -105.1108895,
-    "minLat": 39.5363083,
+    "minLon": -105.1131004,
+    "minLat": 39.531672,
     "maxLon": -104.973282,
     "maxLat": 39.6352967
   },
-  "wayCount": 2014,
-  "positionCount": 15880,
-  "uniqueNodeCount": 13225,
-  "totalMeters": 351397.1964641567,
+  "wayCount": 2207,
+  "positionCount": 17503,
+  "uniqueNodeCount": 14587,
+  "totalMeters": 377075.66869981604,
   "classes": [
     "primary",
     "secondary",
@@ -25,12 +25,14 @@
     "residential",
     "unclassified",
     "living_street",
-    "cycleway"
+    "cycleway",
+    "path",
+    "bridleway"
   ],
   "byteLengths": {
-    "positions": 254080,
-    "startIndices": 8060,
-    "wayIds": 16112,
-    "classes": 2014
+    "positions": 280048,
+    "startIndices": 8832,
+    "wayIds": 17656,
+    "classes": 2207
   }
 }

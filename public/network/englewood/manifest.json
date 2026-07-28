@@ -1,23 +1,23 @@
 {
-  "version": 1,
+  "version": 2,
   "regionId": "englewood",
   "regionName": "Englewood",
   "group": "metro-core",
   "osmId": 7243979,
   "osmKind": "relation",
-  "generatedAt": "2026-07-28T16:21:10.537Z",
-  "osmTimestamp": "2026-07-28T15:40:25Z",
-  "queryHash": "62228fcf81259217",
+  "generatedAt": "2026-07-28T17:00:54.802Z",
+  "osmTimestamp": "2026-07-28T16:43:15Z",
+  "queryHash": "c17c490ee6a26b93",
   "bbox": {
     "minLon": -105.034931,
     "minLat": 39.6186832,
     "maxLon": -104.9594276,
     "maxLat": 39.6778534
   },
-  "wayCount": 879,
-  "positionCount": 6720,
-  "uniqueNodeCount": 5436,
-  "totalMeters": 202405.36576227957,
+  "wayCount": 912,
+  "positionCount": 7073,
+  "uniqueNodeCount": 5749,
+  "totalMeters": 205230.42132180044,
   "classes": [
     "primary",
     "secondary",
@@ -25,12 +25,14 @@
     "residential",
     "unclassified",
     "living_street",
-    "cycleway"
+    "cycleway",
+    "path",
+    "bridleway"
   ],
   "byteLengths": {
-    "positions": 107520,
-    "startIndices": 3520,
-    "wayIds": 7032,
-    "classes": 879
+    "positions": 113168,
+    "startIndices": 3652,
+    "wayIds": 7296,
+    "classes": 912
   }
 }

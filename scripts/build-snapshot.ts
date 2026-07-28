@@ -1,9 +1,15 @@
+import { createHash } from 'node:crypto'
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { bboxOf } from '../src/geo/bounds.ts'
 import { pathLengthMeters } from '../src/geo/haversine.ts'
 import { normalize, type OsmElement } from '../src/network/normalize.ts'
-import { HIGHWAY_CLASSES, REGIONS, regionById } from '../src/network/regions.ts'
+import {
+  HIGHWAY_CLASSES,
+  REGIONS,
+  buildOverpassQuery,
+  regionById,
+} from '../src/network/regions.ts'
 import {
   SNAPSHOT_VERSION,
   packSnapshot,
@@ -39,6 +45,22 @@ async function buildRegion(
   const raw = JSON.parse(await readFile(join(RAW_DIR, rawFile), 'utf8')) as RawPayload
   const region = regionById(raw.regionId)
   if (!region) throw new Error(`Raw file references unknown region "${raw.regionId}"`)
+
+  // A failed --force leaves the previous raw file untouched, so a region can
+  // silently carry data fetched with an older query. The filter has already
+  // changed once (bike-legal path/bridleway); building a mixed snapshot set
+  // would corrupt the denominator with no visible symptom.
+  const expectedHash = createHash('sha256')
+    .update(buildOverpassQuery(region))
+    .digest('hex')
+    .slice(0, 16)
+  if (raw.queryHash !== expectedHash) {
+    throw new Error(
+      `Region "${region.id}" was fetched with a different query ` +
+        `(raw ${raw.queryHash}, current ${expectedHash}). ` +
+        `Re-run: npm run fetch:network -- --region ${region.id} --force`,
+    )
+  }
 
   const network = normalize(raw.elements)
 

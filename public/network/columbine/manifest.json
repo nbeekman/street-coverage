@@ -1,23 +1,23 @@
 {
-  "version": 1,
+  "version": 2,
   "regionId": "columbine",
   "regionName": "Columbine",
   "group": "metro-core",
   "osmId": 33168093,
   "osmKind": "way",
-  "generatedAt": "2026-07-28T16:21:10.513Z",
-  "osmTimestamp": "2026-07-28T15:40:25Z",
-  "queryHash": "eee889ebc821ddd6",
+  "generatedAt": "2026-07-28T17:00:54.788Z",
+  "osmTimestamp": "2026-07-02T16:51:45Z",
+  "queryHash": "200762eae0db169c",
   "bbox": {
     "minLon": -105.0913,
     "minLat": 39.5419643,
     "maxLon": -105.0382984,
     "maxLat": 39.6098666
   },
-  "wayCount": 1022,
-  "positionCount": 6923,
-  "uniqueNodeCount": 5630,
-  "totalMeters": 204176.38479499373,
+  "wayCount": 1132,
+  "positionCount": 7682,
+  "uniqueNodeCount": 6236,
+  "totalMeters": 212918.30634902572,
   "classes": [
     "primary",
     "secondary",
@@ -25,12 +25,14 @@
     "residential",
     "unclassified",
     "living_street",
-    "cycleway"
+    "cycleway",
+    "path",
+    "bridleway"
   ],
   "byteLengths": {
-    "positions": 110768,
-    "startIndices": 4092,
-    "wayIds": 8176,
-    "classes": 1022
+    "positions": 122912,
+    "startIndices": 4532,
+    "wayIds": 9056,
+    "classes": 1132
   }
 }
