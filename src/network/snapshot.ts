@@ -2,8 +2,15 @@ import type { Bbox } from '../geo/bounds.ts'
 import type { NormalizedWay } from './normalize.ts'
 import type { OsmKind, RegionGroup } from './regions.ts'
 
-/** Bump when the buffer layout changes. Invalidates snapshots on disk. */
-export const SNAPSHOT_VERSION = 1
+/**
+ * Bump when the layout OR the meaning of the data changes. Invalidates
+ * snapshots on disk.
+ *
+ * v2: HIGHWAY_CLASSES gained bike-legal `path` and `bridleway`, so a v1
+ * snapshot has a different denominator. Loading one against v2 code would
+ * silently compute the wrong coverage percentage.
+ */
+export const SNAPSHOT_VERSION = 2
 
 export type SnapshotBuffers = {
   /** Flat [lon, lat, ...] Float64. Shared nodes are duplicated per way. */

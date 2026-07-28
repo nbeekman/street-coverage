@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   HIGHWAY_CLASSES,
+  highwayClassIndex,
   REGIONS,
   buildOverpassQuery,
   regionById,
@@ -47,7 +48,44 @@ describe('HIGHWAY_CLASSES', () => {
       'unclassified',
       'living_street',
       'cycleway',
+      'path',
+      'bridleway',
     ])
+  })
+
+  it('keeps the original seven at their original indices', () => {
+    // path/bridleway were appended in v2. If these shift, every classes.bin
+    // written before the change silently recolors.
+    expect(HIGHWAY_CLASSES.indexOf('primary')).toBe(0)
+    expect(HIGHWAY_CLASSES.indexOf('cycleway')).toBe(6)
+    expect(HIGHWAY_CLASSES.indexOf('path')).toBe(7)
+    expect(HIGHWAY_CLASSES.indexOf('bridleway')).toBe(8)
+  })
+})
+
+describe('highwayClassIndex', () => {
+  it('accepts ordinary streets with no bicycle tag', () => {
+    expect(highwayClassIndex('residential')).toBe(3)
+    expect(highwayClassIndex('cycleway')).toBe(6)
+  })
+
+  it('accepts a path or bridleway open to bikes', () => {
+    // Bear Creek Lake Park tags the Connector and Greenbelt trails this way.
+    expect(highwayClassIndex('path', 'yes')).toBe(7)
+    expect(highwayClassIndex('path', 'designated')).toBe(7)
+    expect(highwayClassIndex('bridleway', 'yes')).toBe(8)
+  })
+
+  it('rejects a path or bridleway with no bicycle access', () => {
+    expect(highwayClassIndex('path')).toBe(-1)
+    expect(highwayClassIndex('path', 'no')).toBe(-1)
+    expect(highwayClassIndex('bridleway')).toBe(-1)
+  })
+
+  it('rejects footway outright, bicycle tag or not', () => {
+    // Overwhelmingly sidewalks; including them doubles the denominator.
+    expect(highwayClassIndex('footway', 'designated')).toBe(-1)
+    expect(highwayClassIndex('motorway')).toBe(-1)
   })
 })
 
@@ -73,6 +111,14 @@ describe('buildOverpassQuery', () => {
     for (const cls of HIGHWAY_CLASSES) {
       expect(q).toContain(cls)
     }
+  })
+
+  it('gates path and bridleway behind a bicycle tag, but not ordinary streets', () => {
+    const q = buildOverpassQuery(regionById('littleton')!)
+    expect(q).toMatch(/\(path\|bridleway\)\$"\]\["bicycle"~"\^\(yes\|designated\)\$"\]/)
+    // The street selector must NOT carry a bicycle requirement.
+    const streetLine = q.split('\n').find((l) => l.includes('residential'))!
+    expect(streetLine).not.toContain('bicycle')
   })
 
   it('builds a poly: query for polygon regions', () => {

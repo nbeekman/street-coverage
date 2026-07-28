@@ -39,13 +39,46 @@ export const HIGHWAY_CLASSES = [
   'unclassified',
   'living_street',
   'cycleway',
+  // Appended 2026-07-28. Indices 0-6 above must never move: classes.bin
+  // stores indices into this array, so reordering recolors every snapshot.
+  'path',
+  'bridleway',
 ] as const
+
+/**
+ * Classes that only count when the way is explicitly open to bikes.
+ *
+ * OSM tags bike-legal trails inconsistently -- Bear Creek Lake Park has the
+ * Bear Creek and Kipling trails as `cycleway` but the Stone House, Connector,
+ * North Park and Greenbelt trails as `path` or `bridleway`. Requiring a
+ * bicycle tag picks those up without swallowing footpaths.
+ *
+ * `footway` is deliberately absent: it is overwhelmingly sidewalks, and
+ * including it more than doubles the denominator.
+ */
+export const BICYCLE_GATED_CLASSES: readonly string[] = ['path', 'bridleway']
+
+const BICYCLE_ALLOWED = new Set(['yes', 'designated'])
 
 export type HighwayClass = (typeof HIGHWAY_CLASSES)[number]
 
-export function highwayClassIndex(tag: string | undefined): number {
+/**
+ * Index into HIGHWAY_CLASSES, or -1 if the way is not rideable.
+ *
+ * `bicycle` is required for the gated classes; passing it is what keeps a
+ * hiking-only path out of the denominator.
+ */
+export function highwayClassIndex(
+  tag: string | undefined,
+  bicycle?: string,
+): number {
   if (tag === undefined) return -1
-  return (HIGHWAY_CLASSES as readonly string[]).indexOf(tag)
+  const index = (HIGHWAY_CLASSES as readonly string[]).indexOf(tag)
+  if (index < 0) return -1
+  if (BICYCLE_GATED_CLASSES.includes(tag) && !BICYCLE_ALLOWED.has(bicycle ?? '')) {
+    return -1
+  }
+  return index
 }
 
 /**
@@ -118,8 +151,16 @@ export function regionById(id: string): Region | undefined {
  * ways present in its areas file.
  */
 export function buildOverpassQuery(region: Region): string {
-  const classes = HIGHWAY_CLASSES.join('|')
-  const filter = `["highway"~"^(${classes})$"]["access"!~"private"]`
+  const open = HIGHWAY_CLASSES.filter((c) => !BICYCLE_GATED_CLASSES.includes(c))
+  const gated = HIGHWAY_CLASSES.filter((c) => BICYCLE_GATED_CLASSES.includes(c))
+  const notPrivate = '["access"!~"private"]'
+
+  /** Two selectors: ordinary streets, plus paths only where bikes are allowed. */
+  const selectors = (scope: string) =>
+    [
+      `way${scope}["highway"~"^(${open.join('|')})$"]${notPrivate};`,
+      `way${scope}["highway"~"^(${gated.join('|')})$"]["bicycle"~"^(yes|designated)$"]${notPrivate};`,
+    ].join('\n  ')
 
   if (region.osmKind === 'polygon') {
     if (!region.polygon || region.polygon.length < 3) {
@@ -129,7 +170,9 @@ export function buildOverpassQuery(region: Region): string {
     const ring = region.polygon.map(([lat, lon]) => `${lat} ${lon}`).join(' ')
     return [
       '[out:json][timeout:180];',
-      `way(poly:"${ring}")${filter};`,
+      '(',
+      '  ' + selectors(`(poly:"${ring}")`),
+      ');',
       '(._;>;);',
       'out body;',
     ].join('\n')
@@ -139,7 +182,9 @@ export function buildOverpassQuery(region: Region): string {
   return [
     '[out:json][timeout:180];',
     `${seed}(${region.osmId});map_to_area->.r;`,
-    `way(area.r)${filter};`,
+    '(',
+    '  ' + selectors('(area.r)'),
+    ');',
     '(._;>;);',
     'out body;',
   ].join('\n')

@@ -5,8 +5,16 @@ function node(id: number, lon: number, lat: number): OsmElement {
   return { type: 'node', id, lon, lat }
 }
 
-function way(id: number, nodes: number[], highway?: string): OsmElement {
-  return { type: 'way', id, nodes, tags: highway ? { highway } : {} }
+function way(
+  id: number,
+  nodes: number[],
+  highway?: string,
+  bicycle?: string,
+): OsmElement {
+  const tags: Record<string, string> = {}
+  if (highway) tags.highway = highway
+  if (bicycle) tags.bicycle = bicycle
+  return { type: 'way', id, nodes, tags }
 }
 
 describe('normalize', () => {
@@ -96,6 +104,26 @@ describe('normalize', () => {
       way(100, [1, 2, 3], 'residential'),
     ])
     expect(result.ways[0].nodeRefs).toEqual([1, 3])
+  })
+
+  it('keeps a path that is open to bikes', () => {
+    const result = normalize([
+      node(1, 0, 0),
+      node(2, 0, 1),
+      way(100, [1, 2], 'path', 'designated'),
+    ])
+    expect(result.ways).toHaveLength(1)
+    expect(result.ways[0].classIndex).toBe(7)
+  })
+
+  it('drops a path with no bicycle access', () => {
+    const result = normalize([
+      node(1, 0, 0),
+      node(2, 0, 1),
+      way(100, [1, 2], 'path'),
+    ])
+    expect(result.ways).toHaveLength(0)
+    expect(result.droppedWays).toBe(1)
   })
 
   it('preserves way order for deterministic snapshots', () => {

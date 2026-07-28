@@ -54,7 +54,7 @@ export function normalize(elements: OsmElement[]): NormalizedNetwork {
   for (const el of elements) {
     if (el.type !== 'way') continue
 
-    const classIndex = highwayClassIndex(el.tags?.highway)
+    const classIndex = highwayClassIndex(el.tags?.highway, el.tags?.bicycle)
     if (classIndex < 0) {
       droppedWays++
       continue
