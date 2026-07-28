@@ -33,6 +33,19 @@ Regions are incorporated places and CDPs, not counties — county boundaries inc
 mountain and plains roads that will never be ridden, which would make 100% unreachable.
 Adding one is a single entry in `src/network/regions.ts` followed by a re-fetch.
 
+Some land belongs to no municipality at all. The strip between Littleton and Morrison is
+unincorporated Jefferson County, so no boundary query can reach it even though it carries
+S Kipling Pkwy and the C-470 Trail. Those areas use **polygon regions**
+(`osmKind: 'polygon'`) — an explicit ring rather than an OSM boundary.
+
+Regions may overlap. `build-snapshot` assigns each way to exactly one region, in `REGIONS`
+order, so the headline denominator never double-counts. Two consequences worth knowing:
+
+- **List polygon regions last.** They overlap the towns they surround and must lose.
+- **Polygon rings can be drawn loosely.** The SW Metro ring is a plain rectangle; it
+  fetches 14,276 ways and keeps only the 3,200 no boundary region claimed. No
+  border-tracing needed.
+
 The headline percentage covers the `metro-core` group only. Away regions (Summit County,
 and an Iowa/RAGBRAI route corridor after M2) are tracked separately and excluded from it,
 so the number on screen stays a meaningful progress bar.

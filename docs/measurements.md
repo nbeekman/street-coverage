@@ -10,49 +10,71 @@ Snapshot version 1. Fetched 2026-07-28, OSM base timestamp `2026-07-28T14:51:57Z
 | Region | Ways | Vertices | Unique nodes | km | MB |
 |---|---:|---:|---:|---:|---:|
 | Denver | 22,979 | 173,250 | 139,074 | 4,083 | 3.07 |
-| Lakewood | 6,728 | 53,343 | 44,379 | 1,170 | 0.94 |
+| Lakewood | 6,630 | 52,657 | 43,844 | 1,148 | 0.93 |
 | Centennial | 4,882 | 55,987 | 49,738 | 869 | 0.96 |
-| Highlands Ranch | 2,837 | 28,532 | 24,775 | 650 | 0.49 |
-| Littleton | 2,052 | 16,321 | 13,608 | 362 | 0.29 |
-| Greenwood Village | 1,821 | 14,726 | 12,544 | 230 | 0.26 |
+| SW Metro (unincorporated) | 3,200 | 30,596 | 26,713 | 626 | 0.53 |
+| Highlands Ranch | 2,826 | 28,466 | 24,722 | 649 | 0.49 |
+| Littleton | 2,014 | 15,880 | 13,225 | 351 | 0.28 |
+| Greenwood Village | 1,757 | 13,967 | 11,883 | 212 | 0.25 |
 | Ken Caryl | 1,363 | 13,674 | 11,891 | 275 | 0.24 |
-| Columbine | 1,052 | 7,198 | 5,858 | 211 | 0.13 |
-| Englewood | 984 | 8,015 | 6,498 | 251 | 0.14 |
-| Sheridan | 304 | 2,761 | 2,385 | 57 | 0.05 |
-| **Total** | **45,002** | **373,807** | **310,750** | **8,158** | **6.57** |
+| Columbine | 1,022 | 6,923 | 5,630 | 204 | 0.12 |
+| Englewood | 879 | 6,720 | 5,436 | 202 | 0.12 |
+| Cherry Hills Village | 380 | 4,789 | 4,334 | 101 | 0.08 |
+| Sheridan | 274 | 2,126 | 1,809 | 42 | 0.04 |
+| Morrison | 157 | 1,416 | 1,235 | 29 | 0.02 |
+| Bow Mar | 38 | 640 | 589 | 14 | 0.01 |
+| **Total** | **48,401** | **407,091** | **340,123** | **8,806** | **7.14** |
 
-**Zero ways dropped** in normalization across all ten regions.
+**Zero ways dropped** in normalization. **Zero duplicate way ids** across regions.
 
 | Size | Value |
 |---|---|
-| Raw Overpass JSON (gitignored) | ~37 MB |
-| Packed snapshots (committed) | 6.57 MB |
-| Gzipped over the wire | ~4.3 MB |
+| Raw Overpass JSON (gitignored) | ~52 MB |
+| Packed snapshots (committed) | 7.14 MB |
 
-The two-stage pipeline gives a **5.6x** reduction from raw JSON to packed binary. Gzip
-adds only 1.53x on top — modest because Float64 coordinates have high-entropy low bits.
-Delta-encoding coordinates along each path would compress far better if it ever matters.
+**Vertex duplication ratio:** 407,091 / 340,123 = **1.197**
 
-**Vertex duplication ratio:** 373,807 ÷ 310,750 = **1.203**
+## Coverage gaps and how they were found
 
-The design spec predicted 1.3–1.5x from shared intersection nodes, and estimated
-6.5–7.5 MB. The ratio came in below the predicted range but total size landed inside the
-estimate at 6.57 MB. Denver's grid shares fewer nodes between ways than assumed, because
-long arterials are split into many short ways that each own their interior vertices.
+The first ten-region build left visible holes. Three classes of cause, all found by
+diffing OSM way ids in a bbox against the ids in our own `wayIds.bin`:
+
+**1. Missing municipalities.** Cherry Hills Village, Morrison and Bow Mar are ordinary
+`admin_level=8` places that were simply never added to the registry. 575 ways.
+
+**2. Unincorporated land.** The strip between Littleton and Morrison -- Ken Caryl Ranch
+north, Willowbrook, Willow Springs -- sits in no municipality at all. An `is_in` probe
+returns only Jefferson County (`admin_level=6`), so no boundary query can reach it. It
+carries S Kipling Pkwy, W Bowles Ave, the C-470 Trail and the Kipling Trail; **22% of the
+missing ways there were `cycleway`**. Fixed with a polygon region (3,200 net new ways).
+
+This is the cost of choosing incorporated places over whole counties. That choice was
+still right -- whole Jefferson County reaches the Continental Divide and would put 100%
+out of reach -- but it needs polygon patches wherever people actually ride.
+
+**3. Double-counted border ways.** Overpass `way(area.r)` returns any way with a node
+inside the area, so a way straddling a shared municipal border was claimed by both
+neighbours. **395 ways across 19 region pairs** (Denver+Lakewood 98, Denver+Englewood 66,
+...), inflating the denominator by 127 km before anyone noticed. `build-snapshot` now
+assigns each way to exactly one region in `REGIONS` order.
+
+That ordering is what lets polygon regions be drawn loosely: the SW Metro ring overlaps
+its neighbours freely, fetches 14,276 ways, and keeps only the 3,200 nobody else claimed.
+No precise border-tracing required.
 
 ## M1 — client render
 
-Chrome on macOS (Darwin 25.5.0), all ten regions loaded, full metro core in view.
+Chrome on macOS (Darwin 25.5.0), all fourteen regions loaded, full metro core in view.
 
 | Metric | Value |
 |---|---|
-| Snapshot fetch + decode, 10 regions | **658 ms** |
+| Snapshot fetch + decode, 14 regions | **1,075 ms** |
 | Steady-state FPS | **58** |
 | FPS while panning | **60** |
-| Paths rendered | 45,002 |
-| Vertices uploaded | 373,807 |
+| Paths rendered | 48,401 |
+| Vertices uploaded | 407,091 |
 
-60 fps while panning 45k paths, with no geometry simplification and no Web Worker. Both
+60 fps while panning 48k paths, with no geometry simplification and no Web Worker. Both
 were deferred to M7 pending measurement — this is the measurement, and neither is needed
 yet. That is the useful M7 result: the binary-attribute path was sufficient on its own.
 

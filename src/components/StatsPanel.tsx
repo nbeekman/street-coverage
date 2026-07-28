@@ -16,7 +16,7 @@ export default function StatsPanel({ state }: { state: NetworkState }) {
   const percent = totalMeters === 0 ? 0 : (riddenMeters / totalMeters) * 100
 
   return (
-    <div className="absolute top-4 left-4 z-10 w-80 rounded-lg bg-black/75 p-4 text-sm backdrop-blur">
+    <div className="absolute top-4 left-4 z-10 w-96 rounded-lg bg-black/75 p-4 text-sm backdrop-blur">
       <div className="mb-3">
         <div className="text-4xl font-semibold tabular-nums">
           {percent.toFixed(2)}%
@@ -37,25 +37,25 @@ export default function StatsPanel({ state }: { state: NetworkState }) {
         <thead className="text-neutral-400">
           <tr>
             <th className="text-left font-normal">Region</th>
-            <th className="text-right font-normal">Ways</th>
-            <th className="text-right font-normal">Nodes</th>
-            <th className="text-right font-normal">km</th>
+            <th className="pl-3 text-right font-normal">Ways</th>
+            <th className="pl-3 text-right font-normal">Nodes</th>
+            <th className="pl-3 text-right font-normal">km</th>
           </tr>
         </thead>
         <tbody>
           {state.regions.map((r) => (
             <tr key={r.id} className="border-t border-white/10">
               <td className="py-0.5 text-left">{r.name}</td>
-              <td className="text-right">{r.manifest.wayCount.toLocaleString()}</td>
-              <td className="text-right">{r.manifest.uniqueNodeCount.toLocaleString()}</td>
-              <td className="text-right">{km(r.manifest.totalMeters)}</td>
+              <td className="pl-3 text-right">{r.manifest.wayCount.toLocaleString()}</td>
+              <td className="pl-3 text-right">{r.manifest.uniqueNodeCount.toLocaleString()}</td>
+              <td className="pl-3 text-right">{km(r.manifest.totalMeters)}</td>
             </tr>
           ))}
           <tr className="border-t border-white/30 font-semibold">
             <td className="py-0.5 text-left">Total</td>
-            <td className="text-right">{totalWays.toLocaleString()}</td>
-            <td className="text-right">{totalNodes.toLocaleString()}</td>
-            <td className="text-right">{km(totalMeters)}</td>
+            <td className="pl-3 text-right">{totalWays.toLocaleString()}</td>
+            <td className="pl-3 text-right">{totalNodes.toLocaleString()}</td>
+            <td className="pl-3 text-right">{km(totalMeters)}</td>
           </tr>
         </tbody>
       </table>
