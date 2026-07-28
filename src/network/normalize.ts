@@ -21,6 +21,13 @@ export type NormalizedWay = {
   classIndex: number
   /** Flat [lon, lat, lon, lat, ...]. */
   coords: number[]
+  /**
+   * OSM node ids, index-aligned with the coordinate pairs.
+   *
+   * Kept so unique-node counts can be recomputed after a caller filters the
+   * way list -- and because M3's node coverage matches on node identity.
+   */
+  nodeRefs: number[]
 }
 
 export type NormalizedNetwork = {
@@ -70,7 +77,7 @@ export function normalize(elements: OsmElement[]): NormalizedNetwork {
     }
 
     for (const ref of seen) referenced.add(ref)
-    ways.push({ id: el.id, classIndex, coords })
+    ways.push({ id: el.id, classIndex, coords, nodeRefs: seen })
   }
 
   return { ways, uniqueNodeCount: referenced.size, droppedWays }

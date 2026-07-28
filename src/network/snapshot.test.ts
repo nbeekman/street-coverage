@@ -10,8 +10,8 @@ import {
 } from './snapshot'
 
 const WAYS: NormalizedWay[] = [
-  { id: 100, classIndex: 3, coords: [-105, 39.6, -104.99, 39.61] },
-  { id: 101, classIndex: 6, coords: [-104.99, 39.61, -104.98, 39.62, -104.97, 39.63] },
+  { id: 100, classIndex: 3, coords: [-105, 39.6, -104.99, 39.61], nodeRefs: [1, 2] },
+  { id: 101, classIndex: 6, coords: [-104.99, 39.61, -104.98, 39.62, -104.97, 39.63], nodeRefs: [2, 3, 4] },
 ]
 
 function manifestFor(buffers: ReturnType<typeof packSnapshot>): SnapshotManifest {
@@ -55,7 +55,7 @@ describe('packSnapshot', () => {
 
   it('stores way ids in Float64 so large OSM ids survive', () => {
     // 624295048 fits in Uint32, but OSM way ids have already passed 2^32.
-    const b = packSnapshot([{ id: 12_345_678_901, classIndex: 0, coords: [0, 0, 1, 1] }])
+    const b = packSnapshot([{ id: 12_345_678_901, classIndex: 0, coords: [0, 0, 1, 1], nodeRefs: [1, 2] }])
     expect(b.wayIds).toBeInstanceOf(Float64Array)
     expect(b.wayIds[0]).toBe(12_345_678_901)
   })

@@ -50,6 +50,13 @@ async function buildRegion(
   const deduped = before - network.ways.length
   for (const w of network.ways) claimed.add(w.id)
 
+  // normalize() counted nodes across every way it returned, including the ones
+  // dedup just removed. Recount over what actually ships, or a heavily-deduped
+  // region reports more unique nodes than it has vertices.
+  const retainedNodes = new Set<number>()
+  for (const w of network.ways) for (const ref of w.nodeRefs) retainedNodes.add(ref)
+  const uniqueNodeCount = retainedNodes.size
+
   if (network.ways.length === 0) {
     throw new Error(
       `Region "${region.id}" has no ways left after dedup (${before} were all claimed by earlier regions)`,
@@ -80,7 +87,7 @@ async function buildRegion(
     bbox: bboxOf(buffers.positions),
     wayCount: network.ways.length,
     positionCount: buffers.startIndices[network.ways.length],
-    uniqueNodeCount: network.uniqueNodeCount,
+    uniqueNodeCount,
     totalMeters,
     classes: [...HIGHWAY_CLASSES],
     byteLengths: {
@@ -112,7 +119,7 @@ async function buildRegion(
   const mb = (bytes / 1e6).toFixed(2)
   console.log(
     `ok  ${region.id.padEnd(18)} ways=${String(network.ways.length).padEnd(6)} ` +
-      `verts=${String(manifest.positionCount).padEnd(7)} uniq=${String(network.uniqueNodeCount).padEnd(7)} ` +
+      `verts=${String(manifest.positionCount).padEnd(7)} uniq=${String(uniqueNodeCount).padEnd(7)} ` +
       `dropped=${String(network.droppedWays).padEnd(5)} dedup=${String(deduped).padEnd(5)} ${km}km ${mb}MB`,
   )
 

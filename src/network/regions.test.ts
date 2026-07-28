@@ -18,8 +18,8 @@ describe('REGIONS', () => {
     expect(new Set(keys).size).toBe(keys.length)
   })
 
-  it('defines exactly thirteen metro-core regions', () => {
-    expect(regionsInGroup('metro-core')).toHaveLength(13)
+  it('defines exactly fourteen metro-core regions', () => {
+    expect(regionsInGroup('metro-core')).toHaveLength(14)
   })
 
   it('pins Denver to relation 1411339', () => {

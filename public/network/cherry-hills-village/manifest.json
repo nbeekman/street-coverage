@@ -5,7 +5,7 @@
   "group": "metro-core",
   "osmId": 7560099,
   "osmKind": "relation",
-  "generatedAt": "2026-07-28T16:16:58.931Z",
+  "generatedAt": "2026-07-28T16:21:10.552Z",
   "osmTimestamp": "2026-07-28T16:14:56Z",
   "queryHash": "b512cb943cfaedc7",
   "bbox": {
@@ -16,7 +16,7 @@
   },
   "wayCount": 380,
   "positionCount": 4789,
-  "uniqueNodeCount": 5003,
+  "uniqueNodeCount": 4334,
   "totalMeters": 100989.4043278077,
   "classes": [
     "primary",

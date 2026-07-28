@@ -3,8 +3,8 @@ import { loadRegion } from './loadSnapshot'
 import { SNAPSHOT_VERSION, packSnapshot } from './snapshot'
 
 const WAYS = [
-  { id: 100, classIndex: 3, coords: [-105.01, 39.6, -104.99, 39.61] },
-  { id: 101, classIndex: 6, coords: [-104.99, 39.61, -104.97, 39.63] },
+  { id: 100, classIndex: 3, coords: [-105.01, 39.6, -104.99, 39.61], nodeRefs: [1, 2] },
+  { id: 101, classIndex: 6, coords: [-104.99, 39.61, -104.97, 39.63], nodeRefs: [2, 3] },
 ]
 
 function fixture() {

@@ -75,6 +75,32 @@ export const REGIONS: readonly Region[] = [
   { id: 'castle-rock',       name: 'Castle Rock',       osmId: 112343,    osmKind: 'relation', group: 'metro-outer' },
 
   { id: 'summit-county',     name: 'Summit County',     osmId: 441008,    osmKind: 'relation', group: 'mountain' },
+
+  // Polygon regions MUST come after every boundary region: build-snapshot
+  // dedupes in this order, so a catch-all never steals a way from the town it
+  // overlaps.
+  //
+  // The land between Littleton and Morrison is unincorporated Jefferson
+  // County -- Ken Caryl Ranch north, Willowbrook, Willow Springs. It belongs
+  // to no admin_level=8 municipality, so no boundary query can reach it, yet
+  // it carries S Kipling Pkwy, W Bowles Ave, the C-470 Trail and the Kipling
+  // Trail. Measured 2026-07-28: 2,658 rideable ways east of the hogback.
+  //
+  // The ring stops at -105.18 to stay east of the hogback; deeper foothills
+  // roads are mostly park trails and would put 100% out of reach.
+  {
+    id: 'sw-metro-unincorporated',
+    name: 'SW Metro (unincorporated)',
+    osmId: 0,
+    osmKind: 'polygon',
+    group: 'metro-core',
+    polygon: [
+      [39.73, -105.18],
+      [39.73, -105.02],
+      [39.52, -105.02],
+      [39.52, -105.18],
+    ],
+  },
 ]
 
 export function regionsInGroup(group: RegionGroup): Region[] {

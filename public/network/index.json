@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-28T16:16:58.938Z",
+  "generatedAt": "2026-07-28T16:21:10.851Z",
   "regions": [
     {
       "id": "denver",
@@ -28,6 +28,15 @@
       "positionCount": 55987,
       "totalMeters": 868903.0745138221,
       "bytes": 959262
+    },
+    {
+      "id": "sw-metro-unincorporated",
+      "name": "SW Metro (unincorporated)",
+      "group": "metro-core",
+      "wayCount": 3200,
+      "positionCount": 30596,
+      "totalMeters": 625942.9185236034,
+      "bytes": 531140
     },
     {
       "id": "highlands-ranch",

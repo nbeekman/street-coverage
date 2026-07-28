@@ -76,6 +76,28 @@ describe('normalize', () => {
     expect(result.ways).toHaveLength(2)
   })
 
+  it('keeps node refs aligned with coordinate pairs', () => {
+    // Needed to recount unique nodes after a caller filters ways, and by M3's
+    // node-identity coverage matching.
+    const result = normalize([
+      node(1, -105, 39.6),
+      node(2, -104.9, 39.7),
+      node(3, -104.8, 39.8),
+      way(100, [1, 2, 3], 'residential'),
+    ])
+    expect(result.ways[0].nodeRefs).toEqual([1, 2, 3])
+    expect(result.ways[0].nodeRefs.length).toBe(result.ways[0].coords.length / 2)
+  })
+
+  it('omits node refs for vertices that could not be resolved', () => {
+    const result = normalize([
+      node(1, 0, 0),
+      node(3, 0, 2),
+      way(100, [1, 2, 3], 'residential'),
+    ])
+    expect(result.ways[0].nodeRefs).toEqual([1, 3])
+  })
+
   it('preserves way order for deterministic snapshots', () => {
     const result = normalize([
       node(1, 0, 0),
