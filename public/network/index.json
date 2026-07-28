@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-07-28T21:28:18.027Z",
+  "generatedAt": "2026-07-28T21:37:46.554Z",
   "regions": [
     {
       "id": "denver",
@@ -105,10 +105,10 @@
       "id": "cherry-creek-corridor",
       "name": "Cherry Creek corridor (unincorporated)",
       "group": "metro-core",
-      "wayCount": 497,
-      "positionCount": 3625,
-      "totalMeters": 50458.72132392109,
-      "bytes": 64465
+      "wayCount": 885,
+      "positionCount": 7417,
+      "totalMeters": 112987.71299507843,
+      "bytes": 130181
     },
     {
       "id": "cherry-hills-village",

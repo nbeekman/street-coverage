@@ -160,9 +160,15 @@ export const REGIONS: readonly Region[] = [
   // and the park left orphan ride points clustered at ~39.67, -104.89 -- this
   // ring closes that last gap.
   //
-  // Kept deliberately tight. Pushing the eastern edge past -104.855 starts
-  // pulling in Aurora's residential grid, which is the bulk this scope was
-  // chosen to avoid.
+  // Widened 2026-07-28 to wrap the whole reservoir. The first ring stopped at
+  // -104.855 to avoid pulling in Aurora, and that tightness left the trail
+  // along the north shore -- tagged cycleway, bicycle=designated, plainly
+  // rideable -- in a strip belonging to no region at all. Measured: the
+  // nearest snapshot node to that trail was 186 m away.
+  //
+  // Keeping it tight is no longer necessary. Aurora is a boundary region and
+  // is listed above, so it claims its own ways first and this ring only picks
+  // up what nothing else covers.
   {
     id: 'cherry-creek-corridor',
     name: 'Cherry Creek corridor (unincorporated)',
@@ -170,10 +176,10 @@ export const REGIONS: readonly Region[] = [
     osmKind: 'polygon',
     group: 'metro-core',
     polygon: [
-      [39.690, -104.915],
-      [39.690, -104.855],
-      [39.650, -104.855],
-      [39.650, -104.915],
+      [39.690, -104.920],
+      [39.690, -104.820],
+      [39.590, -104.820],
+      [39.590, -104.920],
     ],
   },
 ]

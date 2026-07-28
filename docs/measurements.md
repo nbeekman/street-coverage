@@ -345,3 +345,39 @@ overloaded, and had been returning `runtime error: ... too busy` to plain ID loo
 earlier. The per-attempt cap was raised to 180 s with a `--timeout` override anyway, since
 90 s cannot distinguish a large query from a hung mirror, but the honest cause was server
 load and the honest fix was retrying.
+
+### The reservoir gap, part two
+
+Widening the corridor ring closed part of it. The first ring stopped at −104.855 to avoid
+pulling in Aurora; that tightness left the north-shore trail — tagged `cycleway`,
+`bicycle=designated` — in a strip belonging to no region. The nearest snapshot node to it was
+**186 m** away. Aurora is now a boundary region listed above the polygon, so it claims its own
+ways first and the ring can be widened safely.
+
+| | Before | After |
+|---|---:|---:|
+| Corridor ways | 497 | 885 |
+| Corridor km | 50 | 113 |
+| Unmatched in the reservoir box | 12.8% | **7.0%** |
+| Covered | 348 km | 351 km |
+
+**What remains there is not a missing region.** The leftover orphans sit 27–39 m from the
+Cherry Creek Trail, which *is* in the snapshot — just outside the 25 m radius. The nearer
+features are a `track` with `bicycle=no` (correctly excluded) and a `footway` with
+`bicycle=designated` (excluded by the blanket footway rule).
+
+### Where every unmatched ride point actually is
+
+Across the whole metro, of 505,100 ride points:
+
+| Nearest rideable way | Points | Share of unmatched |
+|---|---:|---:|
+| within 25 m (matched) | 406,658 | — |
+| 25–40 m | 31,660 | 32.2% |
+| 40–75 m | 25,023 | 25.4% |
+| 75–150 m | 8,883 | 9.0% |
+| 150 m+ | 32,876 | 33.4% |
+
+19.5% of points are unmatched at 25 m. **A third of those have a rideable street 25–40 m
+away** — the radius is the binding constraint, not the map. The 150 m+ third is mostly
+out-of-region riding, which has no network by definition.
