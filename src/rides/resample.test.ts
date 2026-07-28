@@ -12,7 +12,7 @@ function line(n: number, stepDeg = 0.0001): TrackPoint[] {
 
 describe('resampleByDistance', () => {
   it('collapses a stationary cluster to almost nothing', () => {
-    // A coffee stop: 300 points inside a few metres. Time-based sampling would
+    // A coffee stop: 300 points inside a few meters. Time-based sampling would
     // keep all 300 and bias M3's matching toward wherever you paused.
     const stopped: TrackPoint[] = Array.from({ length: 300 }, (_, i) => ({
       lon: -105.0 + (i % 3) * 0.00001,

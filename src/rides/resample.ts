@@ -5,7 +5,7 @@ import type { TrackPoint } from './types.ts'
  * Thin a trace so kept points are at least `spacingMeters` apart.
  *
  * Distance-based, never time-based. A stopped rider emits hundreds of points
- * within a few metres; keeping them all biases M3's nearest-node matching
+ * within a few meters; keeping them all biases M3's nearest-node matching
  * toward wherever the ride paused.
  *
  * Crucially this measures displacement from the LAST KEPT POINT, not

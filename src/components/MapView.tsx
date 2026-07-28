@@ -1,6 +1,8 @@
-import { useMemo } from 'react'
-import DeckGL from '@deck.gl/react'
-import { Map } from 'react-map-gl/maplibre'
+import { useMemo, useState } from 'react'
+import { MapboxOverlay } from '@deck.gl/mapbox'
+import type { Layer } from '@deck.gl/core'
+import { Map, useControl } from 'react-map-gl/maplibre'
+import type { MapEvent } from 'react-map-gl/maplibre'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { createCoverageLayer } from '../layers/coverageLayer.ts'
 import { createNetworkLayer } from '../layers/networkLayer.ts'
@@ -21,6 +23,20 @@ const INITIAL_VIEW_STATE = {
   bearing: 0,
 }
 
+/**
+ * Draw deck.gl layers inside MapLibre's WebGL context rather than in a canvas
+ * stacked on top of it.
+ *
+ * Interleaving is what makes `beforeId` mean anything: in the default overlaid
+ * mode deck owns a separate canvas above the whole map, so place labels can
+ * never sit above the network no matter where they are in the style.
+ */
+function DeckOverlay({ layers }: { layers: Layer[] }) {
+  const overlay = useControl(() => new MapboxOverlay({ interleaved: true, layers }))
+  overlay.setProps({ layers })
+  return null
+}
+
 type Props = {
   regions: LoadedRegion[]
   rides: LoadedRides | null
@@ -36,26 +52,34 @@ export default function MapView({
   coverage,
   showCoverage,
 }: Props) {
+  // The id of the style's first symbol layer. Everything deck draws is
+  // inserted before it, which puts every label above every generated line.
+  const [labelLayerId, setLabelLayerId] = useState<string | undefined>(undefined)
+
   const layers = useMemo(() => {
     // Coverage geometry is the same network, split at ridden/unridden
     // boundaries, so the two layer sets are alternatives rather than a stack.
     const base =
       coverage && showCoverage
-        ? coverage.regions.map((region) => createCoverageLayer(region))
-        : regions.map((region) => createNetworkLayer(region))
+        ? coverage.regions.map((region) => createCoverageLayer(region, labelLayerId))
+        : regions.map((region) => createNetworkLayer(region, labelLayerId))
 
-    // Rides draw last so they sit above the network.
-    return rides && showRides ? [...base, createRideLayer(rides)] : base
-  }, [regions, rides, showRides, coverage, showCoverage])
+    // Rides draw last so they sit above the network but still below labels.
+    return rides && showRides ? [...base, createRideLayer(rides, labelLayerId)] : base
+  }, [regions, rides, showRides, coverage, showCoverage, labelLayerId])
 
   return (
-    <DeckGL
+    <Map
       initialViewState={INITIAL_VIEW_STATE}
-      controller={true}
-      layers={layers}
+      mapStyle={BASEMAP_STYLE}
       style={{ position: 'absolute', inset: '0' }}
+      onLoad={(event: MapEvent) => {
+        const style = event.target.getStyle()
+        const firstSymbol = style?.layers?.find((l) => l.type === 'symbol')
+        setLabelLayerId(firstSymbol?.id)
+      }}
     >
-      <Map mapStyle={BASEMAP_STYLE} />
-    </DeckGL>
+      <DeckOverlay layers={layers} />
+    </Map>
   )
 }

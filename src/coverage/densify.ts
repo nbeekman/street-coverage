@@ -5,7 +5,7 @@ import { haversineMeters } from '../geo/haversine.ts'
  * than `maxGapMeters` apart.
  *
  * Node matching asks whether a ride point came within the radius of a node,
- * but the rider travelled the *line between* the points. Real traces are far
+ * but the rider traveled the *line between* the points. Real traces are far
  * sparser than M2's 10 m resample target -- source recordings are already
  * coarse, leaving a median gap of ~23 m and a tail past 250 m -- so a node in
  * the middle of a long gap is missed even though the rider rode straight over
@@ -15,7 +15,7 @@ import { haversineMeters } from '../geo/haversine.ts'
  * This does not undo M2's resampling. That collapsed stationary clusters,
  * which stay collapsed; this only adds points along genuine movement.
  *
- * Interpolation is linear in lon/lat. Over gaps of a few hundred metres the
+ * Interpolation is linear in lon/lat. Over gaps of a few hundred meters the
  * departure from a great circle is far below the match radius.
  */
 export function densifyTrace(

@@ -16,20 +16,20 @@ export function useCoverage(): CoverageState {
   })
 
   useEffect(() => {
-    let cancelled = false
+    let canceled = false
     const started = performance.now()
 
     async function run() {
       try {
         const coverage = await loadCoverage()
-        if (cancelled) return
+        if (canceled) return
         setState({
           status: 'ready',
           coverage,
           decodeMs: Math.round(performance.now() - started),
         })
       } catch (error) {
-        if (cancelled) return
+        if (canceled) return
         // A missing snapshot means "run the build", not "something broke".
         if (error instanceof CoverageAbsent) {
           setState({ status: 'absent', coverage: null, decodeMs: 0 })
@@ -46,7 +46,7 @@ export function useCoverage(): CoverageState {
 
     void run()
     return () => {
-      cancelled = true
+      canceled = true
     }
   }, [])
 

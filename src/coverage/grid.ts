@@ -13,13 +13,13 @@ const DEG_TO_RAD = Math.PI / 180
 const CELL_SAFETY = 1.01
 
 /**
- * Cell dimensions guaranteeing a cell spans at least `radius` metres anywhere
+ * Cell dimensions guaranteeing a cell spans at least `radius` meters anywhere
  * inside `bbox`.
  *
  * Longitude is the axis that bites: a degree of longitude shrinks as latitude
  * rises, so the widest cell in degrees is needed at the bbox's poleward edge.
- * Sizing from the smallest metres-per-degree in range makes every cell at
- * least `radius` across, which is what the 3x3 neighbourhood scan relies on.
+ * Sizing from the smallest meters-per-degree in range makes every cell at
+ * least `radius` across, which is what the 3x3 neighborhood scan relies on.
  *
  * Both axes derive from the same sphere `haversineMeters` uses. An earlier
  * version took the ellipsoidal 111320 m/deg for longitude and produced 24.97 m

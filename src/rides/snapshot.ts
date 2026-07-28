@@ -25,7 +25,7 @@ export type RidesManifest = {
   rideCount: number
   pointCount: number
   totalMeters: number
-  /** Metres clipped from each end. Part of what the data means. */
+  /** Meters clipped from each end. Part of what the data means. */
   clipMeters: number
   resampleMeters: number
   bbox: Bbox

@@ -2,7 +2,8 @@ import { COORDINATE_SYSTEM } from '@deck.gl/core'
 import { PathLayer } from '@deck.gl/layers'
 import type { LoadedRegion } from '../network/loadSnapshot.ts'
 
-export type Rgb = [number, number, number]
+export type { Rgb } from './colors.ts'
+import type { Rgb } from './colors.ts'
 
 /**
  * Index-aligned with HIGHWAY_CLASSES. Warm for arterials, cool for
@@ -53,6 +54,6 @@ export function buildLayerProps(region: LoadedRegion) {
   }
 }
 
-export function createNetworkLayer(region: LoadedRegion): PathLayer {
-  return new PathLayer(buildLayerProps(region) as never)
+export function createNetworkLayer(region: LoadedRegion, beforeId?: string): PathLayer {
+  return new PathLayer({ ...buildLayerProps(region), beforeId } as never)
 }

@@ -1,5 +1,5 @@
 /**
- * Display units. Storage and computation are always metres -- this module
+ * Display units. Storage and computation are always meters -- this module
  * only converts at the edge, so no distance is ever round-tripped through a
  * lossy unit and back.
  */
@@ -39,7 +39,7 @@ export function formatDistance(meters: number, units: Units, digits = 0): string
 
 /**
  * Short distances -- the privacy clip radius and the match radius, which are
- * hundreds of metres rather than thousands. Miles would read as "0.31".
+ * hundreds of meters rather than thousands. Miles would read as "0.31".
  */
 export function shortDistanceIn(meters: number, units: Units): number {
   return units === 'mi' ? meters / METERS_PER_FOOT : meters

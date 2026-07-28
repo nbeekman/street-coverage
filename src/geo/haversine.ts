@@ -2,7 +2,7 @@
 export const EARTH_RADIUS_M = 6371008.8
 
 /**
- * Metres per degree on the sphere `haversineMeters` uses.
+ * Meters per degree on the sphere `haversineMeters` uses.
  *
  * Exported so anything sizing a distance in degrees derives it from the same
  * sphere. The ellipsoidal figure (111320 m at the equator) disagrees by 125 m

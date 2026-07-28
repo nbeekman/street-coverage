@@ -71,7 +71,7 @@ describe('PointGrid', () => {
     expect(grid.hasPointWithin(-105.0, lat, 25)).toBe(false)
   })
 
-  it('rejects a point a kilometre away', () => {
+  it('rejects a point a kilometer away', () => {
     const grid = new PointGrid(new Float64Array([-105.0, 39.7]), 25, DENVER)
     expect(grid.hasPointWithin(-105.0, 39.71, 25)).toBe(false)
   })

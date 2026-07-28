@@ -33,7 +33,7 @@ describe('trackBbox', () => {
 })
 
 describe('padBbox', () => {
-  it('grows the box by roughly the requested metres', () => {
+  it('grows the box by roughly the requested meters', () => {
     const padded = padBbox({ minLon: -105, minLat: 39.6, maxLon: -105, maxLat: 39.6 }, 5000)
     expect(padded.maxLat - 39.6).toBeGreaterThan(0.04)
     expect(padded.maxLat - 39.6).toBeLessThan(0.05)

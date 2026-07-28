@@ -453,7 +453,7 @@ import type { TrackPoint } from './types.ts'
  * Thin a trace so consecutive points are at least `spacingMeters` apart.
  *
  * Distance-based, never time-based. A stopped rider emits hundreds of points
- * within a few metres; keeping them all biases M3's nearest-node matching
+ * within a few meters; keeping them all biases M3's nearest-node matching
  * toward wherever the ride paused.
  */
 export function resampleByDistance(
@@ -548,7 +548,7 @@ describe('trackBbox', () => {
 })
 
 describe('padBbox', () => {
-  it('grows the box by roughly the requested metres', () => {
+  it('grows the box by roughly the requested meters', () => {
     const padded = padBbox({ minLon: -105, minLat: 39.6, maxLon: -105, maxLat: 39.6 }, 5000)
     // 5 km is ~0.045 deg of latitude.
     expect(padded.maxLat - 39.6).toBeGreaterThan(0.04)
@@ -861,7 +861,7 @@ export type RidesManifest = {
   rideCount: number
   pointCount: number
   totalMeters: number
-  /** Metres clipped from each end. Part of what the data means. */
+  /** Meters clipped from each end. Part of what the data means. */
   clipMeters: number
   resampleMeters: number
   bbox: Bbox
@@ -1822,14 +1822,14 @@ export function useRides(): RidesState {
   const [state, setState] = useState<RidesState>({ status: 'loading', rides: null })
 
   useEffect(() => {
-    let cancelled = false
+    let canceled = false
     loadRides()
       .then((rides) => {
-        if (cancelled) return
+        if (canceled) return
         setState(rides ? { status: 'ready', rides } : { status: 'absent', rides: null })
       })
       .catch((error) => {
-        if (cancelled) return
+        if (canceled) return
         setState({
           status: 'error',
           rides: null,
@@ -1837,7 +1837,7 @@ export function useRides(): RidesState {
         })
       })
     return () => {
-      cancelled = true
+      canceled = true
     }
   }, [])
 
@@ -1895,7 +1895,7 @@ describe('buildRideLayerProps', () => {
     expect(buildRideLayerProps(rides).coordinateOrigin).toEqual([-105, 39.6])
   })
 
-  it('draws above the network with a single warm colour', () => {
+  it('draws above the network with a single warm color', () => {
     const p = buildRideLayerProps(rides)
     expect(p.getColor).toEqual(RIDE_COLOR)
     expect(p.id).toBe('rides')
@@ -2114,4 +2114,4 @@ git commit -m "docs: ride import pipeline and privacy trade-offs"
 | Headline stays 0.00% | 12 |
 | Tests over pure modules | 2–6, 11, 12 |
 
-**Deferred confirmed absent:** coverage computation, node matching, PostGIS, MCP sync, neighbourhood stats, timeline scrubber. `times.bin` is stored but unused — M6 needs it and it costs 8 bytes per ride.
+**Deferred confirmed absent:** coverage computation, node matching, PostGIS, MCP sync, neighborhood stats, timeline scrubber. `times.bin` is stored but unused — M6 needs it and it costs 8 bytes per ride.

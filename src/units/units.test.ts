@@ -47,7 +47,7 @@ describe('isUnits', () => {
 })
 
 describe('distanceIn', () => {
-  it('converts metres to kilometres', () => {
+  it('converts meters to kilometers', () => {
     expect(distanceIn(1000, 'km')).toBe(1)
     expect(distanceIn(9224000, 'km')).toBe(9224)
   })
@@ -97,12 +97,12 @@ describe('formatDistance', () => {
 })
 
 describe('short distances', () => {
-  it('uses feet under miles and metres under km', () => {
+  it('uses feet under miles and meters under km', () => {
     expect(shortDistanceLabel('mi')).toBe('ft')
     expect(shortDistanceLabel('km')).toBe('m')
   })
 
-  it('leaves metres untouched under km', () => {
+  it('leaves meters untouched under km', () => {
     expect(shortDistanceIn(500, 'km')).toBe(500)
   })
 

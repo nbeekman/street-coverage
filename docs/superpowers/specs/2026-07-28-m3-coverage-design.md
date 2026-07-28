@@ -21,7 +21,7 @@ ridden are lit and the ones you have not are dim.
 hits, covered-distance rollups, a versioned binary coverage snapshot, coverage-colored
 rendering.
 
-**Out:** PostGIS (M4), incremental per-ride updates (M4), neighbourhood breakdown (M5),
+**Out:** PostGIS (M4), incremental per-ride updates (M4), neighborhood breakdown (M5),
 nearest-unridden (M5), the timeline scrubber (M6), dual-carriageway pairing.
 
 ---
@@ -33,9 +33,9 @@ nearest-unridden (M5), the timeline scrubber (M6), dual-carriageway pairing.
 | Matching rule | Node coverage — a node is hit when any ride point is within the radius | Option A in the source doc. Robust to GPS noise, no perpendicular-distance math, no matching ambiguity. Failure modes are obvious rather than subtle. |
 | Match radius | **25 m**, overridable with `--radius` | The doc's value and CityStrides' effective default. Forgiving of urban-canyon drift. Its cost is quantified below rather than hidden. |
 | Segment rule | A segment is ridden when **both** endpoints are hit | Stops one stray GPS point from crediting a 400 m stretch never ridden. The "both" is the whole safeguard. |
-| **Headline** | **Ridden metres / total metres** | Reads as "12% of Denver's street miles". Avoids the intersection-density bias that makes a raw node percentage mean something other than what a rider assumes. |
+| **Headline** | **Ridden meters / total meters** | Reads as "12% of Denver's street miles". Avoids the intersection-density bias that makes a raw node percentage mean something other than what a rider assumes. |
 | Where it runs | Offline script → static binary snapshot | The source doc's "coverage computed once, cached". Matches the M1/M2 two-stage pattern and keeps M4's move to PostGIS a swap rather than a rewrite. |
-| Rendering | Ways split into runs of ridden / unridden, one colour per run | An exact two-tone map. A half-ridden street renders half bright at the point the rider turned off, not as a uniform mid-colour. |
+| Rendering | Ways split into runs of ridden / unridden, one color per run | An exact two-tone map. A half-ridden street renders half bright at the point the rider turned off, not as a uniform mid-color. |
 | Storage | **Gitignored** | Coverage is derived from ride traces. Which streets someone has ridden is location data, and publishing it would defeat M2's privacy clipping. |
 
 ---
@@ -43,12 +43,12 @@ nearest-unridden (M5), the timeline scrubber (M6), dual-carriageway pairing.
 ## The performance problem, and why a grid
 
 369,823 unique nodes against 151,382 ride points is **56 billion** distance tests. Nearly
-every pair is tens of kilometres apart, so the work is making the question cheap rather than
+every pair is tens of kilometers apart, so the work is making the question cheap rather than
 making each test fast.
 
 A uniform grid keyed at the match radius, built over the ride points and queried per node:
 
-1. Hash all ride points into cells whose sides are at least `radius` metres. One pass.
+1. Hash all ride points into cells whose sides are at least `radius` meters. One pass.
 2. For a node, examine its cell plus the 8 neighbours. Any point within `radius` **must**
    lie in those 9 cells, so nothing is missed.
 3. Haversine decides each candidate.
@@ -57,16 +57,16 @@ Typical candidate counts drop from 151,382 to zero or a handful.
 
 ### Sizing the cells conservatively
 
-The grid is in degrees; the radius is in metres; the conversion differs by axis and varies
+The grid is in degrees; the radius is in meters; the conversion differs by axis and varies
 with latitude. Getting this wrong silently loses matches, so both axes are sized to
-guarantee a cell is **at least** `radius` metres across anywhere in the bbox:
+guarantee a cell is **at least** `radius` meters across anywhere in the bbox:
 
 ```
-cellLatDeg = radius / 110574                       // min metres per degree of latitude
-cellLonDeg = radius / (111320 * cos(maxAbsLat))    // min metres per degree of longitude in bbox
+cellLatDeg = radius / 110574                       // min meters per degree of latitude
+cellLonDeg = radius / (111320 * cos(maxAbsLat))    // min meters per degree of longitude in bbox
 ```
 
-Using the minimum metres-per-degree makes the cell larger, never smaller. The grid only
+Using the minimum meters-per-degree makes the cell larger, never smaller. The grid only
 proposes candidates and haversine makes the final call, so a sizing error can cost speed but
 cannot produce a wrong answer. A test asserts the grid returns exactly what brute force
 returns over random points.
@@ -126,11 +126,11 @@ reporting one.
 
 ### Rendering
 
-One `PathLayer` per region over the run geometry, coloured from `flags` through the
+One `PathLayer` per region over the run geometry, colored from `flags` through the
 `updateTriggers.getColor` hook M1 left in place. When no coverage snapshot is present the
-map falls back to M1's class-coloured network layers, so a fresh clone still renders.
+map falls back to M1's class-colored network layers, so a fresh clone still renders.
 
-A toggle switches between coverage colouring and M1's highway-class colouring. Both are
+A toggle switches between coverage coloring and M1's highway-class coloring. Both are
 useful: coverage answers "where have I been", classes answer "is the network right".
 
 ### Module layout
@@ -139,7 +139,7 @@ useful: coverage answers "where have I been", classes answer "is the network rig
 src/coverage/
   grid.ts           PointGrid — uniform spatial hash              [pure, tested]
   nodes.ts          node hit computation over the grid            [pure, tested]
-  segments.ts       runs, covered metres, way completion          [pure, tested]
+  segments.ts       runs, covered meters, way completion          [pure, tested]
   snapshot.ts       pack / unpack / validate                      [pure, tested]
   loadCoverage.ts   browser fetch + decode
   useCoverage.ts    React hook
@@ -156,7 +156,7 @@ Named, distinct states, following M1 and M2:
 
 - No rides snapshot → the build explains that `import:rides` must run first
 - Way counts disagree with the rendered snapshot → refuse to write, name the region
-- Coverage snapshot missing in the browser → render the class-coloured network and say
+- Coverage snapshot missing in the browser → render the class-colored network and say
   coverage has not been computed, rather than showing an error
 - Coverage version mismatch → distinct error code, tells the user to re-run the build
 
@@ -176,7 +176,7 @@ it is not rediscovered as a bug.
 
 **Dual carriageways read as half-ridden forever.** A divided road is two OSM ways and riding
 one direction leaves the other unhit. M3 does not pair them. The build reports the share of
-total metres carried by ways tagged `oneway=yes`, which bounds how much of the denominator is
+total meters carried by ways tagged `oneway=yes`, which bounds how much of the denominator is
 affected.
 
 ---
@@ -191,12 +191,12 @@ Vitest over the pure modules, with fixtures whose answers are known by hand:
 - `nodes` — a node with a trace through it is hit; a node 1 km away is not; a shared node is
   tested once and reported once
 - `segments` — both endpoints hit → ridden; one endpoint hit → not; runs split at each state
-  change; a fully ridden way yields one run; covered metres equal the sum of ridden segment
+  change; a fully ridden way yields one run; covered meters equal the sum of ridden segment
   lengths
 - `snapshot` — pack/unpack round-trips geometry exactly; version mismatch and truncated
   buffers raise distinct codes
 
-Plus an end-to-end assertion in the build: covered metres never exceed total metres, and
+Plus an end-to-end assertion in the build: covered meters never exceed total meters, and
 per-region way counts match the rendered snapshot.
 
 ---
@@ -206,7 +206,7 @@ per-region way counts match the rendered snapshot.
 - `npm run build:coverage` reports covered km, node hit rate, and completed ways
 - `npm run dev` renders ridden streets lit and unridden dim, with a coverage/class toggle
 - The headline percentage is non-zero and equals covered km / total km
-- The panel honours the miles/kilometres toggle
+- The panel honours the miles/kilometers toggle
 - `npm test` passes, `tsc` clean
 - No coverage or ride data is tracked by git — verified with `git ls-files`
 
@@ -218,6 +218,6 @@ per-region way counts match the rendered snapshot.
 |---|---|---|
 | PostGIS, `ST_DWithin`, GiST | M4 | The offline build is fast enough now; the database story is its own milestone |
 | Incremental per-ride updates | M4 | A full recompute takes seconds; incremental only matters once it does not |
-| Neighbourhood breakdown, nearest-unridden | M5 | Needs coverage to exist first |
+| Neighborhood breakdown, nearest-unridden | M5 | Needs coverage to exist first |
 | Dual-carriageway pairing | post-M5 | Bounded and reported in M3, solved later |
 | Densifying sparse ways | post-M5 | The doc's gotcha: long ways with few nodes can complete early. Measured first, fixed if it bothers. |

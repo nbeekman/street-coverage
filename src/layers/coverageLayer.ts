@@ -1,13 +1,7 @@
 import { COORDINATE_SYSTEM } from '@deck.gl/core'
 import { PathLayer } from '@deck.gl/layers'
 import type { LoadedCoverageRegion } from '../coverage/loadCoverage.ts'
-import type { Rgb } from './networkLayer.ts'
-
-/** Ridden. Warm and bright so covered streets read as the figure. */
-export const RIDDEN_COLOR: Rgb = [255, 190, 60]
-
-/** Unridden. Dim and cool so the uncovered network reads as ground. */
-export const UNRIDDEN_COLOR: Rgb = [70, 82, 100]
+import { RIDDEN_COLOR, UNRIDDEN_COLOR, type Rgb } from './colors.ts'
 
 export function buildCoverageLayerProps(region: LoadedCoverageRegion) {
   const flags = region.buffers.flags
@@ -43,6 +37,6 @@ export function buildCoverageLayerProps(region: LoadedCoverageRegion) {
   }
 }
 
-export function createCoverageLayer(region: LoadedCoverageRegion): PathLayer {
-  return new PathLayer(buildCoverageLayerProps(region) as never)
+export function createCoverageLayer(region: LoadedCoverageRegion, beforeId?: string): PathLayer {
+  return new PathLayer({ ...buildCoverageLayerProps(region), beforeId } as never)
 }

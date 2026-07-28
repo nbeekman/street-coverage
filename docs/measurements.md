@@ -198,7 +198,7 @@ reduces each query to the 9 cells that could possibly contain a match.
 | Whole-metro build | **0.7 s** |
 
 A test asserts the grid returns exactly what brute force returns over 3,000 random queries,
-so the optimisation is verified rather than assumed.
+so the optimization is verified rather than assumed.
 
 ### Two bugs the tests caught
 
@@ -208,7 +208,7 @@ per degree. Cells came out 24.97 m for a 25 m radius. Undersized cells silently 
 rather than failing loudly. Both axes now derive from the same sphere, plus a 1% margin.
 
 **Sparse traces under-reported coverage.** Coverage asks whether a ride *point* came within
-25 m of a node, but the rider travelled the *line between* points. The archive's traces have
+25 m of a node, but the rider traveled the *line between* points. The archive's traces have
 a median gap of 23.5 m, p90 of 38.6 m, and 9,634 gaps over 50 m — worst 262 m. A node mid-gap
 was missed despite being ridden straight over.
 
@@ -231,7 +231,7 @@ Densifying to ≤10 m spacing makes the point test approximate a line test to wi
 | **Coverage (52,235 runs)** | **48** |
 
 Splitting ways into runs adds ~1,150 paths over the plain network and costs ~12 fps against
-the network-only baseline, largely from the per-run colour and width accessors. Initial
+the network-only baseline, largely from the per-run color and width accessors. Initial
 decode is 1,709 ms.
 
 ### The three zeros are real

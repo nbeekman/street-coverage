@@ -126,7 +126,7 @@ export default function StatsPanel({
       {coverage.status === 'ready' && coverage.coverage && totals && (
         <div className="mt-3 border-t border-white/20 pt-2">
           <label className="flex cursor-pointer items-center justify-between text-xs">
-            <span>Coverage colouring</span>
+            <span>Coverage coloring</span>
             <input
               type="checkbox"
               checked={showCoverage}

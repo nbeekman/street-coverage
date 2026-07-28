@@ -20,7 +20,7 @@ stays 0.00% until M3.
 **In:** FIT and GPX parsing, virtual-ride and out-of-region rejection, privacy clipping,
 distance-based resampling, versioned binary ride snapshots, a deck.gl trace layer.
 
-**Out:** coverage computation, node matching, the percentage moving, PostGIS, neighbourhood
+**Out:** coverage computation, node matching, the percentage moving, PostGIS, neighborhood
 stats, the timeline scrubber, Strava MCP integration.
 
 ---
@@ -135,7 +135,7 @@ Keeps the first and last point, and otherwise emits a point only once `spacingMe
 cumulative distance has passed. Default **10 m**.
 
 Distance-based, never time-based. A stopped rider produces hundreds of points in a few
-metres; time-based sampling keeps them all and biases M3's nearest-node matching toward
+meters; time-based sampling keeps them all and biases M3's nearest-node matching toward
 wherever you paused.
 
 ### Snapshot format
@@ -181,7 +181,7 @@ consistent with `overpass.ts` in M1.
 A second `PathLayer` above the network layer, same binary-attributes approach and the same
 Float64-stored / Float32-offset-rendered coordinate treatment M1 established.
 
-- Traces draw in a warm colour with additive-ish blending, so repeatedly ridden streets
+- Traces draw in a warm color with additive-ish blending, so repeatedly ridden streets
   read brighter. That is a free, honest preview of what M3 will compute properly.
 - The layer is toggleable, because a dense trace overlay hides the network beneath it.
 - Ride count and total ridden km join the stats panel. The **headline percentage stays

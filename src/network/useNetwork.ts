@@ -21,7 +21,7 @@ export function useNetwork(): NetworkState {
   })
 
   useEffect(() => {
-    let cancelled = false
+    let canceled = false
     const started = performance.now()
 
     async function run() {
@@ -39,7 +39,7 @@ export function useNetwork(): NetworkState {
         // Render regions as they arrive rather than waiting for all ten.
         for (const entry of index.regions) {
           const region = await loadRegion(entry.id)
-          if (cancelled) return
+          if (canceled) return
           loaded.push(region)
           setState({
             status: 'loading',
@@ -48,14 +48,14 @@ export function useNetwork(): NetworkState {
           })
         }
 
-        if (cancelled) return
+        if (canceled) return
         setState({
           status: 'ready',
           regions: loaded,
           decodeMs: Math.round(performance.now() - started),
         })
       } catch (error) {
-        if (cancelled) return
+        if (canceled) return
         setState({
           status: 'error',
           regions: [],
@@ -67,7 +67,7 @@ export function useNetwork(): NetworkState {
 
     void run()
     return () => {
-      cancelled = true
+      canceled = true
     }
   }, [])
 

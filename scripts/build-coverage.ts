@@ -143,7 +143,7 @@ async function main(): Promise<void> {
 
     if (coveredMeters > totalMeters + 1e-6) {
       throw new Error(
-        `Region "${region.id}" reports ${coveredMeters} covered metres of ${totalMeters} total.`,
+        `Region "${region.id}" reports ${coveredMeters} covered meters of ${totalMeters} total.`,
       )
     }
 

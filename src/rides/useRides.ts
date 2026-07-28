@@ -11,21 +11,21 @@ export function useRides(): RidesState {
   const [state, setState] = useState<RidesState>({ status: 'loading', rides: null })
 
   useEffect(() => {
-    let cancelled = false
+    let canceled = false
     loadRides()
       .then((rides) => {
-        if (cancelled) return
+        if (canceled) return
         setState(rides ? { status: 'ready', rides } : { status: 'absent', rides: null })
       })
       .catch((error) => {
-        if (cancelled) return
+        if (canceled) return
         setState({
           status: 'error',
           rides: null,
           error: error instanceof Error ? error.message : String(error),
         })
       })
-    return () => { cancelled = true }
+    return () => { canceled = true }
   }, [])
 
   return state

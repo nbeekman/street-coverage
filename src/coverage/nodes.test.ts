@@ -27,7 +27,7 @@ describe('computeNodeHits', () => {
     expect(uniqueNodeCount).toBe(2)
   })
 
-  it('misses a node a kilometre from any point', () => {
+  it('misses a node a kilometer from any point', () => {
     const way: CoverageWay = { id: 1, coords: [-105.0, 39.7, -105.0, 39.71], nodeRefs: [10, 11] }
     const grid = gridOf([-104.9, 39.6])
     expect(computeNodeHits([way], grid, 25).hitNodeIds.size).toBe(0)

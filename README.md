@@ -2,7 +2,7 @@
 
 Ride every street in the Denver metro. The map fills in as you do.
 
-M1 renders the network; coverage arrives in M3.
+The network renders, rides import, and coverage computes: **3.56% of 9,224 km** so far.
 
 ## Setup
 
@@ -87,13 +87,13 @@ npm run build:coverage -- --radius 15
 **What counts as ridden.** A node is *hit* when a ride point passed within **25 m**. A
 segment counts as ridden when **both** its endpoints are hit — the "both" is what stops a
 single stray GPS point from crediting a stretch never ridden. The headline percentage is
-ridden metres over total metres, so it reads as "3.56% of the metro's street distance".
+ridden meters over total meters, so it reads as "3.56% of the metro's street distance".
 
 Coverage output is **gitignored** for the same reason ride traces are: which streets someone
 has ridden is location data, and publishing it would undo the privacy clipping.
 
 **Traces are densified to 10 m before matching.** Coverage asks whether a ride *point* came
-within 25 m of a node, but the rider travelled the *line between* points. Real traces have a
+within 25 m of a node, but the rider traveled the *line between* points. Real traces have a
 median gap of 23.5 m and a tail past 250 m, so a node mid-gap was missed despite being ridden
 over. Densifying recovered 11 km of genuine coverage — see `src/coverage/densify.ts`.
 
