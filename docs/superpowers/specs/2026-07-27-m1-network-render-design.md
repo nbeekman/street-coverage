@@ -89,34 +89,35 @@ mirror pool.
 
 **Scale, measured.** Metro-core regions:
 
-| Region | Ways | Unique nodes |
-|---|---:|---:|
-| Denver | 22,994 | 139,040 |
-| Lakewood | 6,728 | 44,379 |
-| Centennial | 4,885 | 49,745 |
-| Littleton | 2,052 | 13,608 |
-| Greenwood Village | 1,821 | 12,544 |
-| Englewood | 984 | 6,498 |
-| Sheridan | 304 | 2,385 |
-| **Total** | **39,768** | **268,199** |
+| Region | Ways | Unique nodes | Boundary |
+|---|---:|---:|---|
+| Denver | 22,994 | 139,040 | relation |
+| Lakewood | 6,728 | 44,379 | relation |
+| Centennial | 4,885 | 49,745 | relation |
+| Highlands Ranch | 2,837 | 24,775 | relation |
+| Littleton | 2,052 | 13,608 | relation |
+| Greenwood Village | 1,821 | 12,544 | relation |
+| Ken Caryl | 1,363 | 11,891 | way |
+| Columbine | 1,052 | 5,858 | way |
+| Englewood | 984 | 6,498 | relation |
+| Sheridan | 304 | 2,385 | relation |
+| **Total** | **45,020** | **310,723** | |
 
-About 6.7 unique nodes per way.
+About 6.9 unique nodes per way.
 
 **Positions are not `nodeCount × 2`.** Overpass `out count` reports *unique* nodes, but the
 positions array stores each way's node list independently, so nodes shared between ways —
 every intersection — are duplicated once per way that references them. On a street grid
-that inflates the array by roughly 30–50%, putting the core near **350k–400k position
-entries ≈ 5.6–6.4 MB** of Float64, not 4.3 MB. Still committable, and git compresses
-coordinate data well, but `build-snapshot.ts` must report the true packed byte count rather
-than deriving it from node counts. This is the first number to verify against reality during
-implementation.
+that inflates the array by roughly 30–50%, putting the core near **400k–470k position
+entries ≈ 6.5–7.5 MB** of Float64. Still committable, and git compresses coordinate data
+well, but `build-snapshot.ts` must report the true packed byte count rather than deriving it
+from node counts. This is the first number to verify against reality during implementation.
 
 Whole counties, for contrast — larger and mostly unrideable, which is what ruled the
 county approach out: Jefferson 27,283 ways, Arapahoe 25,453, Adams 23,180, Denver 22,940,
 Douglas 16,621, Broomfield 4,058.
 
-Future regions are cheap: Summit County **2,156** ways, Castle Rock **3,515**,
-Highlands Ranch **2,837**, Ken Caryl **1,363**, Columbine **1,052**.
+Future regions are cheap: Summit County **2,156** ways, Castle Rock **3,515**.
 
 **The denominator already moved during design.** Littleton measured 2,052 ways at one point
 and 2,055 roughly forty minutes later — live OSM edits, mid-session. This is the
@@ -159,11 +160,20 @@ displays separately and is excluded from it.
 | `greenwood-village` | Greenwood Village | 112940 | relation |
 | `lakewood` | Lakewood | 112200 | relation |
 | `sheridan` | Sheridan | 7240527 | relation |
+| `highlands-ranch` | Highlands Ranch | 19685245 | relation |
+| `columbine` | Columbine | 33168093 | **way** |
+| `ken-caryl` | Ken Caryl | 624295048 | **way** |
+
+The last three are unincorporated places adjacent to Littleton — ridden regularly, so they
+belong in the denominator. Including Columbine and Ken Caryl also means **M1 exercises the
+way-boundary path in production**, rather than shipping a `map_to_area` branch that nothing
+covers until a later milestone. Given that the first attempt at way-boundary resolution was
+silently wrong, having it under load in M1 is worth the extra ~5,250 ways.
 
 **Registered but not fetched in M1**, present to prove the registry and make expansion a
-config change: Highlands Ranch (`19685245`, relation), Columbine (`33168093`, way),
-Ken Caryl (`624295048`, way), Castle Rock (`112343`, relation) — all `metro-outer`;
-Summit County (`441008`, relation) as `mountain`.
+config change: Castle Rock (`112343`, relation), Parker, Aurora, Arvada, Westminster,
+Thornton, Golden, Wheat Ridge — all `metro-outer`; Summit County (`441008`, relation) as
+`mountain`.
 
 ### Two-stage pipeline
 
@@ -305,8 +315,8 @@ empty-but-valid response.
 ## Done when
 
 - `npm run fetch:network -- --group metro-core` then `npm run build:snapshot` produces
-  seven committed region snapshots
-- `npm run dev` renders all seven as one continuous street map over MapLibre, panning and
+  ten committed region snapshots, including the two way-boundary regions
+- `npm run dev` renders all ten as one continuous street map over MapLibre, panning and
   zooming smoothly
 - Stats panel shows the headline percentage, per-region rows, and diagnostics
 - `npm test` passes
