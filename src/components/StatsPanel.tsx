@@ -1,9 +1,17 @@
 import type { NetworkState } from '../network/useNetwork.ts'
+import type { RidesState } from '../rides/useRides.ts'
 import { useFps } from './useFps.ts'
 
 const km = (meters: number) => (meters / 1000).toFixed(0)
 
-export default function StatsPanel({ state }: { state: NetworkState }) {
+type Props = {
+  state: NetworkState
+  rides: RidesState
+  showRides: boolean
+  onToggleRides: () => void
+}
+
+export default function StatsPanel({ state, rides, showRides, onToggleRides }: Props) {
   const fps = useFps()
 
   const core = state.regions.filter((r) => r.group === 'metro-core')
@@ -59,6 +67,28 @@ export default function StatsPanel({ state }: { state: NetworkState }) {
           </tr>
         </tbody>
       </table>
+
+      {rides.status === 'ready' && rides.rides && (
+        <div className="mt-3 border-t border-white/20 pt-2">
+          <label className="flex cursor-pointer items-center justify-between text-xs">
+            <span>
+              {rides.rides.manifest.rideCount.toLocaleString()} rides ·{' '}
+              {km(rides.rides.manifest.totalMeters)} km ridden
+            </span>
+            <input type="checkbox" checked={showRides} onChange={onToggleRides} className="ml-2" />
+          </label>
+          {rides.rides.manifest.clipMeters > 0 && (
+            <div className="mt-1 text-xs text-neutral-500">
+              {rides.rides.manifest.clipMeters} m clipped from each end
+            </div>
+          )}
+        </div>
+      )}
+      {rides.status === 'absent' && (
+        <div className="mt-3 border-t border-white/20 pt-2 text-xs text-neutral-500">
+          No rides imported — run npm run import:rides
+        </div>
+      )}
 
       <div className="mt-3 flex justify-between text-xs text-neutral-500">
         <span>snapshot v{state.regions[0]?.manifest.version ?? '—'}</span>

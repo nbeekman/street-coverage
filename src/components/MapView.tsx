@@ -3,7 +3,9 @@ import DeckGL from '@deck.gl/react'
 import { Map } from 'react-map-gl/maplibre'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { createNetworkLayer } from '../layers/networkLayer.ts'
+import { createRideLayer } from '../layers/rideLayer.ts'
 import type { LoadedRegion } from '../network/loadSnapshot.ts'
+import type { LoadedRides } from '../rides/loadRides.ts'
 
 /** Free, no-token basemap. Attribution renders from the style itself. */
 const BASEMAP_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
@@ -19,13 +21,16 @@ const INITIAL_VIEW_STATE = {
 
 type Props = {
   regions: LoadedRegion[]
+  rides: LoadedRides | null
+  showRides: boolean
 }
 
-export default function MapView({ regions }: Props) {
-  const layers = useMemo(
-    () => regions.map((region) => createNetworkLayer(region)),
-    [regions],
-  )
+export default function MapView({ regions, rides, showRides }: Props) {
+  const layers = useMemo(() => {
+    const network = regions.map((region) => createNetworkLayer(region))
+    // Rides draw last so they sit above the network.
+    return rides && showRides ? [...network, createRideLayer(rides)] : network
+  }, [regions, rides, showRides])
 
   return (
     <DeckGL

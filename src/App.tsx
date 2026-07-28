@@ -1,9 +1,13 @@
+import { useState } from 'react'
 import MapView from './components/MapView.tsx'
 import StatsPanel from './components/StatsPanel.tsx'
 import { useNetwork } from './network/useNetwork.ts'
+import { useRides } from './rides/useRides.ts'
 
 export default function App() {
   const state = useNetwork()
+  const rides = useRides()
+  const [showRides, setShowRides] = useState(true)
 
   if (state.status === 'error') {
     return (
@@ -30,8 +34,13 @@ export default function App() {
 
   return (
     <div className="relative h-full w-full">
-      <MapView regions={state.regions} />
-      <StatsPanel state={state} />
+      <MapView regions={state.regions} rides={rides.rides} showRides={showRides} />
+      <StatsPanel
+        state={state}
+        rides={rides}
+        showRides={showRides}
+        onToggleRides={() => setShowRides((v) => !v)}
+      />
     </div>
   )
 }
