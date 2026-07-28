@@ -127,3 +127,44 @@ pacing and 30 s post-throttle cooldown.
 Region size does not predict fetch time. Denver (23,603 ways) took 229 s; Bow Mar
 (38 ways) exhausted 9 attempts twice and needed 215 s on a third run. Budget by mirror
 health, not by data volume.
+
+## M2 — ride import
+
+Strava bulk export, 2026-07-28. 225 activity files, **100% `.fit.gz`** — zero GPX.
+
+| | Count |
+|---|---:|
+| Files in archive | 225 |
+| **Imported** | **165** |
+| Rejected — virtual | 35 |
+| Rejected — out-of-region | 25 |
+| Rejected — no GPS / too short | 0 |
+
+165 + 35 + 25 = 225, and the 35 virtual matches `activities.csv`'s "Virtual Ride" count
+exactly — an independent check that the filter is neither over- nor under-matching.
+
+| Metric | Value |
+|---|---|
+| Ridden distance (after clipping) | 3,955 km |
+| Points after resampling at 10 m | 151,382 |
+| Snapshot size | 2.42 MB |
+| Clip distance | 500 m from each end |
+
+### Render cost of the ride layer
+
+| Layers | FPS |
+|---|---:|
+| Network only (51,086 paths) | 60 |
+| Network + rides (51,251 paths) | **43** |
+
+Adding 165 ride paths cost ~17 fps — far more than their path count suggests, because the
+ride layer is semi-transparent and overlapping traces force per-fragment blending along
+heavily-repeated corridors like the Platte River Trail. Worth revisiting in M7 if it drops
+further; still comfortably interactive.
+
+Combined decode (network + rides) is 2,783 ms, up from 1,105 ms for the network alone.
+
+### The out-of-region 25
+
+Not errors. These are rides outside the metro-core bbox — travel, RAGBRAI, and Summit
+County. They will import once their regions are added to the registry and fetched.

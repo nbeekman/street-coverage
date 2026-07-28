@@ -50,6 +50,33 @@ The headline percentage covers the `metro-core` group only. Away regions (Summit
 and an Iowa/RAGBRAI route corridor after M2) are tracked separately and excluded from it,
 so the number on screen stays a meaningful progress bar.
 
+## Rides
+
+```bash
+npm run import:rides -- --dir <unzipped Strava export>/activities
+npm run build:rides
+```
+
+Ride traces are **never committed** — `data/rides/` and `public/rides/` are gitignored,
+because they are personal location data. A fresh clone shows the street network and no
+rides until you re-import.
+
+**Privacy clipping** removes the first and last 500 m of every ride (`--clip-meters` to
+change), and runs inside the importer so unclipped coordinates never reach disk. The cost
+is real and permanent: streets within 500 m of any ride start may never reach 100%.
+
+**Rejected automatically,** with counts reported by reason:
+
+- **Virtual rides** — Zwift sets `subSport: virtualActivity`, and its coordinates are in
+  the Solomon Sea, ~13,000 km from Denver.
+- **Out-of-region** — the trace bbox does not intersect the metro-core regions. These are
+  not errors; they are rides belonging to regions not yet fetched.
+- **No GPS** — trainer sessions.
+
+**Strava exports FIT, not GPX.** The 2026-07-28 archive was 225 files, 100% `.fit.gz`.
+FIT stores positions as *semicircles* and the Garmin SDK does not convert them, even with
+`applyScaleAndOffset` — see `src/rides/semicircles.ts`.
+
 ## What counts as rideable
 
 Ordinary streets count with no extra qualification: `primary`, `secondary`, `tertiary`,
