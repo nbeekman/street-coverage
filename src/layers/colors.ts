@@ -10,8 +10,17 @@ export type Rgba = [number, number, number, number]
  */
 export const RIDDEN_COLOR: Rgb = [255, 190, 60]
 
-/** Unridden. Dim and cool so the uncovered network reads as ground. */
-export const UNRIDDEN_COLOR: Rgb = [70, 82, 100]
+/**
+ * Unridden. Cool and recessive so ridden streets read as the figure -- but
+ * still bright enough to see.
+ *
+ * An earlier [70, 82, 100] was so dark against the basemap that streets with
+ * no ride near them looked absent rather than uncovered, which made the map
+ * read as empty in exactly the places the project is about. It sits just below
+ * the residential class color so the network stays as legible here as in the
+ * class-colored view.
+ */
+export const UNRIDDEN_COLOR: Rgb = [112, 133, 162]
 
 /**
  * Ride traces: the ridden hue, semi-transparent so overlapping traces
