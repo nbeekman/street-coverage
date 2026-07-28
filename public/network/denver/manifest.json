@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "regionId": "denver",
+  "regionName": "Denver",
+  "group": "metro-core",
+  "osmId": 1411339,
+  "osmKind": "relation",
+  "generatedAt": "2026-07-28T14:53:43.883Z",
+  "osmTimestamp": "2026-07-28T14:51:57Z",
+  "queryHash": "65b79c3cdaa5d88c",
+  "bbox": {
+    "minLon": -105.1100018,
+    "minLat": 39.6114017,
+    "maxLon": -104.583348,
+    "maxLat": 39.914432
+  },
+  "wayCount": 22979,
+  "positionCount": 173250,
+  "uniqueNodeCount": 139074,
+  "totalMeters": 4083477.370570874,
+  "classes": [
+    "primary",
+    "secondary",
+    "tertiary",
+    "residential",
+    "unclassified",
+    "living_street",
+    "cycleway"
+  ],
+  "byteLengths": {
+    "positions": 2772000,
+    "startIndices": 91920,
+    "wayIds": 183832,
+    "classes": 22979
+  }
+}

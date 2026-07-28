@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "regionId": "sheridan",
+  "regionName": "Sheridan",
+  "group": "metro-core",
+  "osmId": 7240527,
+  "osmKind": "relation",
+  "generatedAt": "2026-07-28T14:53:43.909Z",
+  "osmTimestamp": "2026-07-28T14:50:57Z",
+  "queryHash": "a43068cbd7026ebb",
+  "bbox": {
+    "minLon": -105.0419563,
+    "minLat": 39.6268387,
+    "maxLon": -105.002275,
+    "maxLat": 39.6605155
+  },
+  "wayCount": 304,
+  "positionCount": 2761,
+  "uniqueNodeCount": 2385,
+  "totalMeters": 57104.86006975701,
+  "classes": [
+    "primary",
+    "secondary",
+    "tertiary",
+    "residential",
+    "unclassified",
+    "living_street",
+    "cycleway"
+  ],
+  "byteLengths": {
+    "positions": 44176,
+    "startIndices": 1220,
+    "wayIds": 2432,
+    "classes": 304
+  }
+}

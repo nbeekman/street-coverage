@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "generatedAt": "2026-07-28T14:53:43.911Z",
+  "regions": [
+    {
+      "id": "denver",
+      "name": "Denver",
+      "group": "metro-core",
+      "wayCount": 22979,
+      "positionCount": 173250,
+      "totalMeters": 4083477.370570874,
+      "bytes": 3070731
+    },
+    {
+      "id": "sheridan",
+      "name": "Sheridan",
+      "group": "metro-core",
+      "wayCount": 304,
+      "positionCount": 2761,
+      "totalMeters": 57104.86006975701,
+      "bytes": 48132
+    }
+  ]
+}
