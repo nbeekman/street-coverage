@@ -12,24 +12,31 @@
 
 ## Progress
 
-Paused 2026-07-27 after Task 5. `HEAD` is green: 44 tests passing, clean tree.
+**M1 complete, 2026-07-28.** All 14 tasks done. 69 tests passing, `tsc` clean, verified
+from a clean `node_modules` install. Ten regions rendering at 60 fps.
 
-| Task | Status |
-|---|---|
-| 1. Project scaffold and toolchain | done |
-| 2. Geo primitives | done — 15 tests |
-| 3. Region registry and query builder | done — 11 tests |
-| 4. Normalize Overpass elements | done — 8 tests |
-| 5. Binary snapshot pack and unpack | done — 10 tests |
-| 6. Resilient Overpass client | **next — start at Step 1** |
-| 7–14 | not started |
+Final numbers are in `docs/measurements.md`.
 
-**To resume:** work in the `worktree-m1-network-render` branch and begin at Task 6,
-Step 1. Nothing is half-finished; Task 6's test file was written and then reverted so
-the suite would stay green across the pause, and its full contents are in Task 6 below.
+### Deviations from this plan
 
-**Heads-up for Task 9:** the ten-region fetch is the slow, flaky part. Overpass failed
-6 of 10 probe queries during design. Budget real time for it and expect to re-run.
+Four things the plan got wrong or did not anticipate, all fixed in the implementation:
+
+1. **Node ESM needs explicit `.ts` extensions.** The scripts crashed at runtime despite
+   both `tsc` and Vite accepting bare specifiers. Required `allowImportingTsExtensions`
+   and `.ts` on every relative import Node loads.
+2. **`maplibre-gl@6` is incompatible with `react-map-gl@8`** — it calls
+   `map.transform.width`, which v6 removed, so the page rendered blank. Pinned to
+   `^5.24.0`. The peer range `>=1.13.0` does not exclude the broken major.
+3. **A dev server's SPA fallback returns HTML at HTTP 200** for missing files, so
+   `res.ok` is not evidence of JSON. Same failure shape as Overpass; now guarded in
+   `fetchJson` with a regression test.
+4. **The Overpass client needed a per-request timeout.** Two of three mirrors accepted
+   connections and never responded; without an `AbortController`, `fetch()` blocked until
+   the OS abandoned the socket. One region took 894s as a result. Fixed with a 90s cap and
+   per-attempt logging.
+
+Also worth noting: an untyped `vi.fn()` infers `mock.calls` as a zero-length tuple, so
+indexing it fails `tsc` even though tests pass. Declare the mock's parameters.
 
 ## Global Constraints
 
