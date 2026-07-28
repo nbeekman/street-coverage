@@ -17,6 +17,7 @@ export type OverpassErrorCode =
   | 'BAD_SHAPE'
   | 'EMPTY_RESULT'
   | 'HTTP_ERROR'
+  | 'RATE_LIMITED'
   | 'TIMEOUT'
   | 'EXHAUSTED'
 
@@ -132,6 +133,12 @@ export async function fetchRegion(
         headers: { 'User-Agent': 'street-coverage/0.1 (github.com/nbeekman)' },
         signal: controller.signal,
       })
+      if (res.status === 429) {
+        // Overpass throttles per IP. Distinct from a 5xx: the server is fine,
+        // we are asking too fast, and the caller should slow down rather than
+        // just rotate mirrors.
+        throw new OverpassError('RATE_LIMITED', `${url} rate-limited us (HTTP 429)`)
+      }
       if (!res.ok) {
         throw new OverpassError('HTTP_ERROR', `${url} returned HTTP ${res.status}`)
       }

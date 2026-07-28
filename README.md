@@ -50,6 +50,28 @@ The headline percentage covers the `metro-core` group only. Away regions (Summit
 and an Iowa/RAGBRAI route corridor after M2) are tracked separately and excluded from it,
 so the number on screen stays a meaningful progress bar.
 
+## What counts as rideable
+
+Ordinary streets count with no extra qualification: `primary`, `secondary`, `tertiary`,
+`residential`, `unclassified`, `living_street`, `cycleway`.
+
+`path` and `bridleway` count **only** when tagged `bicycle=yes` or `bicycle=designated`.
+OSM tags bike-legal trails inconsistently — Bear Creek Lake Park has the Bear Creek and
+Kipling trails as `cycleway`, but the Stone House, Connector, North Park and Greenbelt
+trails as `path` or `bridleway`. Without the gated classes those all vanish from the map.
+
+`footway` is excluded outright, even when tagged for bikes. It is overwhelmingly
+sidewalks: including it adds 14,957 ways to the southwest metro against 1,493 for
+`path`+`bridleway`, which would more than double the denominator with pavement nobody
+sets out to "complete."
+
+Excluded throughout: motorways, trunk roads, service alleys, and anything
+`access=private`.
+
+**`HIGHWAY_CLASSES` order is a storage contract.** `classes.bin` holds indices into that
+array, so new classes are appended and never inserted. A test pins the original seven
+positions.
+
 ## Gotchas worth knowing
 
 Each of these cost real time; they are recorded so they only cost it once.

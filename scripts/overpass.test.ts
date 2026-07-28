@@ -179,6 +179,37 @@ describe('fetchRegion', () => {
     expect(failures).toEqual(['HTML_ERROR'])
   })
 
+  it('distinguishes rate limiting from other HTTP errors', async () => {
+    // Overpass throttles per IP. A 429 means slow down, not "this mirror is
+    // broken" -- the CLI uses the distinct code to trigger a cooldown rather
+    // than just rotating to the next mirror.
+    const limited = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse('', 429))
+      .mockResolvedValueOnce(jsonResponse(VALID_BODY))
+    const codes: string[] = []
+    await fetchRegion(region, {
+      ...opts,
+      fetchImpl: limited as never,
+      onAttemptFailed: ({ error }) => codes.push((error as OverpassError).code),
+    })
+    expect(codes).toEqual(['RATE_LIMITED'])
+  })
+
+  it('reports a 5xx as a plain HTTP error, not rate limiting', async () => {
+    const failing = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse('', 504))
+      .mockResolvedValueOnce(jsonResponse(VALID_BODY))
+    const codes: string[] = []
+    await fetchRegion(region, {
+      ...opts,
+      fetchImpl: failing as never,
+      onAttemptFailed: ({ error }) => codes.push((error as OverpassError).code),
+    })
+    expect(codes).toEqual(['HTTP_ERROR'])
+  })
+
   it('posts the region query as the request body', async () => {
     // The parameters must be declared for mock.calls to be a typed tuple;
     // a bare vi.fn() infers calls as [] and indexing it is a type error.

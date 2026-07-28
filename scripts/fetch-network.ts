@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { mkdir, readdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { fetchRegion } from './overpass.ts'
+import { OverpassError, fetchRegion } from './overpass.ts'
 import {
   REGIONS,
   buildOverpassQuery,
@@ -13,11 +13,27 @@ import {
 
 const RAW_DIR = join(process.cwd(), 'data', 'raw')
 
-type Args = { regions: Region[]; force: boolean }
+/**
+ * Pause between regions.
+ *
+ * A --force run fires every region back to back at the same handful of
+ * mirrors, and overpass-api.de allows only 2 slots per IP. Measured
+ * 2026-07-28: a 14-region re-fetch collected 3 HTTP 429s that were purely
+ * self-inflicted. Costs under a minute across a full run.
+ */
+const INTER_REGION_DELAY_MS = 4000
+
+/** Longer pause after a region that was actually throttled. */
+const RATE_LIMIT_COOLDOWN_MS = 30_000
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+type Args = { regions: Region[]; force: boolean; delayMs: number }
 
 function parseArgs(argv: string[]): Args {
   const force = argv.includes('--force')
   const regions: Region[] = []
+  let delayMs = INTER_REGION_DELAY_MS
 
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--region') {
@@ -32,6 +48,13 @@ function parseArgs(argv: string[]): Args {
       regions.push(...found)
     }
     if (argv[i] === '--all') regions.push(...REGIONS)
+    if (argv[i] === '--delay') {
+      const parsed = Number(argv[i + 1])
+      if (!Number.isFinite(parsed) || parsed < 0) {
+        throw new Error(`--delay expects milliseconds, got "${argv[i + 1]}"`)
+      }
+      delayMs = parsed
+    }
   }
 
   if (regions.length === 0) {
@@ -39,7 +62,7 @@ function parseArgs(argv: string[]): Args {
       'Specify --region <id>, --group <metro-core|metro-outer|mountain|route>, or --all',
     )
   }
-  return { regions, force }
+  return { regions, force, delayMs }
 }
 
 async function alreadyFetched(): Promise<Set<string>> {
@@ -52,13 +75,14 @@ async function alreadyFetched(): Promise<Set<string>> {
 }
 
 async function main(): Promise<void> {
-  const { regions, force } = parseArgs(process.argv.slice(2))
+  const { regions, force, delayMs } = parseArgs(process.argv.slice(2))
   await mkdir(RAW_DIR, { recursive: true })
   const done = await alreadyFetched()
 
   let fetched = 0
   let skipped = 0
   const failures: string[] = []
+  let pending = false
 
   for (const region of regions) {
     if (!force && done.has(region.id)) {
@@ -67,13 +91,22 @@ async function main(): Promise<void> {
       continue
     }
 
+    // Only pace between requests we actually make; skipped regions are free.
+    if (pending && delayMs > 0) await sleep(delayMs)
+    pending = true
+
+    let throttled = false
     const started = Date.now()
     try {
       const response = await fetchRegion(region, {
         onAttempt: ({ attempt, url }) =>
           console.log(`  ...     ${region.id} attempt ${attempt + 1} → ${new URL(url).host}`),
-        onAttemptFailed: ({ ms, error }) =>
-          console.log(`  fail    ${region.id} after ${(ms / 1000).toFixed(1)}s — ${String(error)}`),
+        onAttemptFailed: ({ ms, error }) => {
+          if (error instanceof OverpassError && error.code === 'RATE_LIMITED') {
+            throttled = true
+          }
+          console.log(`  fail    ${region.id} after ${(ms / 1000).toFixed(1)}s — ${String(error)}`)
+        },
       })
       const query = buildOverpassQuery(region)
       const payload = {
@@ -93,8 +126,14 @@ async function main(): Promise<void> {
       console.log(`ok       ${region.id} — ${ways} ways in ${secs}s`)
       fetched++
     } catch (error) {
+      if (error instanceof OverpassError && error.code === 'RATE_LIMITED') throttled = true
       console.error(`FAILED   ${region.id} — ${String(error)}`)
       failures.push(region.id)
+    }
+
+    if (throttled && delayMs > 0) {
+      console.log(`  cool    rate-limited; waiting ${RATE_LIMIT_COOLDOWN_MS / 1000}s before the next region`)
+      await sleep(RATE_LIMIT_COOLDOWN_MS)
     }
   }
 
