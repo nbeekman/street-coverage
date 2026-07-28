@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-28T15:16:15.129Z",
+  "generatedAt": "2026-07-28T15:42:23.924Z",
   "regions": [
     {
       "id": "denver",
@@ -28,6 +28,60 @@
       "positionCount": 55987,
       "totalMeters": 868903.0745138221,
       "bytes": 959262
+    },
+    {
+      "id": "highlands-ranch",
+      "name": "Highlands Ranch",
+      "group": "metro-core",
+      "wayCount": 2837,
+      "positionCount": 28532,
+      "totalMeters": 649501.6674840796,
+      "bytes": 493397
+    },
+    {
+      "id": "littleton",
+      "name": "Littleton",
+      "group": "metro-core",
+      "wayCount": 2052,
+      "positionCount": 16321,
+      "totalMeters": 361818.2872180645,
+      "bytes": 287816
+    },
+    {
+      "id": "greenwood-village",
+      "name": "Greenwood Village",
+      "group": "metro-core",
+      "wayCount": 1821,
+      "positionCount": 14726,
+      "totalMeters": 230443.49272979688,
+      "bytes": 259293
+    },
+    {
+      "id": "ken-caryl",
+      "name": "Ken Caryl",
+      "group": "metro-core",
+      "wayCount": 1363,
+      "positionCount": 13674,
+      "totalMeters": 274851.82538446266,
+      "bytes": 236507
+    },
+    {
+      "id": "columbine",
+      "name": "Columbine",
+      "group": "metro-core",
+      "wayCount": 1052,
+      "positionCount": 7198,
+      "totalMeters": 211408.24188585908,
+      "bytes": 128848
+    },
+    {
+      "id": "englewood",
+      "name": "Englewood",
+      "group": "metro-core",
+      "wayCount": 984,
+      "positionCount": 8015,
+      "totalMeters": 250624.1306645075,
+      "bytes": 141036
     },
     {
       "id": "sheridan",

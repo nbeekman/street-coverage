@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "regionId": "greenwood-village",
+  "regionName": "Greenwood Village",
+  "group": "metro-core",
+  "osmId": 112940,
+  "osmKind": "relation",
+  "generatedAt": "2026-07-28T15:42:23.734Z",
+  "osmTimestamp": "2026-07-28T15:15:06Z",
+  "queryHash": "ef214bdbb9259e4e",
+  "bbox": {
+    "minLon": -104.9801098,
+    "minLat": 39.591388,
+    "maxLon": -104.8478468,
+    "maxLat": 39.647439
+  },
+  "wayCount": 1821,
+  "positionCount": 14726,
+  "uniqueNodeCount": 12544,
+  "totalMeters": 230443.49272979688,
+  "classes": [
+    "primary",
+    "secondary",
+    "tertiary",
+    "residential",
+    "unclassified",
+    "living_street",
+    "cycleway"
+  ],
+  "byteLengths": {
+    "positions": 235616,
+    "startIndices": 7288,
+    "wayIds": 14568,
+    "classes": 1821
+  }
+}

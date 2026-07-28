@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "regionId": "ken-caryl",
+  "regionName": "Ken Caryl",
+  "group": "metro-core",
+  "osmId": 624295048,
+  "osmKind": "way",
+  "generatedAt": "2026-07-28T15:42:23.797Z",
+  "osmTimestamp": "2026-07-28T15:19:08Z",
+  "queryHash": "0b6dcbc0a4467106",
+  "bbox": {
+    "minLon": -105.1531506,
+    "minLat": 39.540377,
+    "maxLon": -105.0824162,
+    "maxLat": 39.6098561
+  },
+  "wayCount": 1363,
+  "positionCount": 13674,
+  "uniqueNodeCount": 11891,
+  "totalMeters": 274851.82538446266,
+  "classes": [
+    "primary",
+    "secondary",
+    "tertiary",
+    "residential",
+    "unclassified",
+    "living_street",
+    "cycleway"
+  ],
+  "byteLengths": {
+    "positions": 218784,
+    "startIndices": 5456,
+    "wayIds": 10904,
+    "classes": 1363
+  }
+}
