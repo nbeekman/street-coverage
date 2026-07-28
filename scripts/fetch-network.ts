@@ -69,7 +69,12 @@ async function main(): Promise<void> {
 
     const started = Date.now()
     try {
-      const response = await fetchRegion(region)
+      const response = await fetchRegion(region, {
+        onAttempt: ({ attempt, url }) =>
+          console.log(`  ...     ${region.id} attempt ${attempt + 1} → ${new URL(url).host}`),
+        onAttemptFailed: ({ ms, error }) =>
+          console.log(`  fail    ${region.id} after ${(ms / 1000).toFixed(1)}s — ${String(error)}`),
+      })
       const query = buildOverpassQuery(region)
       const payload = {
         regionId: region.id,

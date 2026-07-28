@@ -17,6 +17,7 @@ export type OverpassErrorCode =
   | 'BAD_SHAPE'
   | 'EMPTY_RESULT'
   | 'HTTP_ERROR'
+  | 'TIMEOUT'
   | 'EXHAUSTED'
 
 export class OverpassError extends Error {
@@ -73,7 +74,7 @@ export function parseOverpassBody(body: string): OverpassResponse {
 
 type FetchLike = (
   url: string,
-  init: { method: string; body: string; headers: Record<string, string> },
+  init: { method: string; body: string; headers: Record<string, string>; signal?: AbortSignal },
 ) => Promise<{ ok: boolean; status: number; text: () => Promise<string> }>
 
 export type FetchRegionOptions = {
@@ -81,7 +82,24 @@ export type FetchRegionOptions = {
   mirrors?: readonly string[]
   maxAttempts?: number
   sleepMs?: number
+  /** Per-attempt ceiling. See REQUEST_TIMEOUT_MS. */
+  requestTimeoutMs?: number
+  /** Called before each attempt so a long run is not silent. */
+  onAttempt?: (info: { attempt: number; url: string }) => void
+  /** Called when an attempt fails, with how long it burned. */
+  onAttemptFailed?: (info: { attempt: number; url: string; ms: number; error: unknown }) => void
 }
+
+/**
+ * Cap a single attempt at 90s.
+ *
+ * Without this, a hung mirror blocks until the OS abandons the TCP
+ * connection -- minutes of dead waiting per attempt. Measured 2026-07-28:
+ * two of three public mirrors accepted connections and never responded, while
+ * a healthy mirror answered a 23k-way query in 15s. 90s is far above any
+ * legitimate query time here and far below the OS timeout.
+ */
+const REQUEST_TIMEOUT_MS = 90_000
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -94,27 +112,44 @@ export async function fetchRegion(
   const maxAttempts = options.maxAttempts ?? 9
   const baseSleep = options.sleepMs ?? 8000
 
+  const timeoutMs = options.requestTimeoutMs ?? REQUEST_TIMEOUT_MS
   const query = buildOverpassQuery(region)
   let lastError: unknown
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const url = mirrors[attempt % mirrors.length]
+    const started = Date.now()
+    options.onAttempt?.({ attempt, url })
+
+    // A hung mirror never rejects on its own; this is what bounds the attempt.
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), timeoutMs)
+
     try {
       const res = await fetchImpl(url, {
         method: 'POST',
         body: query,
         headers: { 'User-Agent': 'street-coverage/0.1 (github.com/nbeekman)' },
+        signal: controller.signal,
       })
       if (!res.ok) {
         throw new OverpassError('HTTP_ERROR', `${url} returned HTTP ${res.status}`)
       }
       return parseOverpassBody(await res.text())
     } catch (error) {
-      lastError = error
+      const wrapped =
+        error instanceof Error && error.name === 'AbortError'
+          ? new OverpassError('TIMEOUT', `${url} did not respond within ${timeoutMs / 1000}s`)
+          : error
+      lastError = wrapped
+      options.onAttemptFailed?.({ attempt, url, ms: Date.now() - started, error: wrapped })
+
       if (attempt < maxAttempts - 1 && baseSleep > 0) {
         // Backoff caps at 60s; mirrors recover on the order of minutes.
         await sleep(Math.min(baseSleep * 2 ** Math.floor(attempt / mirrors.length), 60_000))
       }
+    } finally {
+      clearTimeout(timer)
     }
   }
 

@@ -134,6 +134,51 @@ describe('fetchRegion', () => {
     expect(fetchImpl).toHaveBeenCalledTimes(3)
   })
 
+  it('abandons a mirror that never responds, rather than waiting forever', async () => {
+    // Measured 2026-07-28: two of three public mirrors accepted the connection
+    // and never answered. Without a per-attempt timeout, fetch() blocks until
+    // the OS gives up on the socket -- minutes of dead waiting per attempt,
+    // which is what made one region take 894s.
+    const hung = vi.fn(
+      (_url: string, init: { signal?: AbortSignal }) =>
+        new Promise<never>((_resolve, reject) => {
+          init.signal?.addEventListener('abort', () => {
+            const err = new Error('aborted')
+            err.name = 'AbortError'
+            reject(err)
+          })
+        }),
+    )
+    await expect(
+      fetchRegion(region, {
+        ...opts,
+        fetchImpl: hung as never,
+        maxAttempts: 2,
+        requestTimeoutMs: 20,
+      }),
+    ).rejects.toThrow(/attempts failed/i)
+    expect(hung).toHaveBeenCalledTimes(2)
+  })
+
+  it('reports each attempt so a slow run is not silent', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(DISPATCHER_TIMEOUT_HTML))
+      .mockResolvedValueOnce(jsonResponse(VALID_BODY))
+    const attempts: number[] = []
+    const failures: string[] = []
+
+    await fetchRegion(region, {
+      ...opts,
+      fetchImpl,
+      onAttempt: ({ attempt }) => attempts.push(attempt),
+      onAttemptFailed: ({ error }) => failures.push((error as OverpassError).code),
+    })
+
+    expect(attempts).toEqual([0, 1])
+    expect(failures).toEqual(['HTML_ERROR'])
+  })
+
   it('posts the region query as the request body', async () => {
     // The parameters must be declared for mock.calls to be a typed tuple;
     // a bare vi.fn() infers calls as [] and indexing it is a type error.

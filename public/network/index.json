@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-28T14:53:43.911Z",
+  "generatedAt": "2026-07-28T15:16:15.129Z",
   "regions": [
     {
       "id": "denver",
@@ -10,6 +10,24 @@
       "positionCount": 173250,
       "totalMeters": 4083477.370570874,
       "bytes": 3070731
+    },
+    {
+      "id": "lakewood",
+      "name": "Lakewood",
+      "group": "metro-core",
+      "wayCount": 6728,
+      "positionCount": 53343,
+      "totalMeters": 1169666.0657203882,
+      "bytes": 940956
+    },
+    {
+      "id": "centennial",
+      "name": "Centennial",
+      "group": "metro-core",
+      "wayCount": 4882,
+      "positionCount": 55987,
+      "totalMeters": 868903.0745138221,
+      "bytes": 959262
     },
     {
       "id": "sheridan",
