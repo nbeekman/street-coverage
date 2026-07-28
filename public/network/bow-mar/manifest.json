@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "regionId": "bow-mar",
+  "regionName": "Bow Mar",
+  "group": "metro-core",
+  "osmId": 194060379,
+  "osmKind": "way",
+  "generatedAt": "2026-07-28T16:12:40.023Z",
+  "osmTimestamp": "2026-07-28T16:10:54Z",
+  "queryHash": "24ddc6201e4c42e9",
+  "bbox": {
+    "minLon": -105.059585,
+    "minLat": 39.6099066,
+    "maxLon": -105.0427197,
+    "maxLat": 39.6388339
+  },
+  "wayCount": 49,
+  "positionCount": 731,
+  "uniqueNodeCount": 661,
+  "totalMeters": 16262.573378090305,
+  "classes": [
+    "primary",
+    "secondary",
+    "tertiary",
+    "residential",
+    "unclassified",
+    "living_street",
+    "cycleway"
+  ],
+  "byteLengths": {
+    "positions": 11696,
+    "startIndices": 200,
+    "wayIds": 392,
+    "classes": 49
+  }
+}

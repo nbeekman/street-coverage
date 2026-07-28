@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "regionId": "morrison",
+  "regionName": "Morrison",
+  "group": "metro-core",
+  "osmId": 18499983,
+  "osmKind": "relation",
+  "generatedAt": "2026-07-28T16:12:41.049Z",
+  "osmTimestamp": "2026-07-28T16:10:54Z",
+  "queryHash": "2c448fc2eb66a8b9",
+  "bbox": {
+    "minLon": -105.2005442,
+    "minLat": 39.6222452,
+    "maxLon": -105.1608226,
+    "maxLat": 39.6666467
+  },
+  "wayCount": 165,
+  "positionCount": 1569,
+  "uniqueNodeCount": 1379,
+  "totalMeters": 33087.28807757926,
+  "classes": [
+    "primary",
+    "secondary",
+    "tertiary",
+    "residential",
+    "unclassified",
+    "living_street",
+    "cycleway"
+  ],
+  "byteLengths": {
+    "positions": 25104,
+    "startIndices": 664,
+    "wayIds": 1320,
+    "classes": 165
+  }
+}

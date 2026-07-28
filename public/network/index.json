@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-28T15:42:23.924Z",
+  "generatedAt": "2026-07-28T16:12:41.057Z",
   "regions": [
     {
       "id": "denver",
@@ -91,6 +91,24 @@
       "positionCount": 2761,
       "totalMeters": 57104.86006975701,
       "bytes": 48132
+    },
+    {
+      "id": "morrison",
+      "name": "Morrison",
+      "group": "metro-core",
+      "wayCount": 165,
+      "positionCount": 1569,
+      "totalMeters": 33087.28807757926,
+      "bytes": 27253
+    },
+    {
+      "id": "bow-mar",
+      "name": "Bow Mar",
+      "group": "metro-core",
+      "wayCount": 49,
+      "positionCount": 731,
+      "totalMeters": 16262.573378090305,
+      "bytes": 12337
     }
   ]
 }

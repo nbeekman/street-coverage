@@ -47,6 +47,11 @@ export const REGIONS: readonly Region[] = [
   { id: 'columbine',         name: 'Columbine',         osmId: 33168093,  osmKind: 'way',      group: 'metro-core' },
   { id: 'englewood',         name: 'Englewood',         osmId: 7243979,   osmKind: 'relation', group: 'metro-core' },
   { id: 'sheridan',          name: 'Sheridan',          osmId: 7240527,   osmKind: 'relation', group: 'metro-core' },
+  // Small municipalities between Littleton and Morrison, found via an is_in
+  // sweep of a visible gap in the rendered map. Bow Mar is an enclave ringed
+  // by Littleton and Lakewood; Morrison is the Red Rocks approach.
+  { id: 'morrison',          name: 'Morrison',          osmId: 18499983,  osmKind: 'relation', group: 'metro-core' },
+  { id: 'bow-mar',           name: 'Bow Mar',           osmId: 194060379, osmKind: 'way',      group: 'metro-core' },
 
   { id: 'castle-rock',       name: 'Castle Rock',       osmId: 112343,    osmKind: 'relation', group: 'metro-outer' },
 

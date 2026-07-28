@@ -18,8 +18,8 @@ describe('REGIONS', () => {
     expect(new Set(keys).size).toBe(keys.length)
   })
 
-  it('defines exactly ten metro-core regions', () => {
-    expect(regionsInGroup('metro-core')).toHaveLength(10)
+  it('defines exactly twelve metro-core regions', () => {
+    expect(regionsInGroup('metro-core')).toHaveLength(12)
   })
 
   it('pins Denver to relation 1411339', () => {
@@ -29,9 +29,9 @@ describe('REGIONS', () => {
     expect(denver).toMatchObject({ osmId: 1411339, osmKind: 'relation' })
   })
 
-  it('includes both way-boundary CDPs in metro-core', () => {
+  it('includes every way-boundary region in metro-core', () => {
     const ways = regionsInGroup('metro-core').filter((r) => r.osmKind === 'way')
-    expect(ways.map((r) => r.id).sort()).toEqual(['columbine', 'ken-caryl'])
+    expect(ways.map((r) => r.id).sort()).toEqual(['bow-mar', 'columbine', 'ken-caryl'])
   })
 })
 
