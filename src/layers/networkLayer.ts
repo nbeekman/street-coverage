@@ -54,6 +54,21 @@ export function buildLayerProps(region: LoadedRegion) {
   }
 }
 
-export function createNetworkLayer(region: LoadedRegion, beforeId?: string): PathLayer {
-  return new PathLayer({ ...buildLayerProps(region), beforeId } as never)
+/**
+ * In rides mode the class colors are scenery, not the subject. Dimming the
+ * whole layer lets the red traces dominate without changing the palette, so
+ * the map key stays truthful about which class is which.
+ */
+export const DIMMED_OPACITY = 0.35
+
+export function createNetworkLayer(
+  region: LoadedRegion,
+  beforeId?: string,
+  dimmed = false,
+): PathLayer {
+  return new PathLayer({
+    ...buildLayerProps(region),
+    beforeId,
+    opacity: dimmed ? DIMMED_OPACITY : 1,
+  } as never)
 }

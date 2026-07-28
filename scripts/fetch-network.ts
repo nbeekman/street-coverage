@@ -28,14 +28,26 @@ const RATE_LIMIT_COOLDOWN_MS = 30_000
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-type Args = { regions: Region[]; force: boolean; delayMs: number }
+type Args = {
+  regions: Region[]
+  force: boolean
+  delayMs: number
+  /** Per-attempt cap override, ms. Large regions need more than the default. */
+  requestTimeoutMs?: number
+}
 
 function parseArgs(argv: string[]): Args {
   const force = argv.includes('--force')
+  let requestTimeoutMs: number | undefined
   const regions: Region[] = []
   let delayMs = INTER_REGION_DELAY_MS
 
   for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === '--timeout') {
+      const n = Number(argv[i + 1])
+      if (!Number.isFinite(n) || n <= 0) throw new Error('--timeout expects seconds > 0')
+      requestTimeoutMs = n * 1000
+    }
     if (argv[i] === '--region') {
       const region = regionById(argv[i + 1])
       if (!region) throw new Error(`Unknown region "${argv[i + 1]}"`)
@@ -62,7 +74,7 @@ function parseArgs(argv: string[]): Args {
       'Specify --region <id>, --group <metro-core|metro-outer|mountain|route>, or --all',
     )
   }
-  return { regions, force, delayMs }
+  return { regions, force, delayMs, requestTimeoutMs }
 }
 
 async function alreadyFetched(): Promise<Set<string>> {
@@ -75,7 +87,7 @@ async function alreadyFetched(): Promise<Set<string>> {
 }
 
 async function main(): Promise<void> {
-  const { regions, force, delayMs } = parseArgs(process.argv.slice(2))
+  const { regions, force, delayMs, requestTimeoutMs } = parseArgs(process.argv.slice(2))
   await mkdir(RAW_DIR, { recursive: true })
   const done = await alreadyFetched()
 
@@ -99,6 +111,7 @@ async function main(): Promise<void> {
     const started = Date.now()
     try {
       const response = await fetchRegion(region, {
+        requestTimeoutMs,
         onAttempt: ({ attempt, url }) =>
           console.log(`  ...     ${region.id} attempt ${attempt + 1} → ${new URL(url).host}`),
         onAttemptFailed: ({ ms, error }) => {

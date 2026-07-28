@@ -5,7 +5,7 @@
   "group": "metro-core",
   "osmId": 0,
   "osmKind": "polygon",
-  "generatedAt": "2026-07-28T21:00:26.475Z",
+  "generatedAt": "2026-07-28T21:28:18.026Z",
   "osmTimestamp": "2026-07-28T20:57:26Z",
   "queryHash": "77771a3cfd71ae38",
   "bbox": {
@@ -14,10 +14,10 @@
     "maxLon": -104.8444466,
     "maxLat": 39.6955325
   },
-  "wayCount": 938,
-  "positionCount": 7177,
-  "uniqueNodeCount": 6120,
-  "totalMeters": 107502.75306961921,
+  "wayCount": 497,
+  "positionCount": 3625,
+  "uniqueNodeCount": 3074,
+  "totalMeters": 50458.72132392109,
   "classes": [
     "primary",
     "secondary",
@@ -30,9 +30,9 @@
     "bridleway"
   ],
   "byteLengths": {
-    "positions": 114832,
-    "startIndices": 3756,
-    "wayIds": 7504,
-    "classes": 938
+    "positions": 58000,
+    "startIndices": 1992,
+    "wayIds": 3976,
+    "classes": 497
   }
 }

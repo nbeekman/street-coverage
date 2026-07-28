@@ -92,15 +92,18 @@ export type FetchRegionOptions = {
 }
 
 /**
- * Cap a single attempt at 90s.
+ * Cap a single attempt.
  *
  * Without this, a hung mirror blocks until the OS abandons the TCP
  * connection -- minutes of dead waiting per attempt. Measured 2026-07-28:
  * two of three public mirrors accepted connections and never responded, while
- * a healthy mirror answered a 23k-way query in 15s. 90s is far above any
- * legitimate query time here and far below the OS timeout.
+ * a healthy mirror answered a 23k-way query in 15s.
+ *
+ * Raised from 90s to 180s after Aurora failed all 9 attempts: a large region
+ * against a busy server is slow but not hung, and 90s could not tell the two
+ * apart. Override per run with --timeout when a region is bigger still.
  */
-const REQUEST_TIMEOUT_MS = 90_000
+const REQUEST_TIMEOUT_MS = 180_000
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 

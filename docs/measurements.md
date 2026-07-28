@@ -315,3 +315,33 @@ rebuild produced a byte-identical 3.70%, confirming that out-of-region traces cr
 
 The network layer has no level-of-detail or culling, so all 52,491 runs rasterize even when
 the metro occupies 40 px. This is the clearest thing for M7 to fix.
+
+## Aurora, and what a denominator change costs
+
+Aurora (relation 112875) joins the metro-core group. It is listed after Cherry Creek State
+Park so the park keeps its own ways rather than being absorbed by the city surrounding it.
+
+| | Before | After |
+|---|---:|---:|
+| Regions | 18 | 19 |
+| Ways | 52,491 | 67,437 |
+| Denominator | 9,420 km | **12,214 km** |
+| Covered | 348 km | 348 km |
+| **Headline** | 3.70% | **2.85%** |
+
+Covered distance did not move by a single metre — only the denominator grew. **Aurora itself
+reads 0.00%: 2 nodes hit of 133,494.** That is the honest answer to "is the east side
+covered", and it is worth more than a flattering percentage.
+
+Dedup did its job on the overlap: `cherry-creek-corridor` fell from 938 ways / 108 km to
+497 / 50 km as Aurora claimed the shared ways first, and the corridor's own percentage rose
+from 5.87% to 12.43% because the unridden bulk moved to Aurora's row.
+
+### The fetch failed before it succeeded
+
+Aurora failed all 9 attempts, every one timing out at the 90 s per-attempt cap. The retry
+then succeeded **in 16.7 s**. The cap was never the binding constraint — Overpass was simply
+overloaded, and had been returning `runtime error: ... too busy` to plain ID lookups minutes
+earlier. The per-attempt cap was raised to 180 s with a `--timeout` override anyway, since
+90 s cannot distinguish a large query from a hung mirror, but the honest cause was server
+load and the honest fix was retrying.

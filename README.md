@@ -2,7 +2,7 @@
 
 Ride every street in the Denver metro. The map fills in as you do.
 
-The network renders, rides import, and coverage computes: **3.70% of 9,420 km** so far.
+The network renders, rides import, and coverage computes: **2.85% of 12,214 km** so far.
 
 ## Setup
 
@@ -92,7 +92,7 @@ npm run build:coverage -- --radius 15
 **What counts as ridden.** A node is *hit* when a ride point passed within **25 m**. A
 segment counts as ridden when **both** its endpoints are hit — the "both" is what stops a
 single stray GPS point from crediting a stretch never ridden. The headline percentage is
-ridden meters over total meters, so it reads as "3.70% of the metro's street distance".
+ridden meters over total meters, so it reads as "2.85% of the metro's street distance".
 
 Coverage output is **gitignored** for the same reason ride traces are: which streets someone
 has ridden is location data, and publishing it would undo the privacy clipping.

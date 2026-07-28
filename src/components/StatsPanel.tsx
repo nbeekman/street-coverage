@@ -8,6 +8,7 @@ import {
   shortDistanceLabel,
   type Units,
 } from '../units/units.ts'
+import MapKey from './MapKey.tsx'
 import UnitsToggle from './UnitsToggle.tsx'
 import ViewToggle from './ViewToggle.tsx'
 import type { ViewMode } from './viewMode.ts'
@@ -66,31 +67,13 @@ export default function StatsPanel({
         <UnitsToggle units={units} onToggle={onToggleUnits} />
       </div>
 
-      <div className="mb-3 flex items-center justify-between gap-3">
+      <div className="mb-3">
         <ViewToggle
           mode={mode}
           onChange={onModeChange}
           ridesAvailable={rides.status === 'ready' && rides.rides !== null}
         />
-        <div className="flex items-center gap-3 text-xs text-neutral-400">
-          {mode === 'coverage' ? (
-            <>
-              <span className="flex items-center gap-1">
-                <span className="inline-block h-0.5 w-3 bg-[rgb(255,190,60)]" />
-                ridden
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="inline-block h-0.5 w-3 bg-[rgb(112,133,162)]" />
-                not yet
-              </span>
-            </>
-          ) : (
-            <span className="flex items-center gap-1">
-              <span className="inline-block h-0.5 w-3 bg-[rgb(255,60,70)]" />
-              ride traces
-            </span>
-          )}
-        </div>
+        <MapKey mode={mode} />
       </div>
 
       {state.status === 'loading' && (

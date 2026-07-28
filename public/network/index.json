@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-07-28T21:00:26.478Z",
+  "generatedAt": "2026-07-28T21:28:18.027Z",
   "regions": [
     {
       "id": "denver",
@@ -10,6 +10,15 @@
       "positionCount": 180412,
       "totalMeters": 4159203.1554729873,
       "bytes": 3193435
+    },
+    {
+      "id": "aurora",
+      "name": "Aurora",
+      "group": "metro-core",
+      "wayCount": 15387,
+      "positionCount": 154052,
+      "totalMeters": 2851440.2464084215,
+      "bytes": 2664867
     },
     {
       "id": "lakewood",
@@ -84,15 +93,6 @@
       "bytes": 137632
     },
     {
-      "id": "cherry-creek-corridor",
-      "name": "Cherry Creek corridor (unincorporated)",
-      "group": "metro-core",
-      "wayCount": 938,
-      "positionCount": 7177,
-      "totalMeters": 107502.75306961921,
-      "bytes": 127030
-    },
-    {
       "id": "englewood",
       "name": "Englewood",
       "group": "metro-core",
@@ -100,6 +100,15 @@
       "positionCount": 7073,
       "totalMeters": 205230.42132180044,
       "bytes": 125028
+    },
+    {
+      "id": "cherry-creek-corridor",
+      "name": "Cherry Creek corridor (unincorporated)",
+      "group": "metro-core",
+      "wayCount": 497,
+      "positionCount": 3625,
+      "totalMeters": 50458.72132392109,
+      "bytes": 64465
     },
     {
       "id": "cherry-hills-village",

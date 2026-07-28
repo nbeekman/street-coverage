@@ -58,7 +58,9 @@ export default function MapView({ regions, rides, coverage, mode }: Props) {
       return coverage.regions.map((region) => createCoverageLayer(region, labelLayerId))
     }
 
-    const base = regions.map((region) => createNetworkLayer(region, labelLayerId))
+    const base = regions.map((region) =>
+      createNetworkLayer(region, labelLayerId, mode === 'rides'),
+    )
     // Rides draw last so they sit above the network but still below labels.
     return rides && mode === 'rides' ? [...base, createRideLayer(rides, labelLayerId)] : base
   }, [regions, rides, coverage, mode, labelLayerId])
