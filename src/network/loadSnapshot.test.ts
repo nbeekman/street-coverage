@@ -38,7 +38,7 @@ function fixture() {
 function fetchFor(manifest: unknown, b: ReturnType<typeof packSnapshot>) {
   return async (url: string) => {
     if (url.endsWith('manifest.json')) {
-      return { ok: true, status: 200, json: async () => manifest, arrayBuffer: async () => new ArrayBuffer(0) }
+      return { ok: true, status: 200, text: async () => JSON.stringify(manifest), json: async () => manifest, arrayBuffer: async () => new ArrayBuffer(0) }
     }
     const buf =
       url.endsWith('positions.bin') ? b.positions.buffer
@@ -68,6 +68,24 @@ describe('loadRegion', () => {
     await expect(
       loadRegion('test', fetchFor(bad, buffers) as never),
     ).rejects.toMatchObject({ code: 'VERSION_MISMATCH' })
+  })
+
+  it('explains a missing snapshot when a dev server returns HTML under HTTP 200', async () => {
+    // Vite's SPA fallback answers a missing file with index.html and status
+    // 200, so res.ok is true. Without the HTML guard the user gets
+    // "Unexpected token '<'" instead of being told to build the snapshot.
+    const spaFallback = async () => ({
+      ok: true,
+      status: 200,
+      text: async () => '<!doctype html><html><body><div id="root"></div></body></html>',
+      json: async () => {
+        throw new SyntaxError("Unexpected token '<'")
+      },
+      arrayBuffer: async () => new ArrayBuffer(0),
+    })
+    await expect(loadRegion('test', spaFallback as never)).rejects.toThrow(
+      /HTML rather than JSON.*build:snapshot/s,
+    )
   })
 
   it('surfaces an HTTP failure with the region id', async () => {

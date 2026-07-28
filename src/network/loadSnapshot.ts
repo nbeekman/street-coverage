@@ -19,6 +19,39 @@ export type LoadedRegion = {
 
 type FetchLike = typeof globalThis.fetch
 
+const REBUILD_HINT =
+  'Run "npm run fetch:network -- --group metro-core" then "npm run build:snapshot".'
+
+/**
+ * Fetch JSON defensively.
+ *
+ * A dev server with SPA fallback answers a missing file with index.html under
+ * HTTP 200, so `res.ok` is not evidence the body is JSON -- the same failure
+ * shape Overpass produces. Without the HTML check the user sees
+ * "Unexpected token '<'" instead of being told the snapshot is missing.
+ */
+export async function fetchJson<T>(
+  fetchImpl: FetchLike,
+  url: string,
+  context: string,
+): Promise<T> {
+  const res = await fetchImpl(url)
+  if (!res.ok) {
+    throw new Error(`${context}: ${url} returned HTTP ${res.status}. ${REBUILD_HINT}`)
+  }
+  const text = await res.text()
+  if (text.trimStart().startsWith('<')) {
+    throw new Error(
+      `${context}: ${url} returned HTML rather than JSON, which means the file is missing. ${REBUILD_HINT}`,
+    )
+  }
+  try {
+    return JSON.parse(text) as T
+  } catch {
+    throw new Error(`${context}: ${url} returned malformed JSON. ${REBUILD_HINT}`)
+  }
+}
+
 async function getBuffer(
   fetchImpl: FetchLike,
   url: string,
@@ -37,11 +70,11 @@ export async function loadRegion(
 ): Promise<LoadedRegion> {
   const base = `network/${id}`
 
-  const manifestRes = await fetchImpl(`${base}/manifest.json`)
-  if (!manifestRes.ok) {
-    throw new Error(`Region "${id}": manifest returned HTTP ${manifestRes.status}`)
-  }
-  const manifest = (await manifestRes.json()) as SnapshotManifest
+  const manifest = await fetchJson<SnapshotManifest>(
+    fetchImpl,
+    `${base}/manifest.json`,
+    `Region "${id}"`,
+  )
 
   const [pos, starts, ids, classes] = await Promise.all([
     getBuffer(fetchImpl, `${base}/positions.bin`, id),

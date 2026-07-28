@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { loadRegion, type LoadedRegion } from './loadSnapshot.ts'
+import { fetchJson, loadRegion, type LoadedRegion } from './loadSnapshot.ts'
 
 type IndexFile = {
   version: number
@@ -26,13 +26,11 @@ export function useNetwork(): NetworkState {
 
     async function run() {
       try {
-        const res = await fetch('network/index.json')
-        if (!res.ok) {
-          throw new Error(
-            `network/index.json returned HTTP ${res.status}. Run "npm run fetch:network -- --group metro-core" then "npm run build:snapshot".`,
-          )
-        }
-        const index = (await res.json()) as IndexFile
+        const index = await fetchJson<IndexFile>(
+          globalThis.fetch,
+          'network/index.json',
+          'Snapshot index',
+        )
         if (index.regions.length === 0) {
           throw new Error('Snapshot index lists zero regions.')
         }
