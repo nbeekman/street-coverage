@@ -73,6 +73,7 @@ describe('HIGHWAY_CLASSES', () => {
       'cycleway',
       'path',
       'bridleway',
+      'footway',
     ])
   })
 
@@ -105,9 +106,25 @@ describe('highwayClassIndex', () => {
     expect(highwayClassIndex('bridleway')).toBe(-1)
   })
 
-  it('rejects footway outright, bicycle tag or not', () => {
-    // Overwhelmingly sidewalks; including them doubles the denominator.
-    expect(highwayClassIndex('footway', 'designated')).toBe(-1)
+  it('accepts a footway only when bicycle=designated', () => {
+    // A footway is overwhelmingly a sidewalk. bicycle=yes there means bikes
+    // are merely permitted; only 'designated' says the way IS a bike route.
+    // Accepting 'yes' would pull in pavement nobody sets out to complete.
+    expect(highwayClassIndex('footway', 'designated')).toBe(
+      HIGHWAY_CLASSES.indexOf('footway'),
+    )
+    expect(highwayClassIndex('footway', 'yes')).toBe(-1)
+    expect(highwayClassIndex('footway')).toBe(-1)
+    expect(highwayClassIndex('footway', 'dismount')).toBe(-1)
+  })
+
+  it('still accepts yes for path and bridleway', () => {
+    // The looser gate is deliberate: these are not sidewalks.
+    expect(highwayClassIndex('path', 'yes')).toBeGreaterThanOrEqual(0)
+    expect(highwayClassIndex('bridleway', 'yes')).toBeGreaterThanOrEqual(0)
+  })
+
+  it('rejects motorways', () => {
     expect(highwayClassIndex('motorway')).toBe(-1)
   })
 })
@@ -136,9 +153,13 @@ describe('buildOverpassQuery', () => {
     }
   })
 
-  it('gates path and bridleway behind a bicycle tag, but not ordinary streets', () => {
+  it('emits a separate selector per bicycle gate', () => {
     const q = buildOverpassQuery(regionById('littleton')!)
-    expect(q).toMatch(/\(path\|bridleway\)\$"\]\["bicycle"~"\^\(yes\|designated\)\$"\]/)
+    // path and bridleway share the looser gate...
+    expect(q).toMatch(/\(path\|bridleway\)\$"\]\["bicycle"~"\^\(designated\|yes\)\$"\]/)
+    // ...while footway carries the strict one. Expressing it in the query
+    // means Overpass never ships sidewalks we would only discard locally.
+    expect(q).toMatch(/\(footway\)\$"\]\["bicycle"~"\^\(designated\)\$"\]/)
     // The street selector must NOT carry a bicycle requirement.
     const streetLine = q.split('\n').find((l) => l.includes('residential'))!
     expect(streetLine).not.toContain('bicycle')

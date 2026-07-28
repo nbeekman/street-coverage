@@ -9,8 +9,11 @@ import type { OsmKind, RegionGroup } from './regions.ts'
  * v2: HIGHWAY_CLASSES gained bike-legal `path` and `bridleway`, so a v1
  * snapshot has a different denominator. Loading one against v2 code would
  * silently compute the wrong coverage percentage.
+ *
+ * v3: gained `footway` where bicycle=designated. Same reasoning -- a v2
+ * snapshot is missing designated bike paths and reports a smaller denominator.
  */
-export const SNAPSHOT_VERSION = 2
+export const SNAPSHOT_VERSION = 3
 
 export type SnapshotBuffers = {
   /** Flat [lon, lat, ...] Float64. Shared nodes are duplicated per way. */

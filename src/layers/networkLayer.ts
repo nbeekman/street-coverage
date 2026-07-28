@@ -20,6 +20,7 @@ export const CLASS_COLORS: readonly Rgb[] = [
   [110, 220, 150], // cycleway
   [90, 190, 130],  // path      (bike-legal only)
   [140, 165, 110], // bridleway (bike-legal only)
+  [ 80, 200, 175], // footway   (bicycle=designated only)
 ]
 
 const FALLBACK_COLOR: Rgb = [255, 0, 255]

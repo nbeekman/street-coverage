@@ -16,6 +16,7 @@ const CLASS_LABELS: Record<string, string> = {
   cycleway: 'Cycleway',
   path: 'Path (bike-legal)',
   bridleway: 'Bridleway (bike-legal)',
+  footway: 'Footway (designated)',
 }
 
 function Swatch({ color, label }: { color: string; label: string }) {
