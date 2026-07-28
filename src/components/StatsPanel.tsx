@@ -1,17 +1,32 @@
 import type { NetworkState } from '../network/useNetwork.ts'
 import type { RidesState } from '../rides/useRides.ts'
+import {
+  distanceLabel,
+  formatDistance,
+  formatShortDistance,
+  shortDistanceLabel,
+  type Units,
+} from '../units/units.ts'
+import UnitsToggle from './UnitsToggle.tsx'
 import { useFps } from './useFps.ts'
-
-const km = (meters: number) => (meters / 1000).toFixed(0)
 
 type Props = {
   state: NetworkState
   rides: RidesState
   showRides: boolean
   onToggleRides: () => void
+  units: Units
+  onToggleUnits: () => void
 }
 
-export default function StatsPanel({ state, rides, showRides, onToggleRides }: Props) {
+export default function StatsPanel({
+  state,
+  rides,
+  showRides,
+  onToggleRides,
+  units,
+  onToggleUnits,
+}: Props) {
   const fps = useFps()
 
   const core = state.regions.filter((r) => r.group === 'metro-core')
@@ -23,15 +38,21 @@ export default function StatsPanel({ state, rides, showRides, onToggleRides }: P
   const riddenMeters = 0
   const percent = totalMeters === 0 ? 0 : (riddenMeters / totalMeters) * 100
 
+  const unit = distanceLabel(units)
+
   return (
     <div className="absolute top-4 left-4 z-10 w-96 rounded-lg bg-black/75 p-4 text-sm backdrop-blur">
-      <div className="mb-3">
-        <div className="text-4xl font-semibold tabular-nums">
-          {percent.toFixed(2)}%
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div>
+          <div className="text-4xl font-semibold tabular-nums">
+            {percent.toFixed(2)}%
+          </div>
+          <div className="text-xs text-neutral-400">
+            of {formatDistance(totalMeters, units)} {unit} across {core.length}{' '}
+            metro-core regions
+          </div>
         </div>
-        <div className="text-xs text-neutral-400">
-          of {km(totalMeters)} km across {core.length} metro-core regions
-        </div>
+        <UnitsToggle units={units} onToggle={onToggleUnits} />
       </div>
 
       {state.status === 'loading' && (
@@ -47,7 +68,7 @@ export default function StatsPanel({ state, rides, showRides, onToggleRides }: P
             <th className="text-left font-normal">Region</th>
             <th className="pl-3 text-right font-normal">Ways</th>
             <th className="pl-3 text-right font-normal">Nodes</th>
-            <th className="pl-3 text-right font-normal">km</th>
+            <th className="pl-3 text-right font-normal">{unit}</th>
           </tr>
         </thead>
         <tbody>
@@ -56,14 +77,16 @@ export default function StatsPanel({ state, rides, showRides, onToggleRides }: P
               <td className="py-0.5 text-left">{r.name}</td>
               <td className="pl-3 text-right">{r.manifest.wayCount.toLocaleString()}</td>
               <td className="pl-3 text-right">{r.manifest.uniqueNodeCount.toLocaleString()}</td>
-              <td className="pl-3 text-right">{km(r.manifest.totalMeters)}</td>
+              <td className="pl-3 text-right">
+                {formatDistance(r.manifest.totalMeters, units)}
+              </td>
             </tr>
           ))}
           <tr className="border-t border-white/30 font-semibold">
             <td className="py-0.5 text-left">Total</td>
             <td className="pl-3 text-right">{totalWays.toLocaleString()}</td>
             <td className="pl-3 text-right">{totalNodes.toLocaleString()}</td>
-            <td className="pl-3 text-right">{km(totalMeters)}</td>
+            <td className="pl-3 text-right">{formatDistance(totalMeters, units)}</td>
           </tr>
         </tbody>
       </table>
@@ -73,13 +96,14 @@ export default function StatsPanel({ state, rides, showRides, onToggleRides }: P
           <label className="flex cursor-pointer items-center justify-between text-xs">
             <span>
               {rides.rides.manifest.rideCount.toLocaleString()} rides ·{' '}
-              {km(rides.rides.manifest.totalMeters)} km ridden
+              {formatDistance(rides.rides.manifest.totalMeters, units)} {unit} ridden
             </span>
             <input type="checkbox" checked={showRides} onChange={onToggleRides} className="ml-2" />
           </label>
           {rides.rides.manifest.clipMeters > 0 && (
             <div className="mt-1 text-xs text-neutral-500">
-              {rides.rides.manifest.clipMeters} m clipped from each end
+              {formatShortDistance(rides.rides.manifest.clipMeters, units)}{' '}
+              {shortDistanceLabel(units)} clipped from each end
             </div>
           )}
         </div>

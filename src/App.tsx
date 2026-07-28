@@ -3,11 +3,13 @@ import MapView from './components/MapView.tsx'
 import StatsPanel from './components/StatsPanel.tsx'
 import { useNetwork } from './network/useNetwork.ts'
 import { useRides } from './rides/useRides.ts'
+import { useUnits } from './units/useUnits.ts'
 
 export default function App() {
   const state = useNetwork()
   const rides = useRides()
   const [showRides, setShowRides] = useState(true)
+  const { units, toggle: toggleUnits } = useUnits()
 
   if (state.status === 'error') {
     return (
@@ -40,6 +42,8 @@ export default function App() {
         rides={rides}
         showRides={showRides}
         onToggleRides={() => setShowRides((v) => !v)}
+        units={units}
+        onToggleUnits={toggleUnits}
       />
     </div>
   )
