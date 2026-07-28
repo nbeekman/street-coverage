@@ -52,8 +52,33 @@ exactly this reason.
 **Not every boundary is a relation.** The unincorporated places next to Littleton are
 census designated places mapped as OSM *ways*: Columbine (`way 33168093`), Ken Caryl
 (`way 624295048`). Highlands Ranch (`relation 19685245`) is a census boundary with no
-`admin_level` at all. The registry therefore stores `osmKind` and computes the Overpass
-area ID as `3600000000 + id` for relations, `2400000000 + id` for ways.
+`admin_level` at all.
+
+**The `2400000000 + wayId` area formula does not work, and `map_to_area` does.** Measured:
+
+| Query form | Columbine result |
+|---|---:|
+| `area(2400033168093)` | **0 ways** |
+| `way(33168093); map_to_area->.r;` | **1,052 ways** |
+
+Overpass only materializes way-derived areas for ways in its areas file, and these CDPs are
+not in it. `map_to_area` derives the area from the element directly and works for both
+kinds — Ken Caryl resolves to 1,363 ways, Littleton (a relation) to 2,055.
+
+So the query builder uses **one uniform mechanism**: seed with `rel(id);` or `way(id);`
+according to `osmKind`, then pipe through `map_to_area`. No offset arithmetic anywhere.
+
+```
+[out:json][timeout:180];
+{rel|way}(<osmId>); map_to_area -> .r;
+way(area.r)["highway"~"^(primary|secondary|tertiary|residential|living_street|unclassified|cycleway)$"]
+  ["access"!~"private"];
+(._;>;);
+out body;
+```
+
+This is also why the fetcher must treat a zero-way response as a failure rather than an
+empty region — the broken formula returned a clean, parseable, entirely wrong `0`.
 
 **Overpass is unreliable enough to design around.** During sizing, 6 of 10 probe queries
 failed and two of three public mirrors were returning dispatcher timeouts. Failures arrive
@@ -90,7 +115,14 @@ Whole counties, for contrast — larger and mostly unrideable, which is what rul
 county approach out: Jefferson 27,283 ways, Arapahoe 25,453, Adams 23,180, Denver 22,940,
 Douglas 16,621, Broomfield 4,058.
 
-Future regions are cheap: Summit County is only **2,156** ways, Castle Rock **3,515**.
+Future regions are cheap: Summit County **2,156** ways, Castle Rock **3,515**,
+Highlands Ranch **2,837**, Ken Caryl **1,363**, Columbine **1,052**.
+
+**The denominator already moved during design.** Littleton measured 2,052 ways at one point
+and 2,055 roughly forty minutes later — live OSM edits, mid-session. This is the
+"denominator moves" gotcha appearing before a line of code was written, and it is the
+concrete reason the manifest pins `osmTimestamp` and the snapshot is versioned. Coverage
+percentages are only comparable within a snapshot version.
 
 ---
 
@@ -257,7 +289,8 @@ Vitest over the pure modules:
 
 - `geo/haversine` — known distances, identical points, path length accumulation
 - `geo/bounds` — bbox over a point set, center, offset round-trip
-- `network/regions` — area ID computation for relation vs way, group filtering
+- `network/regions` — query construction emits `rel(id)` vs `way(id)` per `osmKind` and
+  always routes through `map_to_area`; group filtering; slug uniqueness
 - `network/normalize` — node ref resolution, ways with missing nodes dropped, ways with
   fewer than two nodes dropped, tag → class mapping
 - `network/snapshot` — pack/unpack round-trip preserves geometry exactly; truncated buffer
