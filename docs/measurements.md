@@ -5,34 +5,29 @@ rebuilt; note the snapshot version and OSM timestamp.
 
 ## M1 — snapshot build
 
-Snapshot version 1. Fetched 2026-07-28, OSM base timestamp `2026-07-28T14:51:57Z`.
+Snapshot version 2. Fetched 2026-07-28. Filter includes bike-legal `path`/`bridleway`.
 
 | Region | Ways | Vertices | Unique nodes | km | MB |
 |---|---:|---:|---:|---:|---:|
-| Denver | 22,979 | 173,250 | 139,074 | 4,083 | 3.07 |
-| Lakewood | 6,630 | 52,657 | 43,844 | 1,148 | 0.93 |
-| Centennial | 4,882 | 55,987 | 49,738 | 869 | 0.96 |
-| SW Metro (unincorporated) | 3,200 | 30,596 | 26,713 | 626 | 0.53 |
-| Highlands Ranch | 2,826 | 28,466 | 24,722 | 649 | 0.49 |
-| Littleton | 2,014 | 15,880 | 13,225 | 351 | 0.28 |
-| Greenwood Village | 1,757 | 13,967 | 11,883 | 212 | 0.25 |
-| Ken Caryl | 1,363 | 13,674 | 11,891 | 275 | 0.24 |
-| Columbine | 1,022 | 6,923 | 5,630 | 204 | 0.12 |
-| Englewood | 879 | 6,720 | 5,436 | 202 | 0.12 |
-| Cherry Hills Village | 380 | 4,789 | 4,334 | 101 | 0.08 |
-| Sheridan | 274 | 2,126 | 1,809 | 42 | 0.04 |
-| Morrison | 157 | 1,416 | 1,235 | 29 | 0.02 |
+| Denver | 23,603 | 180,412 | 145,431 | 4,159 | 3.19 |
+| Lakewood | 7,519 | 64,627 | 54,583 | 1,285 | 1.13 |
+| Centennial | 5,003 | 57,225 | 50,794 | 885 | 0.98 |
+| SW Metro (unincorporated) | 3,502 | 35,967 | 31,704 | 714 | 0.62 |
+| Highlands Ranch | 2,985 | 30,305 | 26,329 | 673 | 0.52 |
+| Littleton | 2,207 | 17,503 | 14,587 | 377 | 0.31 |
+| Greenwood Village | 1,875 | 15,304 | 13,057 | 227 | 0.27 |
+| Ken Caryl | 1,446 | 14,620 | 12,726 | 288 | 0.25 |
+| Columbine | 1,132 | 7,682 | 6,236 | 213 | 0.14 |
+| Englewood | 912 | 7,073 | 5,749 | 205 | 0.13 |
+| Cherry Hills Village | 407 | 5,122 | 4,625 | 107 | 0.09 |
+| Sheridan | 296 | 2,240 | 1,902 | 43 | 0.04 |
+| Morrison | 161 | 1,696 | 1,511 | 32 | 0.03 |
 | Bow Mar | 38 | 640 | 589 | 14 | 0.01 |
-| **Total** | **48,401** | **407,091** | **340,123** | **8,806** | **7.14** |
+| **Total** | **51,086** | **440,416** | **369,823** | **9,224** | **7.71** |
 
 **Zero ways dropped** in normalization. **Zero duplicate way ids** across regions.
 
-| Size | Value |
-|---|---|
-| Raw Overpass JSON (gitignored) | ~52 MB |
-| Packed snapshots (committed) | 7.14 MB |
-
-**Vertex duplication ratio:** 407,091 / 340,123 = **1.197**
+Adding bike-legal `path`/`bridleway` (v1 -> v2) contributed **+2,685 ways and +418 km**.
 
 ## Coverage gaps and how they were found
 
@@ -68,13 +63,13 @@ Chrome on macOS (Darwin 25.5.0), all fourteen regions loaded, full metro core in
 
 | Metric | Value |
 |---|---|
-| Snapshot fetch + decode, 14 regions | **1,075 ms** |
+| Snapshot fetch + decode, 14 regions | **1,105 ms** |
 | Steady-state FPS | **58** |
 | FPS while panning | **60** |
-| Paths rendered | 48,401 |
-| Vertices uploaded | 407,091 |
+| Paths rendered | 51,086 |
+| Vertices uploaded | 440,416 |
 
-60 fps while panning 48k paths, with no geometry simplification and no Web Worker. Both
+60 fps while panning 51k paths, with no geometry simplification and no Web Worker. Both
 were deferred to M7 pending measurement — this is the measurement, and neither is needed
 yet. That is the useful M7 result: the binary-attribute path was sufficient on its own.
 
@@ -113,3 +108,22 @@ re-fetched in 3.5s on the first attempt afterward.
 
 **Takeaway for later milestones:** budget fetch time by mirror health, not by region
 size, and never re-fetch without the resumable skip logic.
+
+## Overpass reliability, measured
+
+The v2 re-fetch of 14 regions, with per-attempt logging:
+
+| | |
+|---|---:|
+| Time in successful fetches | 1,007 s |
+| **Time burned on failed attempts** | **1,073 s** |
+| Failed attempts | 19 |
+
+Causes: 11 mirrors that accepted the connection and never responded (each capped at the
+90 s client timeout), 5 HTTP 504, and **3 HTTP 429** — the last self-inflicted by firing
+14 regions back to back at a service allowing 2 slots per IP. Hence the 4 s inter-region
+pacing and 30 s post-throttle cooldown.
+
+Region size does not predict fetch time. Denver (23,603 ways) took 229 s; Bow Mar
+(38 ways) exhausted 9 attempts twice and needed 215 s on a third run. Budget by mirror
+health, not by data volume.

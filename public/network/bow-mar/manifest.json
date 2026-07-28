@@ -1,13 +1,13 @@
 {
-  "version": 1,
+  "version": 2,
   "regionId": "bow-mar",
   "regionName": "Bow Mar",
   "group": "metro-core",
   "osmId": 194060379,
   "osmKind": "way",
-  "generatedAt": "2026-07-28T16:21:10.559Z",
-  "osmTimestamp": "2026-07-28T16:10:54Z",
-  "queryHash": "24ddc6201e4c42e9",
+  "generatedAt": "2026-07-28T17:07:51.530Z",
+  "osmTimestamp": "2026-07-28T17:06:29Z",
+  "queryHash": "41ed79a2edb36ca4",
   "bbox": {
     "minLon": -105.059585,
     "minLat": 39.6099066,
@@ -25,7 +25,9 @@
     "residential",
     "unclassified",
     "living_street",
-    "cycleway"
+    "cycleway",
+    "path",
+    "bridleway"
   ],
   "byteLengths": {
     "positions": 10240,

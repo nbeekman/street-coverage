@@ -1,23 +1,23 @@
 {
-  "version": 1,
+  "version": 2,
   "regionId": "sw-metro-unincorporated",
   "regionName": "SW Metro (unincorporated)",
   "group": "metro-core",
   "osmId": 0,
   "osmKind": "polygon",
-  "generatedAt": "2026-07-28T16:21:10.847Z",
-  "osmTimestamp": "2026-07-28T16:18:01Z",
-  "queryHash": "ff09a0c760b5c364",
+  "generatedAt": "2026-07-28T17:07:51.750Z",
+  "osmTimestamp": "2026-07-28T17:02:28Z",
+  "queryHash": "ca138e04a4978568",
   "bbox": {
     "minLon": -105.1870676,
-    "minLat": 39.5023727,
+    "minLat": 39.4927698,
     "maxLon": -105.010815,
     "maxLat": 39.7355161
   },
-  "wayCount": 3200,
-  "positionCount": 30596,
-  "uniqueNodeCount": 26713,
-  "totalMeters": 625942.9185236034,
+  "wayCount": 3502,
+  "positionCount": 35967,
+  "uniqueNodeCount": 31704,
+  "totalMeters": 713966.7051332057,
   "classes": [
     "primary",
     "secondary",
@@ -25,12 +25,14 @@
     "residential",
     "unclassified",
     "living_street",
-    "cycleway"
+    "cycleway",
+    "path",
+    "bridleway"
   ],
   "byteLengths": {
-    "positions": 489536,
-    "startIndices": 12804,
-    "wayIds": 25600,
-    "classes": 3200
+    "positions": 575472,
+    "startIndices": 14012,
+    "wayIds": 28016,
+    "classes": 3502
   }
 }
