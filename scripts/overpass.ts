@@ -1,5 +1,5 @@
-import type { OsmElement } from '../src/network/normalize'
-import { buildOverpassQuery, type Region } from '../src/network/regions'
+import type { OsmElement } from '../src/network/normalize.ts'
+import { buildOverpassQuery, type Region } from '../src/network/regions.ts'
 
 /**
  * Deliberately excludes overpass.osm.ch: it responds quickly but holds only

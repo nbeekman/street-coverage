@@ -1,6 +1,6 @@
-import type { Bbox } from '../geo/bounds'
-import type { NormalizedWay } from './normalize'
-import type { OsmKind, RegionGroup } from './regions'
+import type { Bbox } from '../geo/bounds.ts'
+import type { NormalizedWay } from './normalize.ts'
+import type { OsmKind, RegionGroup } from './regions.ts'
 
 /** Bump when the buffer layout changes. Invalidates snapshots on disk. */
 export const SNAPSHOT_VERSION = 1

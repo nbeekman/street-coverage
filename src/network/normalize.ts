@@ -1,4 +1,4 @@
-import { highwayClassIndex } from './regions'
+import { highwayClassIndex } from './regions.ts'
 
 export type OsmNode = {
   type: 'node'

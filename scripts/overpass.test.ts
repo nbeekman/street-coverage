@@ -135,9 +135,14 @@ describe('fetchRegion', () => {
   })
 
   it('posts the region query as the request body', async () => {
-    const fetchImpl = vi.fn(async () => jsonResponse(VALID_BODY))
+    // The parameters must be declared for mock.calls to be a typed tuple;
+    // a bare vi.fn() infers calls as [] and indexing it is a type error.
+    const fetchImpl = vi.fn(
+      async (_url: string, _init: { method: string; body: string; headers: Record<string, string> }) =>
+        jsonResponse(VALID_BODY),
+    )
     await fetchRegion(region, { ...opts, fetchImpl })
-    const init = fetchImpl.mock.calls[0][1] as unknown as { body: string; method: string }
+    const init = fetchImpl.mock.calls[0][1]
     expect(init.method).toBe('POST')
     expect(init.body).toContain('rel(112959);map_to_area->.r;')
   })
