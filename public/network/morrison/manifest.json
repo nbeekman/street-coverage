@@ -1,13 +1,13 @@
 {
-  "version": 2,
+  "version": 3,
   "regionId": "morrison",
   "regionName": "Morrison",
   "group": "metro-core",
   "osmId": 18499983,
   "osmKind": "relation",
-  "generatedAt": "2026-07-28T21:37:46.512Z",
-  "osmTimestamp": "2026-07-28T16:46:16Z",
-  "queryHash": "3d723e9767ebe387",
+  "generatedAt": "2026-07-28T21:58:57.271Z",
+  "osmTimestamp": "2026-07-28T21:51:04Z",
+  "queryHash": "891a1647031a62c9",
   "bbox": {
     "minLon": -105.2099881,
     "minLat": 39.6222452,
@@ -27,7 +27,8 @@
     "living_street",
     "cycleway",
     "path",
-    "bridleway"
+    "bridleway",
+    "footway"
   ],
   "byteLengths": {
     "positions": 27136,

@@ -1,23 +1,23 @@
 {
-  "version": 2,
+  "version": 3,
   "regionId": "highlands-ranch",
   "regionName": "Highlands Ranch",
   "group": "metro-core",
   "osmId": 19685245,
   "osmKind": "relation",
-  "generatedAt": "2026-07-28T21:37:46.486Z",
-  "osmTimestamp": "2026-06-12T12:14:17Z",
-  "queryHash": "200b412f1b95d1d4",
+  "generatedAt": "2026-07-28T21:58:57.250Z",
+  "osmTimestamp": "2026-07-28T21:46:02Z",
+  "queryHash": "a9b12286ecb3496f",
   "bbox": {
     "minLon": -105.0677171,
     "minLat": 39.504795,
     "maxLon": -104.8912979,
     "maxLat": 39.5668942
   },
-  "wayCount": 2985,
-  "positionCount": 30305,
-  "uniqueNodeCount": 26329,
-  "totalMeters": 673210.7808709359,
+  "wayCount": 2988,
+  "positionCount": 30347,
+  "uniqueNodeCount": 26371,
+  "totalMeters": 674058.758237959,
   "classes": [
     "primary",
     "secondary",
@@ -27,12 +27,13 @@
     "living_street",
     "cycleway",
     "path",
-    "bridleway"
+    "bridleway",
+    "footway"
   ],
   "byteLengths": {
-    "positions": 484880,
-    "startIndices": 11944,
-    "wayIds": 23880,
-    "classes": 2985
+    "positions": 485552,
+    "startIndices": 11956,
+    "wayIds": 23904,
+    "classes": 2988
   }
 }

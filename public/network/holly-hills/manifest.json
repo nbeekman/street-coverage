@@ -1,13 +1,13 @@
 {
-  "version": 2,
+  "version": 3,
   "regionId": "holly-hills",
   "regionName": "Holly Hills",
   "group": "metro-core",
   "osmId": 9569979,
   "osmKind": "relation",
-  "generatedAt": "2026-07-28T21:37:46.519Z",
-  "osmTimestamp": "2026-07-28T20:54:21Z",
-  "queryHash": "f22af23525171758",
+  "generatedAt": "2026-07-28T21:58:57.276Z",
+  "osmTimestamp": "2026-07-28T21:53:06Z",
+  "queryHash": "1821a6c4f5112b9b",
   "bbox": {
     "minLon": -104.933433,
     "minLat": 39.6591579,
@@ -27,7 +27,8 @@
     "living_street",
     "cycleway",
     "path",
-    "bridleway"
+    "bridleway",
+    "footway"
   ],
   "byteLengths": {
     "positions": 8624,

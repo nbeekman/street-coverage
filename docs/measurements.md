@@ -381,3 +381,45 @@ Across the whole metro, of 505,100 ride points:
 19.5% of points are unmatched at 25 m. **A third of those have a rideable street 25–40 m
 away** — the radius is the binding constraint, not the map. The 150 m+ third is mostly
 out-of-region riding, which has no network by definition.
+
+## Footways tagged bicycle=designated — a change that did almost nothing
+
+`footway` now counts when tagged `bicycle=designated` (not `yes`, which on a footway means
+bikes are merely permitted). The reasoning was sound: OSM uses `designated` for real bike
+routes, and the nearest feature to the reservoir orphans was exactly such a footway at 27 m.
+
+The measurement does not support the hope.
+
+| | Before | After |
+|---|---:|---:|
+| Ways | 67,825 | 68,574 |
+| Denominator | 12,277 km | 12,346 km |
+| Covered | 351 km | 353 km |
+| Metro points unmatched at 25 m | 98,442 | 98,419 |
+| Reservoir box unmatched | 7.0% | 7.0% |
+| **Headline** | 2.86% | **2.86%** |
+
+749 ways and 69 km added; **23 ride points changed status.** Denominator and numerator grew
+by the same fraction, so the headline did not move at all. Designated footways are simply
+rare in this metro.
+
+The change is kept — it is correct, and it costs nothing — but it was not the binding
+constraint, and predicting that it would be was wrong.
+
+### The radius is the actual lever
+
+Same network, same rides, radius varied:
+
+| Radius | Covered | Headline | Nodes hit |
+|---:|---:|---:|---:|
+| 25 m | 353 km | 2.86% | 3.48% |
+| 30 m | 367 km | 2.97% | 3.65% |
+| 35 m | 382 km | 3.09% | 3.82% |
+| 40 m | 396 km | 3.21% | 3.99% |
+
+35 m recovers 29 km that 25 m misses — an order of magnitude more than the footway change.
+
+**The cost is unmeasured and real.** Denver's grid has ~30 m block spacing, so a wider radius
+credits streets merely ridden past, and nothing here distinguishes a genuine match from a
+false one. The numbers above say what a wider radius *gains*; they say nothing about what it
+wrongly claims. Establishing that needs ground truth this project does not have.

@@ -1,23 +1,23 @@
 {
-  "version": 2,
+  "version": 3,
   "regionId": "aurora",
   "regionName": "Aurora",
   "group": "metro-core",
   "osmId": 112875,
   "osmKind": "relation",
-  "generatedAt": "2026-07-28T21:37:46.536Z",
-  "osmTimestamp": "2026-07-28T21:25:51Z",
-  "queryHash": "df23d36052311ead",
+  "generatedAt": "2026-07-28T21:58:57.293Z",
+  "osmTimestamp": "2026-06-12T12:14:17Z",
+  "queryHash": "5827f357ee132301",
   "bbox": {
-    "minLon": -104.8846756,
+    "minLon": -104.8848136,
     "minLat": 39.5488349,
     "maxLon": -104.446505,
     "maxLat": 39.9574943
   },
-  "wayCount": 15387,
-  "positionCount": 154052,
-  "uniqueNodeCount": 133494,
-  "totalMeters": 2851440.2464084215,
+  "wayCount": 15560,
+  "positionCount": 155670,
+  "uniqueNodeCount": 134940,
+  "totalMeters": 2869014.497501563,
   "classes": [
     "primary",
     "secondary",
@@ -27,12 +27,13 @@
     "living_street",
     "cycleway",
     "path",
-    "bridleway"
+    "bridleway",
+    "footway"
   ],
   "byteLengths": {
-    "positions": 2464832,
-    "startIndices": 61552,
-    "wayIds": 123096,
-    "classes": 15387
+    "positions": 2490720,
+    "startIndices": 62244,
+    "wayIds": 124480,
+    "classes": 15560
   }
 }

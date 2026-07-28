@@ -1,23 +1,23 @@
 {
-  "version": 2,
+  "version": 3,
   "regionId": "denver",
   "regionName": "Denver",
   "group": "metro-core",
   "osmId": 1411339,
   "osmKind": "relation",
-  "generatedAt": "2026-07-28T21:37:46.451Z",
-  "osmTimestamp": "2026-07-28T16:34:04Z",
-  "queryHash": "b02d2a9756800aac",
+  "generatedAt": "2026-07-28T21:58:57.221Z",
+  "osmTimestamp": "2026-07-28T21:43:02Z",
+  "queryHash": "822b07772551fbb1",
   "bbox": {
     "minLon": -105.1100018,
     "minLat": 39.610389,
     "maxLon": -104.583348,
     "maxLat": 39.914432
   },
-  "wayCount": 23603,
-  "positionCount": 180412,
-  "uniqueNodeCount": 145431,
-  "totalMeters": 4159203.1554729873,
+  "wayCount": 24011,
+  "positionCount": 182729,
+  "uniqueNodeCount": 147161,
+  "totalMeters": 4192681.7270026226,
   "classes": [
     "primary",
     "secondary",
@@ -27,12 +27,13 @@
     "living_street",
     "cycleway",
     "path",
-    "bridleway"
+    "bridleway",
+    "footway"
   ],
   "byteLengths": {
-    "positions": 2886592,
-    "startIndices": 94416,
-    "wayIds": 188824,
-    "classes": 23603
+    "positions": 2923664,
+    "startIndices": 96048,
+    "wayIds": 192088,
+    "classes": 24011
   }
 }

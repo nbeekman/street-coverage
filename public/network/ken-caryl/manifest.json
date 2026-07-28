@@ -1,13 +1,13 @@
 {
-  "version": 2,
+  "version": 3,
   "regionId": "ken-caryl",
   "regionName": "Ken Caryl",
   "group": "metro-core",
   "osmId": 624295048,
   "osmKind": "way",
-  "generatedAt": "2026-07-28T21:37:46.500Z",
-  "osmTimestamp": "2026-07-28T16:36:07Z",
-  "queryHash": "690f099a189b047e",
+  "generatedAt": "2026-07-28T21:58:57.261Z",
+  "osmTimestamp": "2026-07-28T21:46:02Z",
+  "queryHash": "938e918a67139960",
   "bbox": {
     "minLon": -105.1531506,
     "minLat": 39.540377,
@@ -27,7 +27,8 @@
     "living_street",
     "cycleway",
     "path",
-    "bridleway"
+    "bridleway",
+    "footway"
   ],
   "byteLengths": {
     "positions": 233920,

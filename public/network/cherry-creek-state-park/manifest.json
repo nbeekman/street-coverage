@@ -1,23 +1,23 @@
 {
-  "version": 2,
+  "version": 3,
   "regionId": "cherry-creek-state-park",
   "regionName": "Cherry Creek State Park",
   "group": "metro-core",
   "osmId": 224202720,
   "osmKind": "way",
-  "generatedAt": "2026-07-28T21:37:46.521Z",
-  "osmTimestamp": "2026-07-28T20:54:21Z",
-  "queryHash": "af7fb01cc706c5cc",
+  "generatedAt": "2026-07-28T21:58:57.278Z",
+  "osmTimestamp": "2026-07-28T21:53:06Z",
+  "queryHash": "30b94b207d07b0b5",
   "bbox": {
     "minLon": -104.8773547,
     "minLat": 39.6062616,
     "maxLon": -104.8163194,
     "maxLat": 39.6566056
   },
-  "wayCount": 263,
-  "positionCount": 4888,
-  "uniqueNodeCount": 4567,
-  "totalMeters": 60701.069554529524,
+  "wayCount": 265,
+  "positionCount": 4903,
+  "uniqueNodeCount": 4581,
+  "totalMeters": 60793.12131778804,
   "classes": [
     "primary",
     "secondary",
@@ -27,12 +27,13 @@
     "living_street",
     "cycleway",
     "path",
-    "bridleway"
+    "bridleway",
+    "footway"
   ],
   "byteLengths": {
-    "positions": 78208,
-    "startIndices": 1056,
-    "wayIds": 2104,
-    "classes": 263
+    "positions": 78448,
+    "startIndices": 1064,
+    "wayIds": 2120,
+    "classes": 265
   }
 }

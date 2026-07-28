@@ -1,13 +1,13 @@
 {
-  "version": 2,
+  "version": 3,
   "regionId": "cherry-hills-village",
   "regionName": "Cherry Hills Village",
   "group": "metro-core",
   "osmId": 7560099,
   "osmKind": "relation",
-  "generatedAt": "2026-07-28T21:37:46.509Z",
-  "osmTimestamp": "2026-07-28T16:43:15Z",
-  "queryHash": "570cbf83cbe9ba3b",
+  "generatedAt": "2026-07-28T21:58:57.270Z",
+  "osmTimestamp": "2026-07-28T21:51:04Z",
+  "queryHash": "0f03eae7df2fd36c",
   "bbox": {
     "minLon": -104.9784985,
     "minLat": 39.6241077,
@@ -27,7 +27,8 @@
     "living_street",
     "cycleway",
     "path",
-    "bridleway"
+    "bridleway",
+    "footway"
   ],
   "byteLengths": {
     "positions": 81952,

@@ -1,78 +1,78 @@
 {
-  "version": 2,
-  "generatedAt": "2026-07-28T21:37:46.554Z",
+  "version": 3,
+  "generatedAt": "2026-07-28T21:58:57.310Z",
   "regions": [
     {
       "id": "denver",
       "name": "Denver",
       "group": "metro-core",
-      "wayCount": 23603,
-      "positionCount": 180412,
-      "totalMeters": 4159203.1554729873,
-      "bytes": 3193435
+      "wayCount": 24011,
+      "positionCount": 182729,
+      "totalMeters": 4192681.7270026226,
+      "bytes": 3235811
     },
     {
       "id": "aurora",
       "name": "Aurora",
       "group": "metro-core",
-      "wayCount": 15387,
-      "positionCount": 154052,
-      "totalMeters": 2851440.2464084215,
-      "bytes": 2664867
+      "wayCount": 15560,
+      "positionCount": 155670,
+      "totalMeters": 2869014.497501563,
+      "bytes": 2693004
     },
     {
       "id": "lakewood",
       "name": "Lakewood",
       "group": "metro-core",
-      "wayCount": 7519,
-      "positionCount": 64627,
-      "totalMeters": 1285425.2312879197,
-      "bytes": 1131783
+      "wayCount": 7550,
+      "positionCount": 64737,
+      "totalMeters": 1286224.2009746004,
+      "bytes": 1133946
     },
     {
       "id": "centennial",
       "name": "Centennial",
       "group": "metro-core",
-      "wayCount": 5003,
-      "positionCount": 57225,
-      "totalMeters": 884700.2213357493,
-      "bytes": 980643
+      "wayCount": 5004,
+      "positionCount": 57237,
+      "totalMeters": 884852.3208806417,
+      "bytes": 980848
     },
     {
       "id": "sw-metro-unincorporated",
       "name": "SW Metro (unincorporated)",
       "group": "metro-core",
-      "wayCount": 3502,
-      "positionCount": 35967,
-      "totalMeters": 713966.7051332057,
-      "bytes": 621002
+      "wayCount": 3535,
+      "positionCount": 36374,
+      "totalMeters": 717952.6583087645,
+      "bytes": 627943
     },
     {
       "id": "highlands-ranch",
       "name": "Highlands Ranch",
       "group": "metro-core",
-      "wayCount": 2985,
-      "positionCount": 30305,
-      "totalMeters": 673210.7808709359,
-      "bytes": 523689
+      "wayCount": 2988,
+      "positionCount": 30347,
+      "totalMeters": 674058.758237959,
+      "bytes": 524400
     },
     {
       "id": "littleton",
       "name": "Littleton",
       "group": "metro-core",
-      "wayCount": 2207,
-      "positionCount": 17503,
-      "totalMeters": 377075.66869981604,
-      "bytes": 308743
+      "wayCount": 2230,
+      "positionCount": 17660,
+      "totalMeters": 379380.54817958834,
+      "bytes": 311554
     },
     {
       "id": "greenwood-village",
       "name": "Greenwood Village",
       "group": "metro-core",
-      "wayCount": 1875,
-      "positionCount": 15304,
-      "totalMeters": 227285.0908131607,
-      "bytes": 269243
+      "wayCount": 1880,
+      "positionCount": 15435,
+      "totalMeters": 228835.03216328137,
+      "bytes": 271404
     },
     {
       "id": "ken-caryl",
@@ -87,28 +87,28 @@
       "id": "columbine",
       "name": "Columbine",
       "group": "metro-core",
-      "wayCount": 1132,
-      "positionCount": 7682,
-      "totalMeters": 212918.30634902572,
-      "bytes": 137632
+      "wayCount": 1173,
+      "positionCount": 8001,
+      "totalMeters": 219888.957554209,
+      "bytes": 143269
     },
     {
       "id": "englewood",
       "name": "Englewood",
       "group": "metro-core",
-      "wayCount": 912,
-      "positionCount": 7073,
-      "totalMeters": 205230.42132180044,
-      "bytes": 125028
+      "wayCount": 922,
+      "positionCount": 7121,
+      "totalMeters": 205692.4937517152,
+      "bytes": 125926
     },
     {
       "id": "cherry-creek-corridor",
       "name": "Cherry Creek corridor (unincorporated)",
       "group": "metro-core",
-      "wayCount": 885,
-      "positionCount": 7417,
-      "totalMeters": 112987.71299507843,
-      "bytes": 130181
+      "wayCount": 900,
+      "positionCount": 7487,
+      "totalMeters": 113620.58372083123,
+      "bytes": 131496
     },
     {
       "id": "cherry-hills-village",
@@ -124,18 +124,18 @@
       "name": "Sheridan",
       "group": "metro-core",
       "wayCount": 296,
-      "positionCount": 2240,
-      "totalMeters": 43445.74708047085,
-      "bytes": 39692
+      "positionCount": 2236,
+      "totalMeters": 43445.74823804882,
+      "bytes": 39628
     },
     {
       "id": "cherry-creek-state-park",
       "name": "Cherry Creek State Park",
       "group": "metro-core",
-      "wayCount": 263,
-      "positionCount": 4888,
-      "totalMeters": 60701.069554529524,
-      "bytes": 81631
+      "wayCount": 265,
+      "positionCount": 4903,
+      "totalMeters": 60793.12131778804,
+      "bytes": 81897
     },
     {
       "id": "morrison",
@@ -150,10 +150,10 @@
       "id": "glendale",
       "name": "Glendale",
       "group": "metro-core",
-      "wayCount": 154,
-      "positionCount": 918,
-      "totalMeters": 13080.557295456978,
-      "bytes": 16694
+      "wayCount": 158,
+      "positionCount": 951,
+      "totalMeters": 13505.150719433403,
+      "bytes": 17274
     },
     {
       "id": "holly-hills",

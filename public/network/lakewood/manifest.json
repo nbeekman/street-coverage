@@ -1,23 +1,23 @@
 {
-  "version": 2,
+  "version": 3,
   "regionId": "lakewood",
   "regionName": "Lakewood",
   "group": "metro-core",
   "osmId": 112200,
   "osmKind": "relation",
-  "generatedAt": "2026-07-28T21:37:46.469Z",
-  "osmTimestamp": "2026-07-28T16:34:04Z",
-  "queryHash": "2690346065884a8a",
+  "generatedAt": "2026-07-28T21:58:57.237Z",
+  "osmTimestamp": "2026-07-28T21:44:02Z",
+  "queryHash": "87db83d6b0d322ff",
   "bbox": {
     "minLon": -105.1971515,
     "minLat": 39.6184911,
     "maxLon": -105.053249,
     "maxLat": 39.7681756
   },
-  "wayCount": 7519,
-  "positionCount": 64627,
-  "uniqueNodeCount": 54583,
-  "totalMeters": 1285425.2312879197,
+  "wayCount": 7550,
+  "positionCount": 64737,
+  "uniqueNodeCount": 54653,
+  "totalMeters": 1286224.2009746004,
   "classes": [
     "primary",
     "secondary",
@@ -27,12 +27,13 @@
     "living_street",
     "cycleway",
     "path",
-    "bridleway"
+    "bridleway",
+    "footway"
   ],
   "byteLengths": {
-    "positions": 1034032,
-    "startIndices": 30080,
-    "wayIds": 60152,
-    "classes": 7519
+    "positions": 1035792,
+    "startIndices": 30204,
+    "wayIds": 60400,
+    "classes": 7550
   }
 }
