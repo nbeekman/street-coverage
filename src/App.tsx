@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import MapView from './components/MapView.tsx'
+import PanelToggle from './components/PanelToggle.tsx'
 import StatsPanel from './components/StatsPanel.tsx'
 import type { ViewMode } from './components/viewMode.ts'
 import { useCoverage } from './coverage/useCoverage.ts'
@@ -12,6 +13,11 @@ export default function App() {
   const rides = useRides()
   const coverage = useCoverage()
   const [mode, setMode] = useState<ViewMode>('coverage')
+  // Open by default on a wide screen, closed on a phone where it would cover
+  // the map entirely. Read once: this is a starting state, not a live binding.
+  const [panelOpen, setPanelOpen] = useState(
+    () => typeof window === 'undefined' || window.matchMedia('(min-width: 768px)').matches,
+  )
   const { units, toggle: toggleUnits } = useUnits()
 
   if (state.status === 'error') {
@@ -45,6 +51,15 @@ export default function App() {
         coverage={coverage.coverage}
         mode={mode}
       />
+      <PanelToggle open={panelOpen} onToggle={() => setPanelOpen((v) => !v)} />
+      {panelOpen && (
+        <button
+          type="button"
+          aria-label="Close stats"
+          onClick={() => setPanelOpen(false)}
+          className="absolute inset-0 z-10 bg-black/40 md:hidden"
+        />
+      )}
       <StatsPanel
         state={state}
         rides={rides}
@@ -53,6 +68,7 @@ export default function App() {
         onModeChange={setMode}
         units={units}
         onToggleUnits={toggleUnits}
+        open={panelOpen}
       />
     </div>
   )

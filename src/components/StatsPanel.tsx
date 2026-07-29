@@ -22,6 +22,8 @@ type Props = {
   onModeChange: (mode: ViewMode) => void
   units: Units
   onToggleUnits: () => void
+  /** Drawer state; only meaningful below the md breakpoint. */
+  open: boolean
 }
 
 export default function StatsPanel({
@@ -32,6 +34,7 @@ export default function StatsPanel({
   onModeChange,
   units,
   onToggleUnits,
+  open,
 }: Props) {
   const fps = useFps()
 
@@ -52,7 +55,16 @@ export default function StatsPanel({
   const unit = distanceLabel(units)
 
   return (
-    <div className="absolute top-4 left-4 z-10 w-96 rounded-lg bg-black/75 p-4 text-sm backdrop-blur">
+    // Below md this is an off-canvas drawer; from md up it is the floating
+    // panel it always was. Both states scroll, because 19 region rows overflow
+    // a laptop viewport too -- that was already true before mobile.
+    <div
+      className={
+        'fixed inset-y-0 left-0 z-20 w-[88vw] max-w-sm overflow-y-auto bg-black/90 p-4 pt-16 text-sm backdrop-blur transition-transform duration-200 ' +
+        'md:absolute md:inset-y-auto md:top-4 md:left-4 md:z-10 md:max-h-[calc(100vh-2rem)] md:w-96 md:max-w-none md:translate-x-0 md:rounded-lg md:bg-black/75 md:pt-4 ' +
+        (open ? 'translate-x-0' : '-translate-x-full')
+      }
+    >
       <div className="mb-3 flex items-start justify-between gap-3">
         <div>
           <div className="text-4xl font-semibold tabular-nums">
@@ -83,7 +95,8 @@ export default function StatsPanel({
         </div>
       )}
 
-      <table className="w-full text-xs tabular-nums">
+      <div className="overflow-x-auto">
+      <table className="w-full min-w-[19rem] text-xs tabular-nums">
         <thead className="text-neutral-400">
           <tr>
             <th className="text-left font-normal">Region</th>
@@ -130,6 +143,7 @@ export default function StatsPanel({
           </tr>
         </tbody>
       </table>
+      </div>
 
       {coverage.status === 'ready' && coverage.coverage && totals && (
         <div className="mt-3 border-t border-white/20 pt-2">
