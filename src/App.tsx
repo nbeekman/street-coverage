@@ -63,6 +63,7 @@ export default function App() {
         coverage={coverage.coverage}
         mode={mode}
         yearMask={maskFor(year)}
+        cumulativeYears={year?.kind === 'through'}
         selectedYear={
           year !== null ? (calendarYearOf(year, coverage.coverage?.manifest.years ?? [])) : null
         }

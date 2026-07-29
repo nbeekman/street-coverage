@@ -80,10 +80,14 @@ export default function StatsPanel({
     if (selectedYear === null) {
       return { count: loaded.manifest.rideCount, meters: loaded.manifest.totalMeters }
     }
+    // Cumulative under the timeline, exact under the year buttons -- the same
+    // rule the traces use, so the panel and the map cannot disagree.
+    const cumulative = year?.kind === 'through'
     let count = 0
     let total = 0
     for (let i = 0; i < times.length; i++) {
-      if (new Date(times[i]).getUTCFullYear() !== selectedYear) continue
+      const y = new Date(times[i]).getUTCFullYear()
+      if (cumulative ? y > selectedYear : y !== selectedYear) continue
       count++
       total += meters[i]
     }
@@ -125,10 +129,7 @@ export default function StatsPanel({
             {year !== null && coverage.coverage && (
               <span className="text-amber-300">
                 {' · '}
-                {/* Only coverage accumulates; a rides frame is one year. */}
-                {year.kind === 'through' && mode === 'coverage'
-                  ? 'ridden through'
-                  : 'ridden during'}{' '}
+                {year.kind === 'through' ? 'ridden through' : 'ridden during'}{' '}
                 {calendarYearOf(year, coverage.coverage.manifest.years)}
               </span>
             )}
@@ -163,7 +164,7 @@ export default function StatsPanel({
             <Timeline
               years={coverage.coverage.manifest.years}
               filter={year}
-              cumulative={mode === 'coverage'}
+              cumulative
               playing={playing}
               onPlayingChange={onPlayingChange}
               onChange={onYearChange}
@@ -280,7 +281,7 @@ export default function StatsPanel({
             {formatDistance(rideStats?.meters ?? 0, units)} {unit} ridden
             {selectedYear !== null && (
               <span className="text-amber-300">
-                {' in '}
+                {year?.kind === 'through' ? ' through ' : ' in '}
                 {selectedYear}
               </span>
             )}

@@ -28,16 +28,27 @@ function rideYears(rides: LoadedRides): Int32Array {
   return years
 }
 
-export function buildRideLayerProps(rides: LoadedRides, selectedYear: number | null = null) {
+export function buildRideLayerProps(
+  rides: LoadedRides,
+  selectedYear: number | null = null,
+  /**
+   * Accumulate rather than isolate: show every ride up to and including the
+   * year. The timeline uses this so traces build up the way coverage does --
+   * without it, playing is just clicking the year buttons in sequence.
+   */
+  cumulative = false,
+) {
   const years = rideYears(rides)
 
   // Non-matching rides go fully transparent rather than being removed from the
   // buffer: dropping them would mean rebuilding `data`, and deck.gl would
   // re-upload every trace on each year click. There are only 190 paths.
+  const shows = (i: number) => {
+    if (selectedYear === null) return true
+    return cumulative ? years[i] <= selectedYear : years[i] === selectedYear
+  }
   const color = (_: unknown, info: { index: number }) =>
-    selectedYear === null || years[info.index] === selectedYear
-      ? RIDE_TRACE_COLOR
-      : TRANSPARENT
+    shows(info.index) ? RIDE_TRACE_COLOR : TRANSPARENT
 
   return {
     id: 'rides',
@@ -57,7 +68,7 @@ export function buildRideLayerProps(rides: LoadedRides, selectedYear: number | n
     capRounded: true,
     jointRounded: true,
     pickable: false,
-    updateTriggers: { getColor: [rides.manifest.version, selectedYear] },
+    updateTriggers: { getColor: [rides.manifest.version, selectedYear, cumulative] },
   }
 }
 
@@ -65,6 +76,10 @@ export function createRideLayer(
   rides: LoadedRides,
   beforeId?: string,
   selectedYear: number | null = null,
+  cumulative = false,
 ): PathLayer {
-  return new PathLayer({ ...buildRideLayerProps(rides, selectedYear), beforeId } as never)
+  return new PathLayer({
+    ...buildRideLayerProps(rides, selectedYear, cumulative),
+    beforeId,
+  } as never)
 }

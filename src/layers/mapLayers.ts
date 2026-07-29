@@ -25,6 +25,8 @@ export type MapLayerInput = {
   yearMask: number
   /** Calendar year, or null for all-time. Filters ride traces. */
   selectedYear: number | null
+  /** True when the year filter is cumulative (the timeline). */
+  cumulativeYears: boolean
 }
 
 /**
@@ -44,6 +46,7 @@ export function buildMapLayers({
   labelLayerId,
   yearMask,
   selectedYear,
+  cumulativeYears,
 }: MapLayerInput): Layer[] {
   // Coverage mode paints the network by what has been ridden. Rides mode falls
   // back to class colors and draws the traces on top, so the two are genuinely
@@ -72,6 +75,6 @@ export function buildMapLayers({
   // Rides draw last so they sit above the network but still below labels, and
   // are never culled -- they are the reason to zoom out.
   return rides && mode === 'rides'
-    ? [stack as unknown as Layer, createRideLayer(rides, labelLayerId, selectedYear)]
+    ? [stack as unknown as Layer, createRideLayer(rides, labelLayerId, selectedYear, cumulativeYears)]
     : [stack as unknown as Layer]
 }

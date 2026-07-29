@@ -6,9 +6,9 @@ type Props = {
   years: readonly number[]
   filter: YearFilter
   /**
-   * Coverage accumulates, so its timeline reads 'through 2019'. Ride traces
-   * do not -- each frame draws only that year's rides -- so the same slider
-   * has to describe itself differently depending on what it is driving.
+   * Always true today: both coverage and ride traces accumulate under the
+   * timeline. Kept as a prop because the slider's wording depends on it, and
+   * a non-cumulative timeline would need to say so.
    */
   cumulative: boolean
   playing: boolean
