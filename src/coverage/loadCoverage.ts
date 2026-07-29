@@ -1,4 +1,4 @@
-import { bboxOf, centerOf, toLngLatOffsets } from '../geo/bounds.ts'
+import { bboxOf, centerOf, toLngLatOffsets, type Bbox } from '../geo/bounds.ts'
 import { fetchJson } from '../network/loadSnapshot.ts'
 import {
   validateCoverage,
@@ -11,6 +11,8 @@ export type LoadedCoverageRegion = {
   id: string
   region: RegionCoverage
   buffers: CoverageBuffers
+  /** Extent of this region's geometry, for viewport culling. */
+  bbox: Bbox
   /** Render origin for LNGLAT_OFFSETS; the region bbox center. */
   origin: [number, number]
   /** Float32 lng/lat offsets from `origin`, ready for the GPU. */
@@ -74,11 +76,13 @@ export async function loadCoverage(
     // Throws CoverageError with a specific code on version or size mismatch.
     validateCoverage(manifest, region, buffers)
 
-    const origin = centerOf(bboxOf(buffers.positions))
+    const bbox = bboxOf(buffers.positions)
+    const origin = centerOf(bbox)
     regions.push({
       id: region.regionId,
       region,
       buffers,
+      bbox,
       origin,
       offsets: toLngLatOffsets(buffers.positions, origin),
     })
