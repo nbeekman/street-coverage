@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { centerOf, toLngLatOffsets } from '../geo/bounds.ts'
 import type { NormalizedWay } from './normalize'
 import {
   SNAPSHOT_VERSION,
@@ -7,6 +8,7 @@ import {
   validateSnapshot,
   wayCoords,
   type SnapshotManifest,
+  type SnapshotBuffers,
 } from './snapshot'
 
 const WAYS: NormalizedWay[] = [
@@ -14,7 +16,23 @@ const WAYS: NormalizedWay[] = [
   { id: 101, classIndex: 6, coords: [-104.99, 39.61, -104.98, 39.62, -104.97, 39.63], nodeRefs: [2, 3, 4] },
 ]
 
-function manifestFor(buffers: ReturnType<typeof packSnapshot>): SnapshotManifest {
+const BBOX = { minLon: -105, minLat: 39.6, maxLon: -104.97, maxLat: 39.63 }
+const ORIGIN = centerOf(BBOX)
+
+/**
+ * What the build ships: Float32 offsets from the origin, no positions and no
+ * way ids. Mirrors build-snapshot so the tests exercise the wire shape rather
+ * than the intermediate one.
+ */
+function wireOf(packed: ReturnType<typeof packSnapshot>): SnapshotBuffers {
+  return {
+    offsets: toLngLatOffsets(packed.positions, ORIGIN),
+    startIndices: packed.startIndices,
+    classes: packed.classes,
+  }
+}
+
+function manifestFor(buffers: SnapshotBuffers): SnapshotManifest {
   return {
     version: SNAPSHOT_VERSION,
     regionId: 'test',
@@ -25,18 +43,19 @@ function manifestFor(buffers: ReturnType<typeof packSnapshot>): SnapshotManifest
     generatedAt: '2026-07-27T00:00:00.000Z',
     osmTimestamp: '2026-07-27T00:00:00Z',
     queryHash: 'abc123',
-    bbox: { minLon: -105, minLat: 39.6, maxLon: -104.97, maxLat: 39.63 },
+    bbox: BBOX,
+    origin: ORIGIN,
     wayCount: 2,
     positionCount: 5,
     uniqueNodeCount: 4,
     totalMeters: 1234,
     classes: ['primary'],
     byteLengths: {
-      positions: buffers.positions.byteLength,
+      offsets: buffers.offsets.byteLength,
       startIndices: buffers.startIndices.byteLength,
-      wayIds: buffers.wayIds.byteLength,
       classes: buffers.classes.byteLength,
     },
+
   }
 }
 
@@ -74,12 +93,12 @@ describe('packSnapshot', () => {
 
 describe('validateSnapshot', () => {
   it('accepts a matching manifest', () => {
-    const b = packSnapshot(WAYS)
+    const b = wireOf(packSnapshot(WAYS))
     expect(() => validateSnapshot(manifestFor(b), b)).not.toThrow()
   })
 
   it('rejects a version mismatch', () => {
-    const b = packSnapshot(WAYS)
+    const b = wireOf(packSnapshot(WAYS))
     const m = { ...manifestFor(b), version: SNAPSHOT_VERSION + 1 }
     expect(() => validateSnapshot(m, b)).toThrow(SnapshotError)
     try {
@@ -89,10 +108,10 @@ describe('validateSnapshot', () => {
     }
   })
 
-  it('rejects a truncated positions buffer', () => {
-    const b = packSnapshot(WAYS)
+  it('rejects a truncated offsets buffer', () => {
+    const b = wireOf(packSnapshot(WAYS))
     const m = manifestFor(b)
-    const truncated = { ...b, positions: b.positions.slice(0, 4) }
+    const truncated = { ...b, offsets: b.offsets.slice(0, 4) }
     try {
       validateSnapshot(m, truncated)
       throw new Error('should have thrown')
@@ -102,7 +121,7 @@ describe('validateSnapshot', () => {
   })
 
   it('rejects a startIndices terminator that disagrees with positionCount', () => {
-    const b = packSnapshot(WAYS)
+    const b = wireOf(packSnapshot(WAYS))
     const m = { ...manifestFor(b), positionCount: 99 }
     try {
       validateSnapshot(m, b)
@@ -113,7 +132,7 @@ describe('validateSnapshot', () => {
   })
 
   it('rejects a wayCount that disagrees with the buffers', () => {
-    const b = packSnapshot(WAYS)
+    const b = wireOf(packSnapshot(WAYS))
     const m = { ...manifestFor(b), wayCount: 7 }
     try {
       validateSnapshot(m, b)

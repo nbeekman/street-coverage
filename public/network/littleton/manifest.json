@@ -1,11 +1,11 @@
 {
-  "version": 3,
+  "version": 4,
   "regionId": "littleton",
   "regionName": "Littleton",
   "group": "metro-core",
   "osmId": 112959,
   "osmKind": "relation",
-  "generatedAt": "2026-07-29T03:25:55.758Z",
+  "generatedAt": "2026-07-29T16:49:53.489Z",
   "osmTimestamp": "2026-07-28T21:46:02Z",
   "queryHash": "b224cc6c53a8f531",
   "bbox": {
@@ -14,6 +14,10 @@
     "maxLon": -104.973282,
     "maxLat": 39.6352967
   },
+  "origin": [
+    -105.0431912,
+    39.58348435
+  ],
   "wayCount": 2230,
   "positionCount": 17660,
   "uniqueNodeCount": 14709,
@@ -31,9 +35,8 @@
     "footway"
   ],
   "byteLengths": {
-    "positions": 282560,
+    "offsets": 141280,
     "startIndices": 8924,
-    "wayIds": 17840,
     "classes": 2230
   }
 }

@@ -1,11 +1,11 @@
 {
-  "version": 3,
+  "version": 4,
   "regionId": "holly-hills",
   "regionName": "Holly Hills",
   "group": "metro-core",
   "osmId": 9569979,
   "osmKind": "relation",
-  "generatedAt": "2026-07-29T03:25:55.781Z",
+  "generatedAt": "2026-07-29T16:49:53.516Z",
   "osmTimestamp": "2026-07-28T21:53:06Z",
   "queryHash": "1821a6c4f5112b9b",
   "bbox": {
@@ -14,6 +14,10 @@
     "maxLon": -104.9158721,
     "maxLat": 39.6766465
   },
+  "origin": [
+    -104.92465254999999,
+    39.6679022
+  ],
   "wayCount": 50,
   "positionCount": 539,
   "uniqueNodeCount": 477,
@@ -31,9 +35,8 @@
     "footway"
   ],
   "byteLengths": {
-    "positions": 8624,
+    "offsets": 4312,
     "startIndices": 204,
-    "wayIds": 400,
     "classes": 50
   }
 }

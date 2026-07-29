@@ -1,11 +1,11 @@
 {
-  "version": 3,
+  "version": 4,
   "regionId": "columbine",
   "regionName": "Columbine",
   "group": "metro-core",
   "osmId": 33168093,
   "osmKind": "way",
-  "generatedAt": "2026-07-29T03:25:55.767Z",
+  "generatedAt": "2026-07-29T16:49:53.499Z",
   "osmTimestamp": "2026-05-06T03:25:00Z",
   "queryHash": "45da4121060bd4d5",
   "bbox": {
@@ -14,6 +14,10 @@
     "maxLon": -105.0376587,
     "maxLat": 39.6098666
   },
+  "origin": [
+    -105.06447935,
+    39.57591545
+  ],
   "wayCount": 1173,
   "positionCount": 8001,
   "uniqueNodeCount": 6481,
@@ -31,9 +35,8 @@
     "footway"
   ],
   "byteLengths": {
-    "positions": 128016,
+    "offsets": 64008,
     "startIndices": 4696,
-    "wayIds": 9384,
     "classes": 1173
   }
 }

@@ -1,11 +1,11 @@
 {
-  "version": 3,
+  "version": 4,
   "regionId": "aurora",
   "regionName": "Aurora",
   "group": "metro-core",
   "osmId": 112875,
   "osmKind": "relation",
-  "generatedAt": "2026-07-29T03:25:55.797Z",
+  "generatedAt": "2026-07-29T16:49:53.533Z",
   "osmTimestamp": "2026-06-12T12:14:17Z",
   "queryHash": "5827f357ee132301",
   "bbox": {
@@ -14,6 +14,10 @@
     "maxLon": -104.446505,
     "maxLat": 39.9574943
   },
+  "origin": [
+    -104.6656593,
+    39.753164600000005
+  ],
   "wayCount": 15560,
   "positionCount": 155670,
   "uniqueNodeCount": 134940,
@@ -31,9 +35,8 @@
     "footway"
   ],
   "byteLengths": {
-    "positions": 2490720,
+    "offsets": 1245360,
     "startIndices": 62244,
-    "wayIds": 124480,
     "classes": 15560
   }
 }

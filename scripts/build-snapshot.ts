@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { bboxOf } from '../src/geo/bounds.ts'
+import { bboxOf, centerOf, toLngLatOffsets } from '../src/geo/bounds.ts'
 import { pathLengthMeters } from '../src/geo/haversine.ts'
 import { HIGHWAY_CLASSES } from '../src/network/regions.ts'
 import {
@@ -36,6 +36,13 @@ async function buildRegion(source: RegionSource): Promise<IndexEntry> {
     )
   }
 
+  // Derive the render origin here rather than in the browser: it comes from
+  // the bbox, and shipping Float32 offsets means the browser never sees the
+  // Float64 positions it would otherwise need to compute one.
+  const bbox = bboxOf(buffers.positions)
+  const origin = centerOf(bbox)
+  const offsets = toLngLatOffsets(buffers.positions, origin)
+
   const manifest: SnapshotManifest = {
     version: SNAPSHOT_VERSION,
     regionId: region.id,
@@ -46,35 +53,36 @@ async function buildRegion(source: RegionSource): Promise<IndexEntry> {
     generatedAt: new Date().toISOString(),
     osmTimestamp: source.osmTimestamp,
     queryHash: source.queryHash,
-    bbox: bboxOf(buffers.positions),
+    bbox,
+    origin,
     wayCount: ways.length,
     positionCount: buffers.startIndices[ways.length],
     uniqueNodeCount,
     totalMeters,
     classes: [...HIGHWAY_CLASSES],
     byteLengths: {
-      positions: buffers.positions.byteLength,
+      offsets: offsets.byteLength,
       startIndices: buffers.startIndices.byteLength,
-      wayIds: buffers.wayIds.byteLength,
       classes: buffers.classes.byteLength,
     },
   }
 
   // Catch a bad build here rather than in the browser.
-  validateSnapshot(manifest, buffers)
+  validateSnapshot(manifest, { offsets, startIndices: buffers.startIndices, classes: buffers.classes })
 
   const dir = join(OUT_DIR, region.id)
   await mkdir(dir, { recursive: true })
   await writeFile(join(dir, 'manifest.json'), JSON.stringify(manifest, null, 2))
-  await writeFile(join(dir, 'positions.bin'), Buffer.from(buffers.positions.buffer))
+  await writeFile(join(dir, 'offsets.bin'), Buffer.from(offsets.buffer))
   await writeFile(join(dir, 'startIndices.bin'), Buffer.from(buffers.startIndices.buffer))
   await writeFile(join(dir, 'wayIds.bin'), Buffer.from(buffers.wayIds.buffer))
   await writeFile(join(dir, 'classes.bin'), Buffer.from(buffers.classes.buffer))
 
+  // What a visitor downloads, not what the build wrote: wayIds stays on disk
+  // for offline use but is never fetched.
   const bytes =
-    manifest.byteLengths.positions +
+    manifest.byteLengths.offsets +
     manifest.byteLengths.startIndices +
-    manifest.byteLengths.wayIds +
     manifest.byteLengths.classes
 
   const km = (totalMeters / 1000).toFixed(0)

@@ -1,11 +1,11 @@
 {
-  "version": 3,
+  "version": 4,
   "regionId": "bow-mar",
   "regionName": "Bow Mar",
   "group": "metro-core",
   "osmId": 194060379,
   "osmKind": "way",
-  "generatedAt": "2026-07-29T03:25:55.777Z",
+  "generatedAt": "2026-07-29T16:49:53.511Z",
   "osmTimestamp": "2026-07-28T21:51:04Z",
   "queryHash": "2c76ed60e2e3a9ad",
   "bbox": {
@@ -14,6 +14,10 @@
     "maxLon": -105.0443571,
     "maxLat": 39.6386928
   },
+  "origin": [
+    -105.05197104999999,
+    39.6242997
+  ],
   "wayCount": 38,
   "positionCount": 640,
   "uniqueNodeCount": 589,
@@ -31,9 +35,8 @@
     "footway"
   ],
   "byteLengths": {
-    "positions": 10240,
+    "offsets": 5120,
     "startIndices": 156,
-    "wayIds": 304,
     "classes": 38
   }
 }

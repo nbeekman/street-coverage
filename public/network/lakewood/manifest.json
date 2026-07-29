@@ -1,11 +1,11 @@
 {
-  "version": 3,
+  "version": 4,
   "regionId": "lakewood",
   "regionName": "Lakewood",
   "group": "metro-core",
   "osmId": 112200,
   "osmKind": "relation",
-  "generatedAt": "2026-07-29T03:25:55.740Z",
+  "generatedAt": "2026-07-29T16:49:53.474Z",
   "osmTimestamp": "2026-07-28T21:44:02Z",
   "queryHash": "87db83d6b0d322ff",
   "bbox": {
@@ -14,6 +14,10 @@
     "maxLon": -105.053249,
     "maxLat": 39.7681756
   },
+  "origin": [
+    -105.12520025,
+    39.69333335
+  ],
   "wayCount": 7550,
   "positionCount": 64737,
   "uniqueNodeCount": 54653,
@@ -31,9 +35,8 @@
     "footway"
   ],
   "byteLengths": {
-    "positions": 1035792,
+    "offsets": 517896,
     "startIndices": 30204,
-    "wayIds": 60400,
     "classes": 7550
   }
 }

@@ -1,11 +1,19 @@
 import { describe, expect, it } from 'vitest'
 import { loadRegion } from './loadSnapshot'
+import { centerOf, toLngLatOffsets } from '../geo/bounds.ts'
 import { SNAPSHOT_VERSION, packSnapshot } from './snapshot'
 
 const WAYS = [
   { id: 100, classIndex: 3, coords: [-105.01, 39.6, -104.99, 39.61], nodeRefs: [1, 2] },
   { id: 101, classIndex: 6, coords: [-104.99, 39.61, -104.97, 39.63], nodeRefs: [2, 3] },
 ]
+
+const BBOX = { minLon: -105.01, minLat: 39.6, maxLon: -104.97, maxLat: 39.63 }
+const ORIGIN = centerOf(BBOX)
+
+/** The Float32 offsets the build ships, from the Float64 positions it packs. */
+const offsetsOf = (b: ReturnType<typeof packSnapshot>) =>
+  toLngLatOffsets(b.positions, ORIGIN)
 
 function fixture() {
   const b = packSnapshot(WAYS)
@@ -19,16 +27,16 @@ function fixture() {
     generatedAt: '2026-07-27T00:00:00.000Z',
     osmTimestamp: '2026-07-27T00:00:00Z',
     queryHash: 'abc123',
-    bbox: { minLon: -105.01, minLat: 39.6, maxLon: -104.97, maxLat: 39.63 },
+    bbox: BBOX,
+    origin: ORIGIN,
     wayCount: 2,
     positionCount: 4,
     uniqueNodeCount: 3,
     totalMeters: 100,
     classes: ['primary'],
     byteLengths: {
-      positions: b.positions.byteLength,
+      offsets: offsetsOf(b).byteLength,
       startIndices: b.startIndices.byteLength,
-      wayIds: b.wayIds.byteLength,
       classes: b.classes.byteLength,
     },
   }
@@ -41,9 +49,8 @@ function fetchFor(manifest: unknown, b: ReturnType<typeof packSnapshot>) {
       return { ok: true, status: 200, text: async () => JSON.stringify(manifest), json: async () => manifest, arrayBuffer: async () => new ArrayBuffer(0) }
     }
     const buf =
-      url.endsWith('positions.bin') ? b.positions.buffer
+      url.endsWith('offsets.bin') ? offsetsOf(b).buffer
       : url.endsWith('startIndices.bin') ? b.startIndices.buffer
-      : url.endsWith('wayIds.bin') ? b.wayIds.buffer
       : b.classes.buffer
     return { ok: true, status: 200, json: async () => ({}), arrayBuffer: async () => buf }
   }
@@ -55,8 +62,9 @@ describe('loadRegion', () => {
     const region = await loadRegion('test', fetchFor(manifest, buffers) as never)
 
     expect(region.manifest.wayCount).toBe(2)
-    expect(region.buffers.positions.length).toBe(8)
-    // Origin is the bbox center, so offsets stay small.
+    expect(region.buffers.offsets.length).toBe(8)
+    // Origin now comes from the manifest rather than being recomputed from
+    // Float64 positions the browser no longer downloads.
     expect(region.origin[0]).toBeCloseTo(-104.99, 5)
     expect(region.offsets).toBeInstanceOf(Float32Array)
     expect(Math.abs(region.offsets[0])).toBeLessThan(0.1)

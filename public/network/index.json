@@ -1,6 +1,6 @@
 {
-  "version": 3,
-  "generatedAt": "2026-07-29T03:25:55.814Z",
+  "version": 4,
+  "generatedAt": "2026-07-29T16:49:53.543Z",
   "regions": [
     {
       "id": "denver",
@@ -9,7 +9,7 @@
       "wayCount": 24011,
       "positionCount": 182729,
       "totalMeters": 4192681.7270026226,
-      "bytes": 3235811
+      "bytes": 1581891
     },
     {
       "id": "aurora",
@@ -18,7 +18,7 @@
       "wayCount": 15560,
       "positionCount": 155670,
       "totalMeters": 2869014.497501563,
-      "bytes": 2693004
+      "bytes": 1323164
     },
     {
       "id": "lakewood",
@@ -27,7 +27,7 @@
       "wayCount": 7550,
       "positionCount": 64737,
       "totalMeters": 1286224.2009746004,
-      "bytes": 1133946
+      "bytes": 555650
     },
     {
       "id": "centennial",
@@ -36,7 +36,7 @@
       "wayCount": 5004,
       "positionCount": 57237,
       "totalMeters": 884852.3208806417,
-      "bytes": 980848
+      "bytes": 482920
     },
     {
       "id": "sw-metro-unincorporated",
@@ -45,7 +45,7 @@
       "wayCount": 3535,
       "positionCount": 36374,
       "totalMeters": 717952.6583087645,
-      "bytes": 627943
+      "bytes": 308671
     },
     {
       "id": "highlands-ranch",
@@ -54,7 +54,7 @@
       "wayCount": 2988,
       "positionCount": 30347,
       "totalMeters": 674058.758237959,
-      "bytes": 524400
+      "bytes": 257720
     },
     {
       "id": "littleton",
@@ -63,7 +63,7 @@
       "wayCount": 2230,
       "positionCount": 17660,
       "totalMeters": 379380.54817958834,
-      "bytes": 311554
+      "bytes": 152434
     },
     {
       "id": "greenwood-village",
@@ -72,7 +72,7 @@
       "wayCount": 1880,
       "positionCount": 15435,
       "totalMeters": 228835.03216328137,
-      "bytes": 271404
+      "bytes": 132884
     },
     {
       "id": "ken-caryl",
@@ -81,7 +81,7 @@
       "wayCount": 1446,
       "positionCount": 14620,
       "totalMeters": 288216.9435323393,
-      "bytes": 252722
+      "bytes": 124194
     },
     {
       "id": "columbine",
@@ -90,7 +90,7 @@
       "wayCount": 1173,
       "positionCount": 8001,
       "totalMeters": 219888.957554209,
-      "bytes": 143269
+      "bytes": 69877
     },
     {
       "id": "englewood",
@@ -99,7 +99,7 @@
       "wayCount": 922,
       "positionCount": 7121,
       "totalMeters": 205692.4937517152,
-      "bytes": 125926
+      "bytes": 61582
     },
     {
       "id": "cherry-creek-corridor",
@@ -108,7 +108,7 @@
       "wayCount": 900,
       "positionCount": 7487,
       "totalMeters": 113620.58372083123,
-      "bytes": 131496
+      "bytes": 64400
     },
     {
       "id": "cherry-hills-village",
@@ -117,7 +117,7 @@
       "wayCount": 407,
       "positionCount": 5122,
       "totalMeters": 107335.97696553767,
-      "bytes": 87247
+      "bytes": 43015
     },
     {
       "id": "sheridan",
@@ -126,7 +126,7 @@
       "wayCount": 296,
       "positionCount": 2236,
       "totalMeters": 43445.74823804882,
-      "bytes": 39628
+      "bytes": 19372
     },
     {
       "id": "cherry-creek-state-park",
@@ -135,7 +135,7 @@
       "wayCount": 265,
       "positionCount": 4903,
       "totalMeters": 60793.12131778804,
-      "bytes": 81897
+      "bytes": 40553
     },
     {
       "id": "morrison",
@@ -144,7 +144,7 @@
       "wayCount": 161,
       "positionCount": 1696,
       "totalMeters": 32019.769788866026,
-      "bytes": 29233
+      "bytes": 14377
     },
     {
       "id": "glendale",
@@ -153,7 +153,7 @@
       "wayCount": 158,
       "positionCount": 951,
       "totalMeters": 13505.150719433403,
-      "bytes": 17274
+      "bytes": 8402
     },
     {
       "id": "holly-hills",
@@ -162,7 +162,7 @@
       "wayCount": 50,
       "positionCount": 539,
       "totalMeters": 14161.982748633045,
-      "bytes": 9278
+      "bytes": 4566
     },
     {
       "id": "bow-mar",
@@ -171,7 +171,7 @@
       "wayCount": 38,
       "positionCount": 640,
       "totalMeters": 14156.548619259578,
-      "bytes": 10738
+      "bytes": 5314
     }
   ]
 }

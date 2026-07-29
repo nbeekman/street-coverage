@@ -1,11 +1,11 @@
 {
-  "version": 3,
+  "version": 4,
   "regionId": "sw-metro-unincorporated",
   "regionName": "SW Metro",
   "group": "metro-core",
   "osmId": 0,
   "osmKind": "polygon",
-  "generatedAt": "2026-07-29T03:25:55.807Z",
+  "generatedAt": "2026-07-29T16:49:53.538Z",
   "osmTimestamp": "2026-07-28T21:57:16Z",
   "queryHash": "63febc32b6787048",
   "bbox": {
@@ -14,6 +14,10 @@
     "maxLon": -105.010815,
     "maxLat": 39.7355161
   },
+  "origin": [
+    -105.0989413,
+    39.61414295
+  ],
   "wayCount": 3535,
   "positionCount": 36374,
   "uniqueNodeCount": 32049,
@@ -31,9 +35,8 @@
     "footway"
   ],
   "byteLengths": {
-    "positions": 581984,
+    "offsets": 290992,
     "startIndices": 14144,
-    "wayIds": 28280,
     "classes": 3535
   }
 }

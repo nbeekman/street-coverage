@@ -1,11 +1,11 @@
 {
-  "version": 3,
+  "version": 4,
   "regionId": "glendale",
   "regionName": "Glendale",
   "group": "metro-core",
   "osmId": 112942,
   "osmKind": "relation",
-  "generatedAt": "2026-07-29T03:25:55.779Z",
+  "generatedAt": "2026-07-29T16:49:53.513Z",
   "osmTimestamp": "2026-05-06T03:25:00Z",
   "queryHash": "04a8404ac0bbbf1d",
   "bbox": {
@@ -14,6 +14,10 @@
     "maxLon": -104.9270964,
     "maxLat": 39.7110373
   },
+  "origin": [
+    -104.93389264999999,
+    39.7029061
+  ],
   "wayCount": 158,
   "positionCount": 951,
   "uniqueNodeCount": 782,
@@ -31,9 +35,8 @@
     "footway"
   ],
   "byteLengths": {
-    "positions": 15216,
+    "offsets": 7608,
     "startIndices": 636,
-    "wayIds": 1264,
     "classes": 158
   }
 }

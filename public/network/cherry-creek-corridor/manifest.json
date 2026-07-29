@@ -1,11 +1,11 @@
 {
-  "version": 3,
+  "version": 4,
   "regionId": "cherry-creek-corridor",
   "regionName": "Cherry Creek corridor",
   "group": "metro-core",
   "osmId": 0,
   "osmKind": "polygon",
-  "generatedAt": "2026-07-29T03:25:55.812Z",
+  "generatedAt": "2026-07-29T16:49:53.540Z",
   "osmTimestamp": "2026-07-28T21:57:16Z",
   "queryHash": "9dc9daf5f1a68b77",
   "bbox": {
@@ -14,6 +14,10 @@
     "maxLon": -104.8211,
     "maxLat": 39.6955325
   },
+  "origin": [
+    -104.8689406,
+    39.64271655
+  ],
   "wayCount": 900,
   "positionCount": 7487,
   "uniqueNodeCount": 6465,
@@ -31,9 +35,8 @@
     "footway"
   ],
   "byteLengths": {
-    "positions": 119792,
+    "offsets": 59896,
     "startIndices": 3604,
-    "wayIds": 7200,
     "classes": 900
   }
 }

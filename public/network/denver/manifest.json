@@ -1,11 +1,11 @@
 {
-  "version": 3,
+  "version": 4,
   "regionId": "denver",
   "regionName": "Denver",
   "group": "metro-core",
   "osmId": 1411339,
   "osmKind": "relation",
-  "generatedAt": "2026-07-29T03:25:55.722Z",
+  "generatedAt": "2026-07-29T16:49:53.461Z",
   "osmTimestamp": "2026-07-28T21:43:02Z",
   "queryHash": "822b07772551fbb1",
   "bbox": {
@@ -14,6 +14,10 @@
     "maxLon": -104.583348,
     "maxLat": 39.914432
   },
+  "origin": [
+    -104.84667490000001,
+    39.7624105
+  ],
   "wayCount": 24011,
   "positionCount": 182729,
   "uniqueNodeCount": 147161,
@@ -31,9 +35,8 @@
     "footway"
   ],
   "byteLengths": {
-    "positions": 2923664,
+    "offsets": 1461832,
     "startIndices": 96048,
-    "wayIds": 192088,
     "classes": 24011
   }
 }

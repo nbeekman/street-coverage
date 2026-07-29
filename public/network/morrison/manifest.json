@@ -1,11 +1,11 @@
 {
-  "version": 3,
+  "version": 4,
   "regionId": "morrison",
   "regionName": "Morrison",
   "group": "metro-core",
   "osmId": 18499983,
   "osmKind": "relation",
-  "generatedAt": "2026-07-29T03:25:55.775Z",
+  "generatedAt": "2026-07-29T16:49:53.509Z",
   "osmTimestamp": "2026-07-28T21:51:04Z",
   "queryHash": "891a1647031a62c9",
   "bbox": {
@@ -14,6 +14,10 @@
     "maxLon": -105.1662201,
     "maxLat": 39.6666467
   },
+  "origin": [
+    -105.1881041,
+    39.644445950000005
+  ],
   "wayCount": 161,
   "positionCount": 1696,
   "uniqueNodeCount": 1511,
@@ -31,9 +35,8 @@
     "footway"
   ],
   "byteLengths": {
-    "positions": 27136,
+    "offsets": 13568,
     "startIndices": 648,
-    "wayIds": 1288,
     "classes": 161
   }
 }
