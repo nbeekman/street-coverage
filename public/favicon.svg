@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Bicycle">
+  <!--
+    Drawn rather than sourced, so nothing here carries a stock licence.
+
+    Circular background, per the request. Amber is the app's "ridden" colour,
+    so the tab icon matches the thing the map is about. The dark glyph on
+    amber keeps contrast high enough to stay legible at 16px, where a thin
+    outline-only bike turns to mush.
+  -->
+  <circle cx="32" cy="32" r="32" fill="#FFBE3C" />
+  <g
+    fill="none"
+    stroke="#12151A"
+    stroke-width="3.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <circle cx="18" cy="41" r="10" />
+    <circle cx="46" cy="41" r="10" />
+    <!-- Frame: rear hub, seat, bars, front hub. -->
+    <path d="M18 41 L27 26 L40 26" />
+    <path d="M18 41 L33 41 L27 26" />
+    <path d="M33 41 L46 41" />
+    <!-- Handlebar and seat. -->
+    <path d="M38 22 L44 22" />
+    <path d="M24 24 L30 24" />
+  </g>
+</svg>
