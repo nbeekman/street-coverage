@@ -2,18 +2,44 @@
 
 Ride every street in the Denver metro. The map fills in as you do.
 
-The network renders, rides import, and coverage computes: **2.85% of 12,214 km** so far.
+The network renders, rides import, and coverage computes: **2.86% of 12,346 km** so far.
 
 ## Setup
 
+The street network is committed, so a fresh clone renders the map immediately:
+
 ```bash
 npm install
-npm run fetch:network -- --group metro-core   # Overpass -> data/raw (slow, flaky, resumable)
-npm run build:snapshot                        # raw -> public/network (committed)
+npm run dev                                   # full network, 0.00% headline, no traces
+```
+
+**The headline stays 0.00% until you add your own rides.** Ride data is gitignored — see
+[Rides](#rides) — so it can never arrive via `git clone`. To get a working coverage map:
+
+```bash
+npm run import:rides -- --dir <unzipped Strava export>/activities   # -> data/rides
+npm run build:rides                                                 # -> public/rides
+npm run build:coverage                                              # -> public/coverage
 npm run dev
 ```
 
-Snapshots are committed, so a fresh clone only needs `npm install && npm run dev`.
+`build:coverage` also reads **`data/raw`**, the raw Overpass payloads, so that the coverage
+denominator is computed from exactly the same way set the map draws. That directory is
+gitignored too, and a fresh clone does not have it:
+
+```bash
+npm run fetch:network -- --group metro-core   # Overpass -> data/raw (slow, flaky, resumable)
+npm run build:snapshot                        # raw -> public/network
+```
+
+> **Re-fetching moves the number.** OSM changes under you, so a fresh fetch shifts the
+> denominator and makes the percentage non-comparable to earlier runs. If you already have
+> `data/raw` on disk from another checkout, copy it rather than re-fetching. Each snapshot
+> manifest pins `osmTimestamp` so you can tell which OSM instant a number came from.
+
+Rebuild only what changed: new rides need `build:rides` + `build:coverage`; a changed match
+radius or rideable-class rule needs `build:coverage`, and a rule change needs a re-fetch
+first because the query hash guard will refuse to build against stale raw data.
 
 ## How it works
 
@@ -92,7 +118,7 @@ npm run build:coverage -- --radius 15
 **What counts as ridden.** A node is *hit* when a ride point passed within **25 m**. A
 segment counts as ridden when **both** its endpoints are hit — the "both" is what stops a
 single stray GPS point from crediting a stretch never ridden. The headline percentage is
-ridden meters over total meters, so it reads as "2.85% of the metro's street distance".
+ridden meters over total meters, so it reads as "2.86% of the metro's street distance".
 
 Coverage output is **gitignored** for the same reason ride traces are: which streets someone
 has ridden is location data, and publishing it would undo the privacy clipping.
