@@ -4,10 +4,7 @@ import type { Layer } from '@deck.gl/core'
 import { Map, useControl } from 'react-map-gl/maplibre'
 import type { MapEvent } from 'react-map-gl/maplibre'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { createCoverageLayer } from '../layers/coverageLayer.ts'
-import { createNetworkLayer } from '../layers/networkLayer.ts'
-import { createRideLayer } from '../layers/rideLayer.ts'
-import { RegionStackLayer } from '../layers/regionStackLayer.ts'
+import { buildMapLayers } from '../layers/mapLayers.ts'
 import type { LoadedCoverage } from '../coverage/loadCoverage.ts'
 import type { LoadedRegion } from '../network/loadSnapshot.ts'
 import type { LoadedRides } from '../rides/loadRides.ts'
@@ -51,38 +48,10 @@ export default function MapView({ regions, rides, coverage, mode }: Props) {
   // inserted before it, which puts every label above every generated line.
   const [labelLayerId, setLabelLayerId] = useState<string | undefined>(undefined)
 
-  const layers = useMemo(() => {
-    // Coverage mode paints the network by what has been ridden. Rides mode
-    // falls back to class colors and draws the traces on top, so the two are
-    // genuinely alternative readings of the same streets.
-    const stack =
-      mode === 'coverage' && coverage
-        ? new RegionStackLayer({
-            id: 'coverage-stack',
-            // MapboxOverlay reads beforeId from the layers it inserts, and it
-            // inserts this stack -- not its sublayers. Without it here the
-            // whole stack lands on top of the basemap's labels.
-            beforeId: labelLayerId,
-            regions: coverage.regions,
-            bboxOf: (r: (typeof coverage.regions)[number]) => r.bbox,
-            idOf: (r: (typeof coverage.regions)[number]) => r.id,
-            build: (r: (typeof coverage.regions)[number]) =>
-              createCoverageLayer(r, labelLayerId),
-          })
-        : new RegionStackLayer({
-            id: 'network-stack',
-            beforeId: labelLayerId,
-            regions,
-            bboxOf: (r: (typeof regions)[number]) => r.manifest.bbox,
-            idOf: (r: (typeof regions)[number]) => r.id,
-            build: (r: (typeof regions)[number]) =>
-              createNetworkLayer(r, labelLayerId, mode === 'rides'),
-          })
-
-    // Rides draw last so they sit above the network but still below labels,
-    // and are never culled -- they are the reason to zoom out.
-    return rides && mode === 'rides' ? [stack, createRideLayer(rides, labelLayerId)] : [stack]
-  }, [regions, rides, coverage, mode, labelLayerId])
+  const layers = useMemo(
+    () => buildMapLayers({ regions, rides, coverage, mode, labelLayerId }),
+    [regions, rides, coverage, mode, labelLayerId],
+  )
 
   return (
     <Map
