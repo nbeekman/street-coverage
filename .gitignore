@@ -18,3 +18,6 @@ public/rides/
 # Coverage is derived from ride traces: which streets someone has ridden is
 # location data too, and publishing it would undo the privacy clipping.
 public/coverage/
+
+# Local Netlify folder
+.netlify

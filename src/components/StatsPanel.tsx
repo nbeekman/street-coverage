@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { CoverageState } from '../coverage/useCoverage.ts'
 import type { NetworkState } from '../network/useNetwork.ts'
 import type { RidesState } from '../rides/useRides.ts'
@@ -8,6 +9,7 @@ import {
   shortDistanceLabel,
   type Units,
 } from '../units/units.ts'
+import InfoIcon from './InfoIcon.tsx'
 import MapKey from './MapKey.tsx'
 import UnitsToggle from './UnitsToggle.tsx'
 import ViewToggle from './ViewToggle.tsx'
@@ -37,9 +39,10 @@ export default function StatsPanel({
   open,
 }: Props) {
   const fps = useFps()
+  const [showSegmentInfo, setShowSegmentInfo] = useState(false)
 
   const core = state.regions.filter((r) => r.group === 'metro-core')
-  const totalWays = core.reduce((s, r) => s + r.manifest.wayCount, 0)
+  const totalSegments = core.reduce((s, r) => s + r.manifest.wayCount, 0)
   const totalMeters = core.reduce((s, r) => s + r.manifest.totalMeters, 0)
 
   const totals = coverage.coverage?.manifest.totals ?? null
@@ -100,7 +103,15 @@ export default function StatsPanel({
         <thead className="text-neutral-400">
           <tr>
             <th className="text-left font-normal">Region</th>
-            <th className="pl-2 text-right font-normal">Ways</th>
+            <th className="pl-2 text-right font-normal whitespace-nowrap">
+              Segments
+              <InfoIcon
+                open={showSegmentInfo}
+                onToggle={() => setShowSegmentInfo((v) => !v)}
+                label="What is a segment?"
+                controls="segment-info"
+              />
+            </th>
             <th className="pl-2 text-right font-normal">{unit}</th>
             <th className="pl-2 text-right font-normal">Ridden</th>
             <th className="pl-2 text-right font-normal">%</th>
@@ -132,7 +143,7 @@ export default function StatsPanel({
           })}
           <tr className="border-t border-white/30 font-semibold">
             <td className="py-0.5 text-left">Total</td>
-            <td className="pl-2 text-right">{totalWays.toLocaleString()}</td>
+            <td className="pl-2 text-right">{totalSegments.toLocaleString()}</td>
             <td className="pl-2 text-right">{formatDistance(totalMeters, units)}</td>
             <td className="pl-2 text-right">
               {totals ? formatDistance(coveredMeters, units, 1) : '—'}
@@ -145,12 +156,25 @@ export default function StatsPanel({
       </table>
       </div>
 
+      {showSegmentInfo && (
+        <div
+          id="segment-info"
+          role="note"
+          className="mt-2 rounded border border-white/15 bg-white/5 p-2 text-xs text-neutral-300"
+        >
+          A <strong>segment</strong> is one piece of road as OpenStreetMap stores it, not a
+          whole street. OSM splits a street wherever something changes — an intersection, a
+          city boundary, a speed limit, a bike lane. Segments here average about 180 m, and a
+          long street is many of them: East Colfax Avenue alone is 277.
+        </div>
+      )}
+
       {coverage.status === 'ready' && coverage.coverage && totals && (
         <div className="mt-3 border-t border-white/20 pt-2">
           <div className="text-xs text-neutral-500">
             {totals.nodesHit.toLocaleString()} of {totals.uniqueNodeCount.toLocaleString()}{' '}
             nodes hit ·{' '}
-            {totals.waysComplete.toLocaleString()} streets complete
+            {totals.waysComplete.toLocaleString()} segments complete
           </div>
           <div className="text-xs text-neutral-500">
             {formatShortDistance(coverage.coverage.manifest.radiusMeters, units)}{' '}
