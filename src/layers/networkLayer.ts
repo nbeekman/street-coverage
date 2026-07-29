@@ -25,23 +25,52 @@ export const CLASS_COLORS: readonly Rgb[] = [
 
 const FALLBACK_COLOR: Rgb = [255, 0, 255]
 
+type Memo = {
+  data: {
+    length: number
+    startIndices: Uint32Array
+    attributes: { getPath: { value: Float32Array; size: 2 } }
+  }
+  getColor: (_: unknown, info: { index: number }) => Rgb
+}
+
+/**
+ * Per-region `data` and accessor, built once and reused.
+ *
+ * deck.gl compares props by reference, and a binary `data` payload is a plain
+ * object wrapping typed arrays. Building a fresh one per render reads as new
+ * data and re-uploads every vertex, which is what made viewport culling cost
+ * more than it saved. Weak, so a dropped region does not pin its buffers.
+ */
+const memo = new WeakMap<LoadedRegion, Memo>()
+
+export function networkMemo(region: LoadedRegion): Memo {
+  let m = memo.get(region)
+  if (m === undefined) {
+    const classes = region.buffers.classes
+    m = {
+      data: {
+        length: region.manifest.wayCount,
+        startIndices: region.buffers.startIndices,
+        attributes: { getPath: { value: region.offsets, size: 2 } },
+      },
+      // With binary data deck.gl passes (null, {index, data, target}).
+      getColor: (_, info) => CLASS_COLORS[classes[info.index]] ?? FALLBACK_COLOR,
+    }
+    memo.set(region, m)
+  }
+  return m
+}
+
 export function buildLayerProps(region: LoadedRegion) {
-  const classes = region.buffers.classes
+  const { data, getColor } = networkMemo(region)
   return {
     id: `network-${region.id}`,
-    data: {
-      length: region.manifest.wayCount,
-      startIndices: region.buffers.startIndices,
-      attributes: {
-        getPath: { value: region.offsets, size: 2 },
-      },
-    },
+    data,
     _pathType: 'open' as const,
     coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS,
     coordinateOrigin: region.origin,
-    // With binary data deck.gl passes (null, {index, data, target}).
-    getColor: (_: unknown, info: { index: number }): Rgb =>
-      CLASS_COLORS[classes[info.index]] ?? FALLBACK_COLOR,
+    getColor,
     widthUnits: 'pixels' as const,
     getWidth: 1,
     widthMinPixels: 0.75,

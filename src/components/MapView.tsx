@@ -7,6 +7,7 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import { createCoverageLayer } from '../layers/coverageLayer.ts'
 import { createNetworkLayer } from '../layers/networkLayer.ts'
 import { createRideLayer } from '../layers/rideLayer.ts'
+import { RegionStackLayer } from '../layers/regionStackLayer.ts'
 import type { LoadedCoverage } from '../coverage/loadCoverage.ts'
 import type { LoadedRegion } from '../network/loadSnapshot.ts'
 import type { LoadedRides } from '../rides/loadRides.ts'
@@ -54,15 +55,28 @@ export default function MapView({ regions, rides, coverage, mode }: Props) {
     // Coverage mode paints the network by what has been ridden. Rides mode
     // falls back to class colors and draws the traces on top, so the two are
     // genuinely alternative readings of the same streets.
-    if (mode === 'coverage' && coverage) {
-      return coverage.regions.map((region) => createCoverageLayer(region, labelLayerId))
-    }
+    const stack =
+      mode === 'coverage' && coverage
+        ? new RegionStackLayer({
+            id: 'coverage-stack',
+            regions: coverage.regions,
+            bboxOf: (r: (typeof coverage.regions)[number]) => r.bbox,
+            idOf: (r: (typeof coverage.regions)[number]) => r.id,
+            build: (r: (typeof coverage.regions)[number]) =>
+              createCoverageLayer(r, labelLayerId),
+          })
+        : new RegionStackLayer({
+            id: 'network-stack',
+            regions,
+            bboxOf: (r: (typeof regions)[number]) => r.manifest.bbox,
+            idOf: (r: (typeof regions)[number]) => r.id,
+            build: (r: (typeof regions)[number]) =>
+              createNetworkLayer(r, labelLayerId, mode === 'rides'),
+          })
 
-    const base = regions.map((region) =>
-      createNetworkLayer(region, labelLayerId, mode === 'rides'),
-    )
-    // Rides draw last so they sit above the network but still below labels.
-    return rides && mode === 'rides' ? [...base, createRideLayer(rides, labelLayerId)] : base
+    // Rides draw last so they sit above the network but still below labels,
+    // and are never culled -- they are the reason to zoom out.
+    return rides && mode === 'rides' ? [stack, createRideLayer(rides, labelLayerId)] : [stack]
   }, [regions, rides, coverage, mode, labelLayerId])
 
   return (

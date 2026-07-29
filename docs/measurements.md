@@ -467,3 +467,54 @@ culling become affordable. That is the prerequisite both attempts skipped.
 The measurement that motivated all this is unchanged: 6 fps at continental zoom, 60 fps with
 the network off screen, 69,791 paths and 613,505 vertices rasterizing into a few hundred
 pixels.
+
+## Zoom-out performance: fixed, on the third attempt
+
+The prerequisite the first two attempts skipped: **memoize the binary `data` object and the
+accessors per region.** deck.gl diffs layer props by reference, and a `data` payload is a
+plain object wrapping typed arrays, so constructing a fresh one per render reads as new data
+and re-uploads all 613,505 vertices. Culling rebuilds layers as the camera moves, so every
+frame paid for the whole network — which is why both earlier attempts were slower than the
+problem.
+
+With `data` and accessors held in a `WeakMap` keyed on the loaded region, a rebuilt layer
+hands deck.gl the references it already uploaded and the diff is a no-op. Nine tests pin the
+reference identity specifically; a value-equality test would pass while the bug returned.
+
+Then culling works. `RegionStackLayer` is a `CompositeLayer` that reads `this.context.viewport`
+— deck.gl already knows the camera, so nothing goes through React state, which is what
+crashed react-map-gl's `setProps` on attempt one. It needs a `shouldUpdateState` override:
+without one a composite never re-runs `renderLayers` on camera change, and the gate is
+evaluated once at construction and never again. Attempt two shipped exactly that and silently
+did nothing.
+
+| View | Before | After |
+|---|---:|---:|
+| Default city zoom | 48–60 | 29–30 |
+| **Continental zoom** | **6** | **29** |
+| Network off screen | 60 | 60 |
+
+Continental zoom is ~5× faster and the map stays responsive. Zooming back in restores the
+network, verified in both directions.
+
+Sublayers are additionally cached on the *set* of visible region ids, so panning within the
+same regions rebuilds nothing at all.
+
+### Bundle chunks
+
+The 500 kB warning fired on two chunks. Splitting by change frequency rather than size:
+
+| Chunk | Before | After |
+|---|---:|---:|
+| `index` (app code) | 825 kB | **37.6 kB** |
+| `react` | — | 189.6 kB |
+| `deck` | — | 597.2 kB |
+| `maplibre-gl` | 1,027.7 kB | 1,027.7 kB |
+
+This does not speed up a cold load — every chunk is needed to render. It means editing a
+component invalidates 37 kB of a returning visitor's cache instead of 825 kB. maplibre-gl
+cannot be split; the warning limit is raised to 1,100 kB so it can only fire on something
+actionable.
+
+**The real first-load cost is not JavaScript.** It is ~21 MB of binary snapshots and roughly
+600–1,700 ms of decode. That is the next thing worth attacking.
