@@ -26,6 +26,7 @@ function manifestFor(b: ReturnType<typeof packRides>): RidesManifest {
     version: RIDES_SNAPSHOT_VERSION,
     generatedAt: '2026-07-28T00:00:00.000Z',
     rideCount: 2,
+    outOfRegionCount: 0,
     pointCount: 5,
     totalMeters: 1234,
     clipMeters: 500,

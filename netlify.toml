@@ -1,0 +1,28 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Vite builds a single-page app: every route must serve index.html rather than
+# 404. Same rule as the other sites in this account.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# The binary snapshots are content-hashed by filename only for JS/CSS; the
+# .bin payloads keep stable names, so they must revalidate rather than be
+# cached forever, or a rebuilt snapshot would never reach a returning visitor.
+[[headers]]
+  for = "/network/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/rides/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/coverage/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"

@@ -48,7 +48,7 @@ async function main(): Promise<void> {
   const empty: Record<RejectReason, number> = {
     'no-positions': 0, virtual: 0, 'out-of-region': 0, 'too-short-after-clip': 0,
   }
-  let meta = { clipMeters: -1, resampleMeters: -1, rejected: empty }
+  let meta = { clipMeters: -1, resampleMeters: -1, rejected: empty, outOfRegion: 0 }
   try {
     meta = { ...meta, ...JSON.parse(await readFile(join(IN_DIR, '_meta.json'), 'utf8')) }
   } catch {

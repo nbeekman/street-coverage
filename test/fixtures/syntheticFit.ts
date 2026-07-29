@@ -1,6 +1,15 @@
 import { Encoder, Profile } from '@garmin/fitsdk'
 
 /**
+ * The SDK types `onMesg`'s payload as a narrow `Mesg`, but the encoder accepts
+ * any profile field at runtime — that is how it writes real files. One cast in
+ * one helper keeps the builder readable without loosening types elsewhere.
+ */
+function emit(encoder: Encoder, mesgNum: number, fields: Record<string, unknown>): void {
+  ;(encoder.onMesg as (n: number, f: Record<string, unknown>) => void)(mesgNum, fields)
+}
+
+/**
  * Build a synthetic virtual-ride FIT file in memory.
  *
  * Replaces a real Zwift recording that used to be committed here. That file
@@ -47,7 +56,7 @@ export function buildSyntheticFit(options: SyntheticOptions = {}): Uint8Array {
   const encoder = new Encoder()
   const start = new Date('2024-01-17T21:26:09.000Z')
 
-  encoder.onMesg(Profile.MesgNum.FILE_ID, {
+  emit(encoder, Profile.MesgNum.FILE_ID, {
     type: 'activity',
     manufacturer,
     product: 0,
@@ -70,10 +79,10 @@ export function buildSyntheticFit(options: SyntheticOptions = {}): Uint8Array {
       record.positionLat = degreesToSemicircles(lat)
       record.positionLong = degreesToSemicircles(lon)
     }
-    encoder.onMesg(Profile.MesgNum.RECORD, record)
+    emit(encoder, Profile.MesgNum.RECORD, record)
   }
 
-  encoder.onMesg(Profile.MesgNum.SESSION, {
+  emit(encoder, Profile.MesgNum.SESSION, {
     timestamp: new Date(start.getTime() + recordCount * 1000),
     startTime: start,
     sport: 'cycling',
