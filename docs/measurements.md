@@ -556,3 +556,43 @@ ends have been ridden.
 The fix is a per-run cumulative year, `max(firstYear(a), firstYear(b))`, stored rather than
 derived from the mask. Left undone deliberately: a snapshot format change and a rebuild for a
 hundredth of a percentage point. Recorded so the discrepancy is not rediscovered as a mystery.
+
+## Compressing the binary payloads
+
+Netlify compresses by content type and offers no override, so the `.bin` snapshots were
+served as `application/octet-stream` and came down raw while the JavaScript was brotli'd.
+Declaring them `text/plain` in `netlify.toml` gets them compressed. Nothing reads the type —
+the browser fetches them with `arrayBuffer()`.
+
+Chosen over forcing a `Content-Encoding: br` header, which is unconditional: a client that
+did not accept brotli would receive a body it could not decode. Letting Netlify negotiate
+keeps that correct, and it was verified — a request with `Accept-Encoding: identity` returns
+99,532 raw bytes, still divisible by 4 and therefore intact `Uint32` data.
+
+Measured live:
+
+| | |
+|---|---:|
+| Over the wire | **4.36 MB** |
+| After decompression | 5.85 MB |
+| Saved by compression | **1.50 MB** |
+| Load event | 853 ms |
+
+### Why the win is smaller than it looks like it should be
+
+An earlier estimate of ~4 MB was wrong: it came from gzipping the **Float64** positions,
+which compressed ~4× because every coordinate sat near −105, 39.7 and shared long identical
+byte prefixes. Those are no longer shipped.
+
+| File | Raw | gzip |
+|---|---:|---:|
+| `offsets.bin` | 1.47 MB | 82% |
+| `flags.bin` | 24.9 KB | 6% |
+| `years.bin` | 99.5 KB | 3% |
+
+`offsets.bin` is ~90% of the bytes and compresses least, because Float32 offsets carry far
+more entropy than the Float64 coordinates they replaced. **The wire-format change already
+took most of this win; compression cannot claim it twice.**
+
+The remaining lever on that payload is quantisation — Int16 deltas at ~1 m precision would
+roughly halve it again — which is a real precision trade-off rather than a free header change.

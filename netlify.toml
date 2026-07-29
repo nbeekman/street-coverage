@@ -12,17 +12,33 @@
 # The binary snapshots are content-hashed by filename only for JS/CSS; the
 # .bin payloads keep stable names, so they must revalidate rather than be
 # cached forever, or a rebuilt snapshot would never reach a returning visitor.
+#
+# Content-Type is set so Netlify will compress them. Netlify compresses by
+# content type and offers no override, so as application/octet-stream these
+# come down raw. Declaring them text gets them negotiated normally -- a client
+# that does not accept brotli still receives gzip or identity, rather than a
+# body it cannot decode, which is why this is preferred over forcing a
+# Content-Encoding header ourselves.
+#
+# Nothing reads the type: the browser fetches these with arrayBuffer(), which
+# ignores it. Measured saving is ~1.2 MB of 5.8 MB. It is not larger because
+# offsets.bin is ~90% of the bytes and compresses only 18% -- Float32 offsets
+# carry far more entropy than the Float64 coordinates they replaced, so the
+# wire-format change already took most of this win.
 [[headers]]
   for = "/network/*"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
+    Content-Type = "text/plain; charset=utf-8"
 
 [[headers]]
   for = "/rides/*"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
+    Content-Type = "text/plain; charset=utf-8"
 
 [[headers]]
   for = "/coverage/*"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
+    Content-Type = "text/plain; charset=utf-8"
