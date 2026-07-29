@@ -55,6 +55,29 @@ Rebuild only what changed: new rides need `build:rides` + `build:coverage`; a ch
 radius or rideable-class rule needs `build:coverage`, and a rule change needs a re-fetch
 first because the query hash guard will refuse to build against stale raw data.
 
+## Deploying
+
+Hosted on Netlify. Because ride and coverage artifacts are gitignored, they cannot reach a
+git-triggered build — so the site is deployed from a local build, where those artifacts
+exist:
+
+```bash
+npx netlify-cli login      # once, interactive
+npx netlify-cli link       # once, pick or create the site
+npm run deploy:preview     # draft URL, safe to check first
+npm run deploy             # production
+```
+
+`predeploy` refuses to ship a site that would render as an empty map: it checks that the
+network, rides and coverage snapshots all exist, that each matches the version the code
+expects, and that coverage was built from the same import being shipped. Deploying a 0.00%
+map with no error is exactly the silent failure this project keeps guarding against.
+
+> **A deploy publishes ride traces.** Privacy clipping keeps ride starts and ends off the
+> map, but the routes themselves become public. A git-connected build would instead produce
+> a network-only site with a 0.00% headline — safe, but not much of a demo. Choose
+> deliberately.
+
 ## How it works
 
 Overpass is contacted only by the offline scripts, never at runtime. Each region is

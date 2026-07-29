@@ -13,7 +13,10 @@
     "build:snapshot": "node --disable-warning=ExperimentalWarning scripts/build-snapshot.ts",
     "import:rides": "node --disable-warning=ExperimentalWarning scripts/import-rides.ts",
     "build:rides": "node --disable-warning=ExperimentalWarning scripts/build-rides.ts",
-    "build:coverage": "node --disable-warning=ExperimentalWarning scripts/build-coverage.ts"
+    "build:coverage": "node --disable-warning=ExperimentalWarning scripts/build-coverage.ts",
+    "deploy:preview": "npm run predeploy && npm run build && npx netlify-cli deploy --dir=dist --no-build",
+    "deploy": "npm run predeploy && npm run build && npx netlify-cli deploy --prod --dir=dist --no-build",
+    "predeploy": "node --disable-warning=ExperimentalWarning scripts/preflight-deploy.ts"
   },
   "dependencies": {
     "@deck.gl/core": "^9.3.7",
