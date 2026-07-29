@@ -3,7 +3,7 @@ import { degreesToSemicircles, semicirclesToDegrees } from './semicircles'
 
 describe('semicirclesToDegrees', () => {
   it('converts a real Zwift coordinate to Watopia', () => {
-    // Captured from test/fixtures/zwift-virtual.fit on 2026-07-28. The FIT SDK
+    // A real semicircle pair as emitted by Zwift. The FIT SDK
     // returns this raw, even with applyScaleAndOffset: true.
     expect(semicirclesToDegrees(-138818392)).toBeCloseTo(-11.63562, 4)
     expect(semicirclesToDegrees(1991822250)).toBeCloseTo(166.95261, 4)
