@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { bboxOf, type Bbox } from '../src/geo/bounds.ts'
+import { bboxOf, centerOf, toLngLatOffsets, type Bbox } from '../src/geo/bounds.ts'
 import { densifyTrace } from '../src/coverage/densify.ts'
 import { PointGrid } from '../src/coverage/grid.ts'
 import { computeNodeHits, wayHits } from '../src/coverage/nodes.ts'
@@ -56,10 +56,13 @@ async function loadRides(): Promise<{
     )
   }
 
+  // Float64, not the Float32 offsets the browser fetches: matching happens in
+  // metres and must not inherit the render format's precision.
   const buf = await readFile(join(RIDES_DIR, 'positions.bin'))
-  if (buf.byteLength !== manifest.byteLengths.positions) {
+  const expected = manifest.pointCount * 2 * 8
+  if (buf.byteLength !== expected) {
     throw new Error(
-      `rides positions.bin is ${buf.byteLength} bytes, manifest declares ${manifest.byteLengths.positions}. Re-run build:rides.`,
+      `rides positions.bin is ${buf.byteLength} bytes, expected ${expected} for ${manifest.pointCount} points. Re-run build:rides.`,
     )
   }
   const positions = new Float64Array(
@@ -150,6 +153,11 @@ async function main(): Promise<void> {
     const buffers = packCoverage(packedWays)
     const runCount = buffers.flags.length
 
+    // Derive origin and offsets here so the browser never fetches Float64.
+    const bbox = bboxOf(buffers.positions)
+    const origin = centerOf(bbox)
+    const offsets = toLngLatOffsets(buffers.positions, origin)
+
     const entry: RegionCoverage = {
       regionId: region.id,
       regionName: region.name,
@@ -163,8 +171,10 @@ async function main(): Promise<void> {
       runCount,
       riddenRunCount: buffers.flags.reduce((s: number, f: number) => s + f, 0),
       positionCount: buffers.startIndices[runCount],
+      origin,
+      bbox,
       byteLengths: {
-        positions: buffers.positions.byteLength,
+        offsets: offsets.byteLength,
         startIndices: buffers.startIndices.byteLength,
         flags: buffers.flags.byteLength,
       },
@@ -172,7 +182,7 @@ async function main(): Promise<void> {
 
     const dir = join(OUT_DIR, region.id)
     await mkdir(dir, { recursive: true })
-    await writeFile(join(dir, 'positions.bin'), Buffer.from(buffers.positions.buffer))
+    await writeFile(join(dir, 'offsets.bin'), Buffer.from(offsets.buffer))
     await writeFile(join(dir, 'startIndices.bin'), Buffer.from(buffers.startIndices.buffer))
     await writeFile(join(dir, 'flags.bin'), Buffer.from(buffers.flags.buffer))
 
@@ -214,12 +224,15 @@ async function main(): Promise<void> {
   // Catch a bad build here rather than in the browser.
   for (const region of regions) {
     const dir = join(OUT_DIR, region.regionId)
-    const positions = await readFile(join(dir, 'positions.bin'))
+    const offsetBytes = await readFile(join(dir, 'offsets.bin'))
     const startIndices = await readFile(join(dir, 'startIndices.bin'))
     const flags = await readFile(join(dir, 'flags.bin'))
     validateCoverage(manifest, region, {
-      positions: new Float64Array(
-        positions.buffer.slice(positions.byteOffset, positions.byteOffset + positions.byteLength),
+      offsets: new Float32Array(
+        offsetBytes.buffer.slice(
+          offsetBytes.byteOffset,
+          offsetBytes.byteOffset + offsetBytes.byteLength,
+        ),
       ),
       startIndices: new Uint32Array(
         startIndices.buffer.slice(
@@ -238,7 +251,7 @@ async function main(): Promise<void> {
   const pct = (totals.coveredMeters / totals.totalMeters) * 100
   const nodePct = (totals.nodesHit / totals.uniqueNodeCount) * 100
   const bytes = regions.reduce(
-    (s, r) => s + r.byteLengths.positions + r.byteLengths.startIndices + r.byteLengths.flags,
+    (s, r) => s + r.byteLengths.offsets + r.byteLengths.startIndices + r.byteLengths.flags,
     0,
   )
 

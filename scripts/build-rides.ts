@@ -1,6 +1,6 @@
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { bboxOf } from '../src/geo/bounds.ts'
+import { bboxOf, centerOf, toLngLatOffsets } from '../src/geo/bounds.ts'
 import { pathLengthMeters } from '../src/geo/haversine.ts'
 import type { RejectReason } from '../src/rides/filter.ts'
 import {
@@ -55,6 +55,12 @@ async function main(): Promise<void> {
     console.warn('  no _meta.json; clip/resample settings will be reported as unknown')
   }
 
+  // positions.bin stays on disk: build-coverage reads it for the actual
+  // matching maths and needs Float64. Only offsets.bin is fetched.
+  const bbox = bboxOf(buffers.positions)
+  const origin = centerOf(bbox)
+  const offsets = toLngLatOffsets(buffers.positions, origin)
+
   const manifest: RidesManifest = {
     version: RIDES_SNAPSHOT_VERSION,
     generatedAt: new Date().toISOString(),
@@ -64,25 +70,27 @@ async function main(): Promise<void> {
     totalMeters,
     clipMeters: meta.clipMeters,
     resampleMeters: meta.resampleMeters,
-    bbox: bboxOf(buffers.positions),
+    bbox,
+    origin,
     rejected: meta.rejected,
     byteLengths: {
-      positions: buffers.positions.byteLength,
+      offsets: offsets.byteLength,
       startIndices: buffers.startIndices.byteLength,
       times: buffers.times.byteLength,
     },
   }
 
-  validateRides(manifest, buffers)
+  validateRides(manifest, { offsets, startIndices: buffers.startIndices, times: buffers.times })
 
   await mkdir(OUT_DIR, { recursive: true })
   await writeFile(join(OUT_DIR, 'manifest.json'), JSON.stringify(manifest, null, 2))
   await writeFile(join(OUT_DIR, 'positions.bin'), Buffer.from(buffers.positions.buffer))
+  await writeFile(join(OUT_DIR, 'offsets.bin'), Buffer.from(offsets.buffer))
   await writeFile(join(OUT_DIR, 'startIndices.bin'), Buffer.from(buffers.startIndices.buffer))
   await writeFile(join(OUT_DIR, 'times.bin'), Buffer.from(buffers.times.buffer))
 
   const bytes =
-    manifest.byteLengths.positions + manifest.byteLengths.startIndices + manifest.byteLengths.times
+    manifest.byteLengths.offsets + manifest.byteLengths.startIndices + manifest.byteLengths.times
   console.log(
     `${rides.length} rides — ${manifest.pointCount} points, ` +
       `${(totalMeters / 1000).toFixed(0)} km, ${(bytes / 1e6).toFixed(2)} MB`,

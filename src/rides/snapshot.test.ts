@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { centerOf, toLngLatOffsets } from '../geo/bounds.ts'
 import type { Ride } from './types'
 import {
   RIDES_SNAPSHOT_VERSION,
@@ -21,7 +22,19 @@ const RIDES: Ride[] = [
   ] },
 ]
 
-function manifestFor(b: ReturnType<typeof packRides>): RidesManifest {
+const BBOX = { minLon: -105, minLat: 39.6, maxLon: -104.96, maxLat: 39.64 }
+const ORIGIN = centerOf(BBOX)
+
+/** What the build ships: Float32 offsets, no Float64 positions. */
+function wireOf(p: ReturnType<typeof packRides>) {
+  return {
+    offsets: toLngLatOffsets(p.positions, ORIGIN),
+    startIndices: p.startIndices,
+    times: p.times,
+  }
+}
+
+function manifestFor(b: ReturnType<typeof wireOf>): RidesManifest {
   return {
     version: RIDES_SNAPSHOT_VERSION,
     generatedAt: '2026-07-28T00:00:00.000Z',
@@ -31,10 +44,11 @@ function manifestFor(b: ReturnType<typeof packRides>): RidesManifest {
     totalMeters: 1234,
     clipMeters: 500,
     resampleMeters: 10,
-    bbox: { minLon: -105, minLat: 39.6, maxLon: -104.96, maxLat: 39.64 },
+    bbox: BBOX,
+    origin: ORIGIN,
     rejected: { 'no-positions': 0, virtual: 35, 'out-of-region': 2, 'too-short-after-clip': 1 },
     byteLengths: {
-      positions: b.positions.byteLength,
+      offsets: b.offsets.byteLength,
       startIndices: b.startIndices.byteLength,
       times: b.times.byteLength,
     },
@@ -47,6 +61,9 @@ describe('packRides', () => {
   })
 
   it('preserves coordinates exactly', () => {
+    // The packed Float64 buffers, not the Float32 wire form: this asserts the
+    // build loses nothing. Float32 offsets are a render format and are checked
+    // for magnitude, not exactness.
     const b = packRides(RIDES)
     expect(ridePoints(b, 0)).toEqual([-105.0, 39.6, -104.99, 39.61])
     expect(ridePoints(b, 1)).toEqual([-104.98, 39.62, -104.97, 39.63, -104.96, 39.64])
@@ -65,12 +82,12 @@ describe('packRides', () => {
 
 describe('validateRides', () => {
   it('accepts a matching manifest', () => {
-    const b = packRides(RIDES)
+    const b = wireOf(packRides(RIDES))
     expect(() => validateRides(manifestFor(b), b)).not.toThrow()
   })
 
   it('rejects a version mismatch', () => {
-    const b = packRides(RIDES)
+    const b = wireOf(packRides(RIDES))
     try {
       validateRides({ ...manifestFor(b), version: RIDES_SNAPSHOT_VERSION + 1 }, b)
       throw new Error('should have thrown')
@@ -80,9 +97,9 @@ describe('validateRides', () => {
   })
 
   it('rejects a truncated buffer', () => {
-    const b = packRides(RIDES)
+    const b = wireOf(packRides(RIDES))
     try {
-      validateRides(manifestFor(b), { ...b, positions: b.positions.slice(0, 4) })
+      validateRides(manifestFor(b), { ...b, offsets: b.offsets.slice(0, 4) })
       throw new Error('should have thrown')
     } catch (e) {
       expect((e as RidesSnapshotError).code).toBe('TRUNCATED')
@@ -90,7 +107,7 @@ describe('validateRides', () => {
   })
 
   it('rejects a terminator that disagrees with pointCount', () => {
-    const b = packRides(RIDES)
+    const b = wireOf(packRides(RIDES))
     try {
       validateRides({ ...manifestFor(b), pointCount: 99 }, b)
       throw new Error('should have thrown')

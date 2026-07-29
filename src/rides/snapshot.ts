@@ -11,12 +11,26 @@ import type { Ride } from './types.ts'
  * v2: the dataset now includes rides outside the metro. Same layout, but
  * rideCount and totalMeters describe all riding rather than metro riding, and
  * the bbox can span the country.
+ *
+ * v3: ships Float32 offsets instead of Float64 positions. The browser
+ * converted one into the other on load and discarded the Float64.
  */
-export const RIDES_SNAPSHOT_VERSION = 2
+export const RIDES_SNAPSHOT_VERSION = 3
 
-export type RidesBuffers = {
+/** What the build packs. Float64, because bbox and origin derive from it. */
+export type PackedRidesBuffers = {
   /** Flat [lon, lat, ...] Float64. */
   positions: Float64Array
+  /** rideCount + 1 point offsets; last entry is the total point count. */
+  startIndices: Uint32Array
+  /** Ride start time in epoch ms, one per ride. For the M6 timeline. */
+  times: Float64Array
+}
+
+/** What the browser fetches. */
+export type RidesBuffers = {
+  /** Flat [dLon, dLat, ...] Float32, relative to the manifest origin. */
+  offsets: Float32Array
   /** rideCount + 1 point offsets; last entry is the total point count. */
   startIndices: Uint32Array
   /** Ride start time in epoch ms, one per ride. For the M6 timeline. */
@@ -32,12 +46,14 @@ export type RidesManifest = {
   pointCount: number
   totalMeters: number
   /** Meters clipped from each end. Part of what the data means. */
+  /** Origin the Float32 offsets are relative to; the bbox centre. */
+  origin: [number, number]
   clipMeters: number
   resampleMeters: number
   bbox: Bbox
   rejected: Record<RejectReason, number>
   byteLengths: {
-    positions: number
+    offsets: number
     startIndices: number
     times: number
   }
@@ -55,7 +71,7 @@ export class RidesSnapshotError extends Error {
   }
 }
 
-export function packRides(rides: Ride[]): RidesBuffers {
+export function packRides(rides: Ride[]): PackedRidesBuffers {
   let pointCount = 0
   for (const r of rides) pointCount += r.points.length
 
@@ -79,7 +95,7 @@ export function packRides(rides: Ride[]): RidesBuffers {
 }
 
 /** Flat [lon, lat, ...] for one ride. Test and debug helper. */
-export function ridePoints(buffers: RidesBuffers, index: number): number[] {
+export function ridePoints(buffers: PackedRidesBuffers, index: number): number[] {
   const start = buffers.startIndices[index]
   const end = buffers.startIndices[index + 1]
   return Array.from(buffers.positions.subarray(start * 2, end * 2))
@@ -95,7 +111,7 @@ export function validateRides(manifest: RidesManifest, buffers: RidesBuffers): v
 
   const expected = manifest.byteLengths
   const actual = {
-    positions: buffers.positions.byteLength,
+    offsets: buffers.offsets.byteLength,
     startIndices: buffers.startIndices.byteLength,
     times: buffers.times.byteLength,
   }

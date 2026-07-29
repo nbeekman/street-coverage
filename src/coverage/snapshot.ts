@@ -1,3 +1,4 @@
+import type { Bbox } from '../geo/bounds.ts'
 import type { RegionGroup } from '../network/regions.ts'
 import type { Run } from './segments.ts'
 
@@ -7,10 +8,15 @@ import type { Run } from './segments.ts'
  * The match radius is part of the meaning: the same buffers built at 15 m and
  * at 25 m describe different claims about the world, so changing the default
  * radius is a version bump even though no field moves.
+ *
+ * v2: ships Float32 offsets instead of Float64 positions, halving the largest
+ * payload. The browser converted one into the other on load and discarded the
+ * Float64; coverage itself is computed offline from data/raw.
  */
-export const COVERAGE_SNAPSHOT_VERSION = 1
+export const COVERAGE_SNAPSHOT_VERSION = 2
 
-export type CoverageBuffers = {
+/** What the build packs. Float64, because bbox and origin derive from it. */
+export type PackedCoverageBuffers = {
   /** Flat [lon, lat, ...] Float64. Adjacent runs share a boundary vertex. */
   positions: Float64Array
   /** runCount + 1 vertex offsets; last entry is the total vertex count. */
@@ -19,8 +25,18 @@ export type CoverageBuffers = {
   flags: Uint8Array
 }
 
+/** What the browser fetches: half the bytes, and what the GPU wants. */
+export type CoverageBuffers = {
+  /** Flat [dLon, dLat, ...] Float32, relative to the region's origin. */
+  offsets: Float32Array
+  /** runCount + 1 vertex offsets; last entry is the total vertex count. */
+  startIndices: Uint32Array
+  /** 1 ridden, 0 unridden. One per run. */
+  flags: Uint8Array
+}
+
 export type ByteLengths = {
-  positions: number
+  offsets: number
   startIndices: number
   flags: number
 }
@@ -37,6 +53,10 @@ export type RegionCoverage = {
   coveredMeters: number
   runCount: number
   riddenRunCount: number
+  /** Origin the Float32 offsets are relative to; the region bbox centre. */
+  origin: [number, number]
+  /** Extent of this region, so the browser need not derive it. */
+  bbox: Bbox
   positionCount: number
   byteLengths: ByteLengths
 }
@@ -85,7 +105,7 @@ export type PackedWay = {
   runs: readonly Run[]
 }
 
-export function packCoverage(ways: readonly PackedWay[]): CoverageBuffers {
+export function packCoverage(ways: readonly PackedWay[]): PackedCoverageBuffers {
   let runCount = 0
   let vertexCount = 0
   for (const way of ways) {
@@ -119,7 +139,7 @@ export function packCoverage(ways: readonly PackedWay[]): CoverageBuffers {
 }
 
 /** Coordinates of one run, as a plain array. Test and debug helper. */
-export function runCoords(buffers: CoverageBuffers, runIndex: number): number[] {
+export function runCoords(buffers: PackedCoverageBuffers, runIndex: number): number[] {
   const start = buffers.startIndices[runIndex]
   const end = buffers.startIndices[runIndex + 1]
   return Array.from(buffers.positions.subarray(start * 2, end * 2))
@@ -139,7 +159,7 @@ export function validateCoverage(
 
   const expected = region.byteLengths
   const actual: ByteLengths = {
-    positions: buffers.positions.byteLength,
+    offsets: buffers.offsets.byteLength,
     startIndices: buffers.startIndices.byteLength,
     flags: buffers.flags.byteLength,
   }

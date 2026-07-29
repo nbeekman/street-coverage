@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { centerOf, toLngLatOffsets } from '../geo/bounds.ts'
 import { splitIntoRuns } from './segments.ts'
 import {
   COVERAGE_SNAPSHOT_VERSION,
@@ -8,15 +9,28 @@ import {
   validateCoverage,
   type CoverageBuffers,
   type CoverageManifest,
+  type PackedCoverageBuffers,
   type PackedWay,
   type RegionCoverage,
 } from './snapshot.ts'
 
 const LINE = [0, 0, 1, 1, 2, 2, 3, 3]
 
+const BBOX = { minLon: 0, minLat: 0, maxLon: 3, maxLat: 3 }
+const ORIGIN = centerOf(BBOX)
+
+/** What the build ships: Float32 offsets, no Float64 positions. */
+function wireOf(p: PackedCoverageBuffers): CoverageBuffers {
+  return {
+    offsets: toLngLatOffsets(p.positions, ORIGIN),
+    startIndices: p.startIndices,
+    flags: p.flags,
+  }
+}
+
 function bytesOf(b: CoverageBuffers) {
   return {
-    positions: b.positions.byteLength,
+    offsets: b.offsets.byteLength,
     startIndices: b.startIndices.byteLength,
     flags: b.flags.byteLength,
   }
@@ -37,6 +51,8 @@ function regionFor(b: CoverageBuffers, overrides: Partial<RegionCoverage> = {}):
     runCount,
     riddenRunCount: b.flags.reduce((s, f) => s + f, 0),
     positionCount: b.startIndices[runCount],
+    origin: ORIGIN,
+    bbox: BBOX,
     byteLengths: bytesOf(b),
     ...overrides,
   }
@@ -121,9 +137,9 @@ describe('packCoverage', () => {
 })
 
 describe('validateCoverage', () => {
-  const buffers = packCoverage([
-    { coords: LINE, runs: splitIntoRuns([true, true, false, false]) },
-  ])
+  const buffers = wireOf(
+    packCoverage([{ coords: LINE, runs: splitIntoRuns([true, true, false, false]) }]),
+  )
 
   it('accepts a consistent snapshot', () => {
     const region = regionFor(buffers)
@@ -144,7 +160,7 @@ describe('validateCoverage', () => {
 
   it('rejects a truncated buffer', () => {
     const region = regionFor(buffers, {
-      byteLengths: { ...bytesOf(buffers), positions: bytesOf(buffers).positions + 8 },
+      byteLengths: { ...bytesOf(buffers), offsets: bytesOf(buffers).offsets + 8 },
     })
     try {
       validateCoverage(manifestFor([region]), region, buffers)

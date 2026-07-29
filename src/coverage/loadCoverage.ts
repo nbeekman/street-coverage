@@ -1,4 +1,4 @@
-import { bboxOf, centerOf, toLngLatOffsets, type Bbox } from '../geo/bounds.ts'
+import type { Bbox } from '../geo/bounds.ts'
 import { fetchJson } from '../network/loadSnapshot.ts'
 import {
   validateCoverage,
@@ -61,14 +61,14 @@ export async function loadCoverage(
 
   for (const region of manifest.regions) {
     const base = `coverage/${region.regionId}`
-    const [pos, starts, flags] = await Promise.all([
-      getBuffer(fetchImpl, `${base}/positions.bin`, region.regionId),
+    const [offsetBytes, starts, flags] = await Promise.all([
+      getBuffer(fetchImpl, `${base}/offsets.bin`, region.regionId),
       getBuffer(fetchImpl, `${base}/startIndices.bin`, region.regionId),
       getBuffer(fetchImpl, `${base}/flags.bin`, region.regionId),
     ])
 
     const buffers: CoverageBuffers = {
-      positions: new Float64Array(pos),
+      offsets: new Float32Array(offsetBytes),
       startIndices: new Uint32Array(starts),
       flags: new Uint8Array(flags),
     }
@@ -76,15 +76,14 @@ export async function loadCoverage(
     // Throws CoverageError with a specific code on version or size mismatch.
     validateCoverage(manifest, region, buffers)
 
-    const bbox = bboxOf(buffers.positions)
-    const origin = centerOf(bbox)
+    // Both precomputed at build time; no Float64 reaches the browser.
     regions.push({
       id: region.regionId,
       region,
       buffers,
-      bbox,
-      origin,
-      offsets: toLngLatOffsets(buffers.positions, origin),
+      bbox: region.bbox,
+      origin: region.origin,
+      offsets: buffers.offsets,
     })
   }
 

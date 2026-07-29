@@ -1,4 +1,3 @@
-import { bboxOf, centerOf, toLngLatOffsets } from '../geo/bounds.ts'
 import { validateRides, type RidesBuffers, type RidesManifest } from './snapshot.ts'
 
 export type LoadedRides = {
@@ -41,19 +40,19 @@ export async function loadRides(
   }
 
   const [pos, starts, times] = await Promise.all([
-    get('positions.bin'),
+    get('offsets.bin'),
     get('startIndices.bin'),
     get('times.bin'),
   ])
 
   const buffers: RidesBuffers = {
-    positions: new Float64Array(pos),
+    offsets: new Float32Array(pos),
     startIndices: new Uint32Array(starts),
     times: new Float64Array(times),
   }
 
   validateRides(manifest, buffers)
 
-  const origin = centerOf(bboxOf(buffers.positions))
-  return { manifest, buffers, origin, offsets: toLngLatOffsets(buffers.positions, origin) }
+  // Both precomputed at build time; no Float64 reaches the browser.
+  return { manifest, buffers, origin: manifest.origin, offsets: buffers.offsets }
 }
