@@ -160,7 +160,7 @@ export const REGIONS: readonly Region[] = [
   // roads are mostly park trails and would put 100% out of reach.
   {
     id: 'sw-metro-unincorporated',
-    name: 'SW Metro (unincorporated)',
+    name: 'SW Metro',
     osmId: 0,
     osmKind: 'polygon',
     group: 'metro-core',
@@ -188,7 +188,7 @@ export const REGIONS: readonly Region[] = [
   // up what nothing else covers.
   {
     id: 'cherry-creek-corridor',
-    name: 'Cherry Creek corridor (unincorporated)',
+    name: 'Cherry Creek corridor',
     osmId: 0,
     osmKind: 'polygon',
     group: 'metro-core',

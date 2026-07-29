@@ -431,3 +431,39 @@ Same network, same rides, radius varied:
 credits streets merely ridden past, and nothing here distinguishes a genuine match from a
 false one. The numbers above say what a wider radius *gains*; they say nothing about what it
 wrongly claims. Establishing that needs ground truth this project does not have.
+
+## Zoom-out performance: two failed attempts
+
+Neither approach landed. Recording both so the next attempt does not repeat them.
+
+**Attempt 1 — viewport in React state.** Culling needs zoom and bounds, so `MapView` held
+them in state and updated on `moveend`. That re-renders react-map-gl's `<Map>`, whose
+`setProps` calls `_updateSize` and threw `Cannot read properties of undefined (reading
+'width')` on every move. The map froze; frame rate fell from 6 to 2. Reverting `MapView`
+alone removed the exception, which is what pinned the cause. maplibre was correctly pinned at
+5.24.0, so this was *not* the documented v6 trap.
+
+**Attempt 2 — a deck.gl CompositeLayer.** Avoids React entirely: `renderLayers` reads
+`this.context.viewport`. Two problems in sequence.
+
+Without a `shouldUpdateState` override the composite never re-renders on camera change, so
+the zoom gate was evaluated once at construction and never again — it compiled, rendered, and
+silently did nothing. Adding the override back made it re-run, and the frame rate at the
+*default* zoom collapsed to 1 fps: worse than the 48–60 fps baseline it was meant to improve.
+
+Reverted. The map is back to its known-good state.
+
+### What the failures actually establish
+
+Rebuilding the layer list on camera change is the thing that cannot be afforded here. Each
+`createCoverageLayer` call constructs a fresh `data` object around the binary attributes, and
+deck.gl cannot diff binary payloads by value — so a rebuild re-uploads all 613,505 vertices.
+Any culling scheme that recreates layers per move pays that cost on every frame.
+
+**A viable attempt would memoize the `data` object per region first**, so a rebuilt layer
+carries the same buffer reference and deck.gl's diff is a no-op. Only then does per-viewport
+culling become affordable. That is the prerequisite both attempts skipped.
+
+The measurement that motivated all this is unchanged: 6 fps at continental zoom, 60 fps with
+the network off screen, 69,791 paths and 613,505 vertices rasterizing into a few hundred
+pixels.

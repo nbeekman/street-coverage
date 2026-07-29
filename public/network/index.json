@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-28T21:58:57.310Z",
+  "generatedAt": "2026-07-29T03:25:55.814Z",
   "regions": [
     {
       "id": "denver",
@@ -40,7 +40,7 @@
     },
     {
       "id": "sw-metro-unincorporated",
-      "name": "SW Metro (unincorporated)",
+      "name": "SW Metro",
       "group": "metro-core",
       "wayCount": 3535,
       "positionCount": 36374,
@@ -103,7 +103,7 @@
     },
     {
       "id": "cherry-creek-corridor",
-      "name": "Cherry Creek corridor (unincorporated)",
+      "name": "Cherry Creek corridor",
       "group": "metro-core",
       "wayCount": 900,
       "positionCount": 7487,

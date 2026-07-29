@@ -1,11 +1,11 @@
 {
   "version": 3,
   "regionId": "sw-metro-unincorporated",
-  "regionName": "SW Metro (unincorporated)",
+  "regionName": "SW Metro",
   "group": "metro-core",
   "osmId": 0,
   "osmKind": "polygon",
-  "generatedAt": "2026-07-28T21:58:57.304Z",
+  "generatedAt": "2026-07-29T03:25:55.807Z",
   "osmTimestamp": "2026-07-28T21:57:16Z",
   "queryHash": "63febc32b6787048",
   "bbox": {
