@@ -16,7 +16,7 @@ export default function UnitsToggle({ units, onToggle }: Props) {
     <div
       role="group"
       aria-label="Distance units"
-      className="flex overflow-hidden rounded-md border border-white/20 text-xs"
+      className="flex shrink-0 overflow-hidden rounded-md border border-white/20 text-xs"
     >
       {OPTIONS.map((option) => {
         const active = option === units

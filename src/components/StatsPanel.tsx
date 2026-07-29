@@ -100,7 +100,12 @@ export default function StatsPanel({
       }
     >
       <div className="mb-3 flex items-start justify-between gap-3">
-        <div>
+        {/*
+          min-w-0 lets this column shrink. Without it the subtitle grows when
+          the timeline adds 'ridden through 2019' and shoves the units toggle
+          off the edge of the panel.
+        */}
+        <div className="min-w-0">
           <div className="text-4xl font-semibold tabular-nums">
             {percent.toFixed(2)}%
           </div>
