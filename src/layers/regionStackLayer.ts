@@ -21,6 +21,8 @@ import { shouldDrawNetwork, visibleRegions } from './visibility.ts'
  */
 type StackProps<T> = {
   id: string
+  /** Maplibre layer id to insert before; how labels stay above the network. */
+  beforeId?: string
   regions: readonly T[]
   bboxOf: (region: T) => Bbox
   idOf: (region: T) => string

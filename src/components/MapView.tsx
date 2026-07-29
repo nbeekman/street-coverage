@@ -59,6 +59,10 @@ export default function MapView({ regions, rides, coverage, mode }: Props) {
       mode === 'coverage' && coverage
         ? new RegionStackLayer({
             id: 'coverage-stack',
+            // MapboxOverlay reads beforeId from the layers it inserts, and it
+            // inserts this stack -- not its sublayers. Without it here the
+            // whole stack lands on top of the basemap's labels.
+            beforeId: labelLayerId,
             regions: coverage.regions,
             bboxOf: (r: (typeof coverage.regions)[number]) => r.bbox,
             idOf: (r: (typeof coverage.regions)[number]) => r.id,
@@ -67,6 +71,7 @@ export default function MapView({ regions, rides, coverage, mode }: Props) {
           })
         : new RegionStackLayer({
             id: 'network-stack',
+            beforeId: labelLayerId,
             regions,
             bboxOf: (r: (typeof regions)[number]) => r.manifest.bbox,
             idOf: (r: (typeof regions)[number]) => r.id,
