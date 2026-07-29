@@ -28,6 +28,8 @@ type Props = {
   onModeChange: (mode: ViewMode) => void
   year: YearFilter
   onYearChange: Dispatch<SetStateAction<YearFilter>>
+  playing: boolean
+  onPlayingChange: (playing: boolean) => void
   units: Units
   onToggleUnits: () => void
   /** Drawer state; only meaningful below the md breakpoint. */
@@ -42,6 +44,8 @@ export default function StatsPanel({
   onModeChange,
   year,
   onYearChange,
+  playing,
+  onPlayingChange,
   units,
   onToggleUnits,
   open,
@@ -121,7 +125,10 @@ export default function StatsPanel({
             {year !== null && coverage.coverage && (
               <span className="text-amber-300">
                 {' · '}
-                {year.kind === 'through' ? 'ridden through' : 'ridden during'}{' '}
+                {/* Only coverage accumulates; a rides frame is one year. */}
+                {year.kind === 'through' && mode === 'coverage'
+                  ? 'ridden through'
+                  : 'ridden during'}{' '}
                 {calendarYearOf(year, coverage.coverage.manifest.years)}
               </span>
             )}
@@ -133,7 +140,10 @@ export default function StatsPanel({
       <div className="mb-3">
         <ViewToggle
           mode={mode}
-          onChange={onModeChange}
+          onChange={(next) => {
+            onPlayingChange(false)
+            onModeChange(next)
+          }}
           // Rides load on demand, so availability cannot be known before
           // switching. The panel reports an absent snapshot once it tries.
           ridesAvailable
@@ -145,11 +155,17 @@ export default function StatsPanel({
             <YearSelector
               years={coverage.coverage.manifest.years}
               filter={year}
-              onChange={onYearChange}
+              onChange={(next) => {
+                onPlayingChange(false)
+                onYearChange(next)
+              }}
             />
             <Timeline
               years={coverage.coverage.manifest.years}
               filter={year}
+              cumulative={mode === 'coverage'}
+              playing={playing}
+              onPlayingChange={onPlayingChange}
               onChange={onYearChange}
             />
           </div>
@@ -264,7 +280,7 @@ export default function StatsPanel({
             {formatDistance(rideStats?.meters ?? 0, units)} {unit} ridden
             {selectedYear !== null && (
               <span className="text-amber-300">
-                {year?.kind === 'through' ? ' through ' : ' in '}
+                {' in '}
                 {selectedYear}
               </span>
             )}

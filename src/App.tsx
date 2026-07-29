@@ -12,6 +12,9 @@ import { useUnits } from './units/useUnits.ts'
 export default function App() {
   const [mode, setMode] = useState<ViewMode>('coverage')
   const [year, setYear] = useState<YearFilter>(null)
+  // Lifted out of Timeline so the year buttons and the view toggle can stop
+  // playback -- interacting with the panel should take control back.
+  const [playing, setPlaying] = useState(false)
   // Each view fetches only its own geometry. Coverage mode never needs the
   // network snapshot: the coverage manifest carries every field the stats
   // table shows, so loading it would be 5.3 MB to read four numbers from.
@@ -81,6 +84,8 @@ export default function App() {
         onModeChange={setMode}
         year={year}
         onYearChange={setYear}
+        playing={playing}
+        onPlayingChange={setPlaying}
         units={units}
         onToggleUnits={toggleUnits}
         open={panelOpen}

@@ -1,10 +1,18 @@
-import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react'
+import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react'
 import type { YearFilter } from '../coverage/yearFilter.ts'
 
 type Props = {
   /** Calendar years with rides, ascending. */
   years: readonly number[]
   filter: YearFilter
+  /**
+   * Coverage accumulates, so its timeline reads 'through 2019'. Ride traces
+   * do not -- each frame draws only that year's rides -- so the same slider
+   * has to describe itself differently depending on what it is driving.
+   */
+  cumulative: boolean
+  playing: boolean
+  onPlayingChange: (playing: boolean) => void
   /** A setter, not a plain callback: playing advances from the previous
    * value, and reading that from a stale closure would skip years. */
   onChange: Dispatch<SetStateAction<YearFilter>>
@@ -24,8 +32,14 @@ const FRAME_MS = 900
  * run buffers the year filter already uses, so scrubbing costs one pass over
  * ~70,000 runs and no fetching.
  */
-export default function Timeline({ years, filter, onChange }: Props) {
-  const [playing, setPlaying] = useState(false)
+export default function Timeline({
+  years,
+  filter,
+  cumulative,
+  playing,
+  onPlayingChange,
+  onChange,
+}: Props) {
   const timer = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Which year the slider sits at. All-time parks it at the end, since
@@ -42,7 +56,7 @@ export default function Timeline({ years, filter, onChange }: Props) {
         // Stop at the end rather than looping: the point is watching it fill
         // up, and a loop that silently resets makes the last frame ambiguous.
         if (at >= years.length - 1) {
-          setPlaying(false)
+          onPlayingChange(false)
           return current
         }
         return { kind: 'through', index: at + 1 }
@@ -58,7 +72,7 @@ export default function Timeline({ years, filter, onChange }: Props) {
   const play = () => {
     // Replaying from the end would show nothing happening.
     if (index >= years.length - 1) onChange({ kind: 'through', index: 0 })
-    setPlaying(true)
+    onPlayingChange(true)
   }
 
   return (
@@ -66,7 +80,7 @@ export default function Timeline({ years, filter, onChange }: Props) {
       <div className="flex items-center gap-2">
         <button
           type="button"
-          onClick={() => (playing ? setPlaying(false) : play())}
+          onClick={() => (playing ? onPlayingChange(false) : play())}
           aria-label={playing ? 'Pause timeline' : 'Play timeline'}
           className="rounded border border-white/25 px-2 py-0.5 text-xs text-neutral-200 hover:bg-white/10"
         >
@@ -79,7 +93,7 @@ export default function Timeline({ years, filter, onChange }: Props) {
           value={index}
           aria-label="Show coverage as of year"
           onChange={(e) => {
-            setPlaying(false)
+            onPlayingChange(false)
             onChange({ kind: 'through', index: Number(e.target.value) })
           }}
           className="h-1 flex-1 accent-amber-300"
@@ -89,7 +103,9 @@ export default function Timeline({ years, filter, onChange }: Props) {
         </span>
       </div>
       <div className="mt-1 text-xs text-neutral-500">
-        Everything ridden through {years[index]}
+        {cumulative
+          ? `Everything ridden through ${years[index]}`
+          : `Rides from ${years[index]}`}
       </div>
     </div>
   )
