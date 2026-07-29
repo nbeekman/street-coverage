@@ -1,4 +1,4 @@
-import { useState, type Dispatch, type SetStateAction } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
 import type { CoverageState } from '../coverage/useCoverage.ts'
 import type { NetworkState } from '../network/useNetwork.ts'
 import type { RidesState } from '../rides/useRides.ts'
@@ -9,7 +9,6 @@ import {
   shortDistanceLabel,
   type Units,
 } from '../units/units.ts'
-import InfoIcon from './InfoIcon.tsx'
 import MapKey from './MapKey.tsx'
 import { calendarYearOf, filteredTotals, type YearFilter } from '../coverage/yearFilter.ts'
 import { coreTotals, regionRows } from './regionRows.ts'
@@ -51,7 +50,6 @@ export default function StatsPanel({
   open,
 }: Props) {
   const fps = useFps()
-  const [showSegmentInfo, setShowSegmentInfo] = useState(false)
 
   // Rows come from whichever snapshot this mode loaded. Coverage mode never
   // fetches the network, so the table is driven by the coverage manifest.
@@ -185,15 +183,7 @@ export default function StatsPanel({
         <thead className="text-neutral-400">
           <tr>
             <th className="text-left font-normal">Region</th>
-            <th className="pl-2 text-right font-normal whitespace-nowrap">
-              Segments
-              <InfoIcon
-                open={showSegmentInfo}
-                onToggle={() => setShowSegmentInfo((v) => !v)}
-                label="What is a segment?"
-                controls="segment-info"
-              />
-            </th>
+            <th className="pl-2 text-right font-normal">Segments</th>
             <th className="pl-2 text-right font-normal">{unit}</th>
             <th className="pl-2 text-right font-normal">Ridden</th>
             <th className="pl-2 text-right font-normal">%</th>
@@ -237,18 +227,6 @@ export default function StatsPanel({
       </table>
       </div>
 
-      {showSegmentInfo && (
-        <div
-          id="segment-info"
-          role="note"
-          className="mt-2 rounded border border-white/15 bg-white/5 p-2 text-xs text-neutral-300"
-        >
-          A <strong>segment</strong> is one piece of road as OpenStreetMap stores it, not a
-          whole street. OSM splits a street wherever something changes — an intersection, a
-          city boundary, a speed limit, a bike lane. Segments here average about 180 m, and a
-          long street is many of them: East Colfax Avenue alone is 277.
-        </div>
-      )}
 
       {coverage.status === 'ready' && coverage.coverage && totals && (
         <div className="mt-3 border-t border-white/20 pt-2">
