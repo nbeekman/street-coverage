@@ -133,7 +133,7 @@ export async function fetchRegion(
       const res = await fetchImpl(url, {
         method: 'POST',
         body: query,
-        headers: { 'User-Agent': 'street-coverage/0.1 (github.com/nbeekman)' },
+        headers: { 'User-Agent': 'cycling-denver/0.1 (github.com/nbeekman)' },
         signal: controller.signal,
       })
       if (res.status === 429) {

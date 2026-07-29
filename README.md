@@ -1,4 +1,4 @@
-# Street Coverage
+# Cycling Denver
 
 Ride every street in a city. The map fills in as you do.
 
