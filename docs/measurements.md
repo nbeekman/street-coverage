@@ -3,6 +3,13 @@
 Baseline numbers for the M7 performance write-up. Update whenever the snapshot is
 rebuilt; note the snapshot version and OSM timestamp.
 
+**About the figures below.** Network numbers — ways, vertices, kilometres per region — are
+properties of OpenStreetMap and reproducible by anyone who runs the fetch. Ride numbers come
+from **one sample Strava export** used during development, and are kept only because the
+engineering findings (grid sizing, trace density, radius sensitivity) are meaningless without
+the data that produced them. They are illustrative, not a target: your own export will
+produce entirely different coverage figures.
+
 ## M1 — snapshot build
 
 Snapshot version 2. Fetched 2026-07-28. Filter includes bike-legal `path`/`bridleway`.
@@ -166,8 +173,9 @@ Combined decode (network + rides) is 2,783 ms, up from 1,105 ms for the network 
 
 ### The out-of-region 25
 
-Not errors. These are rides outside the metro-core bbox — travel, RAGBRAI, and Summit
-County. They will import once their regions are added to the registry and fetched.
+Not errors. These are rides whose bbox falls outside the metro-core regions — travel, tours,
+and riding in areas the registry does not yet cover. They score coverage once those regions
+are added and fetched.
 
 ---
 
@@ -234,10 +242,10 @@ Splitting ways into runs adds ~1,150 paths over the plain network and costs ~12 
 the network-only baseline, largely from the per-run color and width accessors. Initial
 decode is 1,709 ms.
 
-### The three zeros are real
+### Zero-coverage regions are real, not a matching failure
 
-Cherry Hills Village, Morrison, and Bow Mar all report 0.00%. Probing the nearest ride point
-to each confirms these are genuine, not a matching failure:
+Three regions report 0.00% in this sample. Probing the nearest ride point to each confirms
+the zeros are genuine — no ride came near — rather than a matching failure:
 
 | Region | Nearest ride point |
 |---|---:|
@@ -291,8 +299,8 @@ denominator with sidewalks.
 
 ## All rides, everywhere
 
-The importer previously rejected 25 rides as out-of-region. It now keeps them: a ride in Iowa
-is still a ride, and it costs only the bytes of its geometry. Coverage is unaffected — a
+The importer previously rejected out-of-region rides. It now keeps them: a ride in another
+state is still a ride, and it costs only the bytes of its geometry. Coverage is unaffected — a
 rebuild produced a byte-identical 3.70%, confirming that out-of-region traces credit nothing.
 
 | | Metro only | All rides |
@@ -329,8 +337,8 @@ Park so the park keeps its own ways rather than being absorbed by the city surro
 | Covered | 348 km | 348 km |
 | **Headline** | 3.70% | **2.85%** |
 
-Covered distance did not move by a single metre — only the denominator grew. **Aurora itself
-reads 0.00%: 2 nodes hit of 133,494.** That is the honest answer to "is the east side
+Covered distance did not move by a single metre — only the denominator grew. In this sample dataset **Aurora reads 0.00% — 2 nodes hit of 133,494**, because the sample
+contains essentially no riding there. That is the honest answer to "is the east side
 covered", and it is worth more than a flattering percentage.
 
 Dedup did its job on the overlap: `cherry-creek-corridor` fell from 938 ways / 108 km to

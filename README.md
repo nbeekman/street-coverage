@@ -1,8 +1,22 @@
 # Street Coverage
 
-Ride every street in the Denver metro. The map fills in as you do.
+Ride every street in a city. The map fills in as you do.
 
-The network renders, rides import, and coverage computes: **2.86% of 12,346 km** so far.
+Import a Strava export, match the traces against the OpenStreetMap street network, and get a
+percentage that goes up: **what share of the metro's street distance you have actually
+ridden**, with ridden streets lit and unridden ones dim.
+
+**Configured for the Denver metro** — 19 regions, ~68,000 ways, ~12,300 km. That is the
+denominator, and it is what the headline percentage measures. The region registry is a single
+file (`src/network/regions.ts`), so pointing this at another metro means editing that list and
+re-fetching; nothing else is Denver-specific.
+
+**Rides outside the configured area still render.** They draw as traces wherever they
+happened — another state, another country — they simply score no coverage, because there is
+no fetched street network there to credit. So the map doubles as a record of everywhere you
+have ridden, while the percentage stays a meaningful measure of the area you chose.
+
+No ride data ships with this repo. The numbers you see are whatever your own export produces.
 
 ## Setup
 
@@ -50,7 +64,7 @@ coverage denominator stays comparable between snapshots.
 
 The browser feeds those arrays straight to a deck.gl `PathLayer` as binary attributes.
 Geometry is stored Float64 for coverage math but uploaded as Float32 offsets from a
-per-region origin: raw Float32 lng/lat carries ~1.4 m of error at Denver's longitude,
+per-region origin: raw Float32 lng/lat carries ~1.4 m of error at these longitudes,
 which is unusable next to a 25 m coverage radius.
 
 ## Regions
@@ -72,9 +86,11 @@ order, so the headline denominator never double-counts. Two consequences worth k
   fetches 14,276 ways and keeps only the 3,200 no boundary region claimed. No
   border-tracing needed.
 
-The headline percentage covers the `metro-core` group only. Away regions (Summit County,
-and an Iowa/RAGBRAI route corridor after M2) are tracked separately and excluded from it,
-so the number on screen stays a meaningful progress bar.
+The headline percentage covers the `metro-core` group only. Regions in the other groups —
+`metro-outer`, `mountain`, `route` — are tracked separately and excluded from it, so the
+number on screen stays a meaningful progress bar rather than drifting every time somewhere
+distant is added. Use those groups for places you ride occasionally: a mountain county, a
+tour corridor, a town you visit.
 
 ## Rides
 
@@ -87,10 +103,11 @@ Ride traces are **never committed** — `data/rides/` and `public/rides/` are gi
 because they are personal location data. A fresh clone shows the street network and no
 rides until you re-import.
 
-**Every ride is imported, including rides far outside the metro.** RAGBRAI, Summit County
-and travel rides all draw on the map; they simply score no coverage, because there is no
-network out there to credit. The manifest records how many fall outside so the panel can say
-so. Pass `--metro-only` to reject them instead.
+**Every ride is imported, including rides far outside the configured metro.** Tours, trips
+and rides in other states all draw on the map wherever they happened; they simply score no
+coverage, because no street network was fetched there to credit. The manifest records how
+many fall outside, so the panel can report the split. Pass `--metro-only` to reject them
+instead.
 
 **Privacy clipping** removes the first and last 500 m of every ride (`--clip-meters` to
 change), and runs inside the importer so unclipped coordinates never reach disk. The cost
@@ -99,14 +116,15 @@ is real and permanent: streets within 500 m of any ride start may never reach 10
 **Rejected automatically,** with counts reported by reason:
 
 - **Virtual rides** — Zwift sets `subSport: virtualActivity`, and its coordinates are in
-  the Solomon Sea, ~13,000 km from Denver.
+  the Solomon Sea, far from any real riding.
 - **No GPS** — trainer sessions.
 
 Out-of-region is no longer a rejection; see above.
 
-**Strava exports FIT, not GPX.** The 2026-07-28 archive was 225 files, 100% `.fit.gz`.
-FIT stores positions as *semicircles* and the Garmin SDK does not convert them, even with
-`applyScaleAndOffset` — see `src/rides/semicircles.ts`.
+**Strava exports FIT, not GPX.** Expect `.fit.gz` for device recordings, `.gpx` only for
+manual entries; a test archive contained no GPX at all. FIT stores positions as
+*semicircles* and the Garmin SDK does not convert them, even with `applyScaleAndOffset` —
+see `src/rides/semicircles.ts`.
 
 ## Coverage
 
@@ -118,18 +136,18 @@ npm run build:coverage -- --radius 15
 **What counts as ridden.** A node is *hit* when a ride point passed within **25 m**. A
 segment counts as ridden when **both** its endpoints are hit — the "both" is what stops a
 single stray GPS point from crediting a stretch never ridden. The headline percentage is
-ridden meters over total meters, so it reads as "2.86% of the metro's street distance".
+ridden meters over total meters, so it reads as a share of the metro's street distance.
 
 Coverage output is **gitignored** for the same reason ride traces are: which streets someone
 has ridden is location data, and publishing it would undo the privacy clipping.
 
 **Traces are densified to 10 m before matching.** Coverage asks whether a ride *point* came
 within 25 m of a node, but the rider traveled the *line between* points. Real traces have a
-median gap of 23.5 m and a tail past 250 m, so a node mid-gap was missed despite being ridden
-over. Densifying recovered 11 km of genuine coverage — see `src/coverage/densify.ts`.
+median gap of ~23 m and a tail past 250 m, so a node mid-gap was missed despite being ridden
+over. Densifying recovers that coverage — see `src/coverage/densify.ts`.
 
 **Ways are split into runs** of consecutive ridden or unridden segments, so a half-ridden
-street renders half bright at the point you turned off rather than as a uniform average.
+street renders half bright at the point the rider turned off, rather than as a uniform average.
 
 Three limits, none of them bugs:
 

@@ -49,3 +49,18 @@ export function toLngLatOffsets(
   }
   return offsets
 }
+
+/**
+ * Do two bounding boxes overlap? Touching edges count as overlapping.
+ *
+ * Lives here rather than beside its first caller because it is pure geometry:
+ * ride filtering and viewport culling both need it.
+ */
+export function bboxesIntersect(a: Bbox, b: Bbox): boolean {
+  return (
+    a.minLon <= b.maxLon &&
+    a.maxLon >= b.minLon &&
+    a.minLat <= b.maxLat &&
+    a.maxLat >= b.minLat
+  )
+}

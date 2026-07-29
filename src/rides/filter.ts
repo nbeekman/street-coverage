@@ -1,5 +1,8 @@
-import type { Bbox } from '../geo/bounds.ts'
+import { bboxesIntersect, type Bbox } from '../geo/bounds.ts'
 import type { RawTrack, TrackPoint } from './types.ts'
+
+// Re-exported for callers (and tests) that reached for it here first.
+export { bboxesIntersect }
 
 export type RejectReason =
   | 'no-positions'
@@ -36,15 +39,6 @@ export function padBbox(bbox: Bbox, meters: number): Bbox {
     maxLon: bbox.maxLon + dLon,
     maxLat: bbox.maxLat + dLat,
   }
-}
-
-export function bboxesIntersect(a: Bbox, b: Bbox): boolean {
-  return (
-    a.minLon <= b.maxLon &&
-    a.maxLon >= b.minLon &&
-    a.minLat <= b.maxLat &&
-    a.maxLat >= b.minLat
-  )
 }
 
 // Compared lowercased, so these entries must be lowercase too.
