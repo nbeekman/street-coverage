@@ -13,7 +13,7 @@ export type NetworkState = {
   decodeMs: number
 }
 
-export function useNetwork(): NetworkState {
+export function useNetwork(enabled: boolean): NetworkState {
   const [state, setState] = useState<NetworkState>({
     status: 'loading',
     regions: [],
@@ -21,6 +21,10 @@ export function useNetwork(): NetworkState {
   })
 
   useEffect(() => {
+    // Nothing is fetched until this view needs it. Once loaded it stays
+    // loaded, so switching modes back and forth costs nothing.
+    if (!enabled) return
+
     let canceled = false
     const started = performance.now()
 
@@ -69,7 +73,7 @@ export function useNetwork(): NetworkState {
     return () => {
       canceled = true
     }
-  }, [])
+  }, [enabled])
 
   return state
 }

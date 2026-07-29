@@ -8,7 +8,7 @@ export type CoverageState = {
   decodeMs: number
 }
 
-export function useCoverage(): CoverageState {
+export function useCoverage(enabled: boolean): CoverageState {
   const [state, setState] = useState<CoverageState>({
     status: 'loading',
     coverage: null,
@@ -16,6 +16,10 @@ export function useCoverage(): CoverageState {
   })
 
   useEffect(() => {
+    // Nothing is fetched until this view needs it. Once loaded it stays
+    // loaded, so switching modes back and forth costs nothing.
+    if (!enabled) return
+
     let canceled = false
     const started = performance.now()
 
@@ -48,7 +52,7 @@ export function useCoverage(): CoverageState {
     return () => {
       canceled = true
     }
-  }, [])
+  }, [enabled])
 
   return state
 }

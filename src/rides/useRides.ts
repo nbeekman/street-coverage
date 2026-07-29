@@ -7,10 +7,14 @@ export type RidesState = {
   error?: string
 }
 
-export function useRides(): RidesState {
+export function useRides(enabled: boolean): RidesState {
   const [state, setState] = useState<RidesState>({ status: 'loading', rides: null })
 
   useEffect(() => {
+    // Nothing is fetched until this view needs it. Once loaded it stays
+    // loaded, so switching modes back and forth costs nothing.
+    if (!enabled) return
+
     let canceled = false
     loadRides()
       .then((rides) => {
@@ -26,7 +30,7 @@ export function useRides(): RidesState {
         })
       })
     return () => { canceled = true }
-  }, [])
+  }, [enabled])
 
   return state
 }

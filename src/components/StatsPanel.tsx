@@ -11,6 +11,7 @@ import {
 } from '../units/units.ts'
 import InfoIcon from './InfoIcon.tsx'
 import MapKey from './MapKey.tsx'
+import { coreTotals, regionRows } from './regionRows.ts'
 import UnitsToggle from './UnitsToggle.tsx'
 import ViewToggle from './ViewToggle.tsx'
 import type { ViewMode } from './viewMode.ts'
@@ -41,19 +42,12 @@ export default function StatsPanel({
   const fps = useFps()
   const [showSegmentInfo, setShowSegmentInfo] = useState(false)
 
-  const core = state.regions.filter((r) => r.group === 'metro-core')
-  const totalSegments = core.reduce((s, r) => s + r.manifest.wayCount, 0)
-  const totalMeters = core.reduce((s, r) => s + r.manifest.totalMeters, 0)
-
+  // Rows come from whichever snapshot this mode loaded. Coverage mode never
+  // fetches the network, so the table is driven by the coverage manifest.
+  const rows = regionRows(state.regions, coverage.coverage?.manifest ?? null)
+  const core = rows.filter((r) => r.group === 'metro-core')
+  const { segments: totalSegments, totalMeters, coveredMeters, percent } = coreTotals(rows)
   const totals = coverage.coverage?.manifest.totals ?? null
-  const byRegion = new Map(
-    (coverage.coverage?.manifest.regions ?? []).map((r) => [r.regionId, r]),
-  )
-
-  // Until the coverage build has run there is no numerator, and showing
-  // anything other than zero would be a lie.
-  const coveredMeters = totals?.coveredMeters ?? 0
-  const percent = totalMeters === 0 ? 0 : (coveredMeters / totalMeters) * 100
 
   const unit = distanceLabel(units)
 
@@ -86,12 +80,15 @@ export default function StatsPanel({
         <ViewToggle
           mode={mode}
           onChange={onModeChange}
-          ridesAvailable={rides.status === 'ready' && rides.rides !== null}
+          // Rides load on demand, so availability cannot be known before
+          // switching. The panel reports an absent snapshot once it tries.
+          ridesAvailable
+
         />
         <MapKey mode={mode} />
       </div>
 
-      {state.status === 'loading' && (
+      {state.status === 'loading' && state.regions.length > 0 && (
         <div className="mb-2 text-xs text-amber-300">
           Loading… {state.regions.length} region
           {state.regions.length === 1 ? '' : 's'} decoded
@@ -118,25 +115,24 @@ export default function StatsPanel({
           </tr>
         </thead>
         <tbody>
-          {state.regions.map((r) => {
-            const c = byRegion.get(r.id)
-            const pct = c && c.totalMeters > 0 ? (c.coveredMeters / c.totalMeters) * 100 : 0
+          {rows.map((r) => {
+            const covered = r.coveredMeters
+            const pct =
+              covered !== undefined && r.totalMeters > 0 ? (covered / r.totalMeters) * 100 : 0
             return (
               <tr key={r.id} className="border-t border-white/10">
                 <td className="py-0.5 text-left">{r.name}</td>
-                <td className="pl-2 text-right">{r.manifest.wayCount.toLocaleString()}</td>
+                <td className="pl-2 text-right">{r.segments.toLocaleString()}</td>
+                <td className="pl-2 text-right">{formatDistance(r.totalMeters, units)}</td>
                 <td className="pl-2 text-right">
-                  {formatDistance(r.manifest.totalMeters, units)}
-                </td>
-                <td className="pl-2 text-right">
-                  {c ? formatDistance(c.coveredMeters, units, 1) : '—'}
+                  {covered !== undefined ? formatDistance(covered, units, 1) : '—'}
                 </td>
                 <td
                   className={
                     pct > 0 ? 'pl-2 text-right text-amber-300' : 'pl-2 text-right text-neutral-600'
                   }
                 >
-                  {c ? pct.toFixed(2) : '—'}
+                  {covered !== undefined ? pct.toFixed(2) : '—'}
                 </td>
               </tr>
             )
@@ -220,7 +216,12 @@ export default function StatsPanel({
       )}
 
       <div className="mt-3 flex justify-between text-xs text-neutral-500">
-        <span>snapshot v{state.regions[0]?.manifest.version ?? '—'}</span>
+        <span>
+          snapshot v
+          {coverage.coverage?.manifest.version ??
+            state.regions[0]?.manifest.version ??
+            '—'}
+        </span>
         <span>{state.decodeMs} ms decode</span>
         <span>{fps} fps</span>
       </div>
