@@ -15,6 +15,15 @@ export type CoverageWay = {
 export type NodeHitResult = {
   /** OSM ids of nodes with a ride point within the radius. */
   hitNodeIds: Set<number>
+  /**
+   * Per hit node, a bitmask of the year indices it was hit in.
+   *
+   * Kept alongside the set rather than replacing it: a zero mask is a real
+   * possibility if years are not being tracked, and conflating "not hit" with
+   * "hit in no year" is exactly the kind of silent wrong answer this project
+   * keeps guarding against.
+   */
+  yearMasks: Map<number, number>
   /** Distinct nodes considered -- the denominator for the hit rate. */
   uniqueNodeCount: number
 }
@@ -33,6 +42,7 @@ export function computeNodeHits(
   radiusMeters: number,
 ): NodeHitResult {
   const hitNodeIds = new Set<number>()
+  const yearMasks = new Map<number, number>()
   const seen = new Set<number>()
 
   for (const way of ways) {
@@ -40,13 +50,15 @@ export function computeNodeHits(
       const id = way.nodeRefs[v]
       if (seen.has(id)) continue
       seen.add(id)
-      if (grid.hasPointWithin(way.coords[v * 2], way.coords[v * 2 + 1], radiusMeters)) {
+      const mask = grid.yearsWithin(way.coords[v * 2], way.coords[v * 2 + 1], radiusMeters)
+      if (mask !== 0) {
         hitNodeIds.add(id)
+        yearMasks.set(id, mask)
       }
     }
   }
 
-  return { hitNodeIds, uniqueNodeCount: seen.size }
+  return { hitNodeIds, yearMasks, uniqueNodeCount: seen.size }
 }
 
 /** Per-vertex hit flags for one way, from the global hit set. */

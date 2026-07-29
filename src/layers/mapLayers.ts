@@ -21,6 +21,8 @@ export type MapLayerInput = {
    * above the labels and are rebuilt once it resolves.
    */
   labelLayerId: string | undefined
+  /** Year bitmask; 0 is all-time. */
+  yearMask: number
 }
 
 /**
@@ -38,6 +40,7 @@ export function buildMapLayers({
   coverage,
   mode,
   labelLayerId,
+  yearMask,
 }: MapLayerInput): Layer[] {
   // Coverage mode paints the network by what has been ridden. Rides mode falls
   // back to class colors and draws the traces on top, so the two are genuinely
@@ -51,7 +54,7 @@ export function buildMapLayers({
           bboxOf: (r: (typeof coverage.regions)[number]) => r.bbox,
           idOf: (r: (typeof coverage.regions)[number]) => r.id,
           build: (r: (typeof coverage.regions)[number]) =>
-            createCoverageLayer(r, labelLayerId),
+            createCoverageLayer(r, labelLayerId, yearMask),
         })
       : new RegionStackLayer({
           id: 'network-stack',

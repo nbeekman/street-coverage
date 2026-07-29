@@ -61,16 +61,20 @@ export async function loadCoverage(
 
   for (const region of manifest.regions) {
     const base = `coverage/${region.regionId}`
-    const [offsetBytes, starts, flags] = await Promise.all([
+    const [offsetBytes, starts, flags, yearBytes, meterBytes] = await Promise.all([
       getBuffer(fetchImpl, `${base}/offsets.bin`, region.regionId),
       getBuffer(fetchImpl, `${base}/startIndices.bin`, region.regionId),
       getBuffer(fetchImpl, `${base}/flags.bin`, region.regionId),
+      getBuffer(fetchImpl, `${base}/years.bin`, region.regionId),
+      getBuffer(fetchImpl, `${base}/meters.bin`, region.regionId),
     ])
 
     const buffers: CoverageBuffers = {
       offsets: new Float32Array(offsetBytes),
       startIndices: new Uint32Array(starts),
       flags: new Uint8Array(flags),
+      years: new Uint32Array(yearBytes),
+      meters: new Float32Array(meterBytes),
     }
 
     // Throws CoverageError with a specific code on version or size mismatch.

@@ -41,16 +41,17 @@ type Props = {
   rides: LoadedRides | null
   coverage: LoadedCoverage | null
   mode: ViewMode
+  yearMask: number
 }
 
-export default function MapView({ regions, rides, coverage, mode }: Props) {
+export default function MapView({ regions, rides, coverage, mode, yearMask }: Props) {
   // The id of the style's first symbol layer. Everything deck draws is
   // inserted before it, which puts every label above every generated line.
   const [labelLayerId, setLabelLayerId] = useState<string | undefined>(undefined)
 
   const layers = useMemo(
-    () => buildMapLayers({ regions, rides, coverage, mode, labelLayerId }),
-    [regions, rides, coverage, mode, labelLayerId],
+    () => buildMapLayers({ regions, rides, coverage, mode, labelLayerId, yearMask }),
+    [regions, rides, coverage, mode, labelLayerId, yearMask],
   )
 
   return (

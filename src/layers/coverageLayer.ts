@@ -1,6 +1,7 @@
 import { COORDINATE_SYSTEM } from '@deck.gl/core'
 import { PathLayer } from '@deck.gl/layers'
 import type { LoadedCoverageRegion } from '../coverage/loadCoverage.ts'
+import { runCounts } from '../coverage/yearFilter.ts'
 import { RIDDEN_COLOR, UNRIDDEN_COLOR, type Rgb } from './colors.ts'
 
 type Memo = {
@@ -9,8 +10,6 @@ type Memo = {
     startIndices: Uint32Array
     attributes: { getPath: { value: Float32Array; size: 2 } }
   }
-  getColor: (_: unknown, info: { index: number }) => Rgb
-  getWidth: (_: unknown, info: { index: number }) => number
 }
 
 /**
@@ -30,26 +29,31 @@ const memo = new WeakMap<LoadedCoverageRegion, Memo>()
 export function coverageMemo(region: LoadedCoverageRegion): Memo {
   let m = memo.get(region)
   if (m === undefined) {
-    const flags = region.buffers.flags
     m = {
       data: {
         length: region.region.runCount,
         startIndices: region.buffers.startIndices,
         attributes: { getPath: { value: region.offsets, size: 2 } },
       },
-      // With binary data deck.gl passes (null, {index, data, target}).
-      getColor: (_, info) => (flags[info.index] === 1 ? RIDDEN_COLOR : UNRIDDEN_COLOR),
-      // Ridden runs draw slightly heavier so they stay legible where they
-      // overlap the dim network at low zoom.
-      getWidth: (_, info) => (flags[info.index] === 1 ? 1.6 : 1),
     }
     memo.set(region, m)
   }
   return m
 }
 
-export function buildCoverageLayerProps(region: LoadedCoverageRegion) {
-  const { data, getColor, getWidth } = coverageMemo(region)
+export function buildCoverageLayerProps(region: LoadedCoverageRegion, yearMask = 0) {
+  const { data } = coverageMemo(region)
+  const { flags, years } = region.buffers
+
+  // Accessors depend on the filter, so they are not memoized -- but `data` is,
+  // which is the part deck.gl would otherwise re-upload. updateTriggers below
+  // recomputes only the colour attribute when the filter changes.
+  const shows = (i: number) => runCounts(flags[i], years[i], yearMask)
+  const getColor = (_: unknown, info: { index: number }): Rgb =>
+    shows(info.index) ? RIDDEN_COLOR : UNRIDDEN_COLOR
+  const getWidth = (_: unknown, info: { index: number }): number =>
+    shows(info.index) ? 1.6 : 1
+
   return {
     id: `coverage-${region.id}`,
     data,
@@ -65,12 +69,16 @@ export function buildCoverageLayerProps(region: LoadedCoverageRegion) {
     jointRounded: true,
     pickable: false,
     updateTriggers: {
-      getColor: [region.region.runCount],
-      getWidth: [region.region.runCount],
+      getColor: [region.region.runCount, yearMask],
+      getWidth: [region.region.runCount, yearMask],
     },
   }
 }
 
-export function createCoverageLayer(region: LoadedCoverageRegion, beforeId?: string): PathLayer {
-  return new PathLayer({ ...buildCoverageLayerProps(region), beforeId } as never)
+export function createCoverageLayer(
+  region: LoadedCoverageRegion,
+  beforeId?: string,
+  yearMask = 0,
+): PathLayer {
+  return new PathLayer({ ...buildCoverageLayerProps(region, yearMask), beforeId } as never)
 }

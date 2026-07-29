@@ -46,6 +46,7 @@ async function loadRides(): Promise<{
   manifest: RidesManifest
   positions: Float64Array
   startIndices: Uint32Array
+  times: Float64Array
 }> {
   let manifest: RidesManifest
   try {
@@ -74,7 +75,12 @@ async function loadRides(): Promise<{
     idxBuf.buffer.slice(idxBuf.byteOffset, idxBuf.byteOffset + idxBuf.byteLength),
   )
 
-  return { manifest, positions, startIndices }
+  const timeBuf = await readFile(join(RIDES_DIR, 'times.bin'))
+  const times = new Float64Array(
+    timeBuf.buffer.slice(timeBuf.byteOffset, timeBuf.byteOffset + timeBuf.byteLength),
+  )
+
+  return { manifest, positions, startIndices, times }
 }
 
 /**
@@ -92,18 +98,49 @@ async function renderedWayCounts(): Promise<Map<string, number>> {
 async function main(): Promise<void> {
   const radiusMeters = parseRadius(process.argv.slice(2))
 
-  const { manifest: rides, positions: rawPositions, startIndices } = await loadRides()
+  const { manifest: rides, positions: rawPositions, startIndices, times } = await loadRides()
+
+  // Only years that actually have rides, so the selector never offers a dead
+  // option -- this archive has no 2023.
+  const years = [...new Set([...times].map((ms) => new Date(ms).getUTCFullYear()))].sort(
+    (a, b) => a - b,
+  )
+  if (years.length > 32) {
+    throw new Error(`${years.length} distinct years; the run bitmask holds 32.`)
+  }
+  const yearIndexOf = new Map(years.map((y, i) => [y, i]))
   const sources = await loadRegionSources()
   const rendered = await renderedWayCounts()
 
-  const ridePositions = densifyTrace(rawPositions, startIndices, DENSIFY_METERS)
+  // Densify per ride so each output point can carry its ride's year.
+  const perRide: Float64Array[] = []
+  const yearIndexPerPoint: number[] = []
+  for (let r = 0; r < rides.rideCount; r++) {
+    const one = densifyTrace(
+      rawPositions.subarray(startIndices[r] * 2, startIndices[r + 1] * 2),
+      new Uint32Array([0, startIndices[r + 1] - startIndices[r]]),
+      DENSIFY_METERS,
+    )
+    perRide.push(one)
+    const yi = yearIndexOf.get(new Date(times[r]).getUTCFullYear()) ?? 0
+    for (let i = 0; i < one.length / 2; i++) yearIndexPerPoint.push(yi)
+  }
+  const ridePositions = new Float64Array(yearIndexPerPoint.length * 2)
+  {
+    let at = 0
+    for (const one of perRide) {
+      ridePositions.set(one, at)
+      at += one.length
+    }
+  }
+  const yearIndex = Uint8Array.from(yearIndexPerPoint)
   const densifiedCount = ridePositions.length / 2
 
   const rideBbox: Bbox =
     ridePositions.length > 0
       ? bboxOf(ridePositions)
       : { minLon: 0, minLat: 0, maxLon: 0, maxLat: 0 }
-  const grid = new PointGrid(ridePositions, radiusMeters, rideBbox)
+  const grid = new PointGrid(ridePositions, radiusMeters, rideBbox, yearIndex)
 
   console.log(
     `${rides.pointCount.toLocaleString()} ride points from ${rides.rideCount} rides, ` +
@@ -128,7 +165,7 @@ async function main(): Promise<void> {
       )
     }
 
-    const { hitNodeIds } = computeNodeHits(ways, grid, radiusMeters)
+    const { hitNodeIds, yearMasks } = computeNodeHits(ways, grid, radiusMeters)
 
     const packedWays: PackedWay[] = []
     let totalMeters = 0
@@ -137,11 +174,12 @@ async function main(): Promise<void> {
 
     for (const way of ways) {
       const hits = wayHits(way, hitNodeIds)
-      const cov = wayCoverage(way.coords, hits)
+      const vertexYears = way.nodeRefs.map((id) => yearMasks.get(id) ?? 0)
+      const cov = wayCoverage(way.coords, hits, vertexYears)
       totalMeters += cov.totalMeters
       coveredMeters += cov.coveredMeters
       if (cov.complete) waysComplete++
-      packedWays.push({ coords: way.coords, runs: cov.runs })
+      packedWays.push({ coords: way.coords, runs: cov.runs, runMeters: cov.runMeters })
     }
 
     if (coveredMeters > totalMeters + 1e-6) {
@@ -177,6 +215,8 @@ async function main(): Promise<void> {
         offsets: offsets.byteLength,
         startIndices: buffers.startIndices.byteLength,
         flags: buffers.flags.byteLength,
+        years: buffers.years.byteLength,
+        meters: buffers.meters.byteLength,
       },
     }
 
@@ -185,6 +225,8 @@ async function main(): Promise<void> {
     await writeFile(join(dir, 'offsets.bin'), Buffer.from(offsets.buffer))
     await writeFile(join(dir, 'startIndices.bin'), Buffer.from(buffers.startIndices.buffer))
     await writeFile(join(dir, 'flags.bin'), Buffer.from(buffers.flags.buffer))
+    await writeFile(join(dir, 'years.bin'), Buffer.from(buffers.years.buffer))
+    await writeFile(join(dir, 'meters.bin'), Buffer.from(buffers.meters.buffer))
 
     regions.push(entry)
 
@@ -217,6 +259,7 @@ async function main(): Promise<void> {
     ridePointCount: rides.pointCount,
     densifiedPointCount: densifiedCount,
     densifyMeters: DENSIFY_METERS,
+    years,
     regions,
     totals,
   }
@@ -227,6 +270,8 @@ async function main(): Promise<void> {
     const offsetBytes = await readFile(join(dir, 'offsets.bin'))
     const startIndices = await readFile(join(dir, 'startIndices.bin'))
     const flags = await readFile(join(dir, 'flags.bin'))
+    const yearsBin = await readFile(join(dir, 'years.bin'))
+    const metersBin = await readFile(join(dir, 'meters.bin'))
     validateCoverage(manifest, region, {
       offsets: new Float32Array(
         offsetBytes.buffer.slice(
@@ -242,6 +287,12 @@ async function main(): Promise<void> {
       ),
       flags: new Uint8Array(
         flags.buffer.slice(flags.byteOffset, flags.byteOffset + flags.byteLength),
+      ),
+      years: new Uint32Array(
+        yearsBin.buffer.slice(yearsBin.byteOffset, yearsBin.byteOffset + yearsBin.byteLength),
+      ),
+      meters: new Float32Array(
+        metersBin.buffer.slice(metersBin.byteOffset, metersBin.byteOffset + metersBin.byteLength),
       ),
     })
   }

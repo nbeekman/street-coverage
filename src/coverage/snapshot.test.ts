@@ -25,6 +25,8 @@ function wireOf(p: PackedCoverageBuffers): CoverageBuffers {
     offsets: toLngLatOffsets(p.positions, ORIGIN),
     startIndices: p.startIndices,
     flags: p.flags,
+    years: p.years,
+    meters: p.meters,
   }
 }
 
@@ -33,6 +35,8 @@ function bytesOf(b: CoverageBuffers) {
     offsets: b.offsets.byteLength,
     startIndices: b.startIndices.byteLength,
     flags: b.flags.byteLength,
+    years: b.years.byteLength,
+    meters: b.meters.byteLength,
   }
 }
 
@@ -68,6 +72,7 @@ function manifestFor(regions: RegionCoverage[]): CoverageManifest {
     ridePointCount: 151382,
     densifiedPointCount: 400000,
     densifyMeters: 10,
+    years: [2024, 2025],
     regions,
     totals: {
       wayCount: 1,
@@ -82,7 +87,7 @@ function manifestFor(regions: RegionCoverage[]): CoverageManifest {
 
 describe('packCoverage', () => {
   it('round-trips a single fully ridden run exactly', () => {
-    const way: PackedWay = { coords: LINE, runs: splitIntoRuns([true, true, true, true]) }
+    const way: PackedWay = { coords: LINE, runMeters: [], runs: splitIntoRuns([true, true, true, true]) }
     const b = packCoverage([way])
 
     expect(b.flags).toEqual(new Uint8Array([1]))
@@ -91,7 +96,7 @@ describe('packCoverage', () => {
   })
 
   it('duplicates the boundary vertex when a way splits', () => {
-    const way: PackedWay = { coords: LINE, runs: splitIntoRuns([true, true, false, false]) }
+    const way: PackedWay = { coords: LINE, runMeters: [], runs: splitIntoRuns([true, true, false, false]) }
     const b = packCoverage([way])
 
     expect(b.flags).toEqual(new Uint8Array([1, 0]))
@@ -104,14 +109,14 @@ describe('packCoverage', () => {
 
   it('preserves coordinates bit for bit', () => {
     const precise = [-105.0123456789012, 39.7098765432109, -104.9876543210987, 39.6543210987654]
-    const way: PackedWay = { coords: precise, runs: splitIntoRuns([true, true]) }
+    const way: PackedWay = { coords: precise, runMeters: [], runs: splitIntoRuns([true, true]) }
     const b = packCoverage([way])
     expect(runCoords(b, 0)).toEqual(precise)
   })
 
   it('concatenates runs across several ways', () => {
-    const a: PackedWay = { coords: LINE, runs: splitIntoRuns([true, true, true, true]) }
-    const c: PackedWay = { coords: LINE, runs: splitIntoRuns([false, true, true, false]) }
+    const a: PackedWay = { coords: LINE, runMeters: [], runs: splitIntoRuns([true, true, true, true]) }
+    const c: PackedWay = { coords: LINE, runMeters: [], runs: splitIntoRuns([false, true, true, false]) }
     const b = packCoverage([a, c])
 
     expect(b.flags.length).toBe(1 + 3)
@@ -128,8 +133,8 @@ describe('packCoverage', () => {
 
   it('ends startIndices at the true vertex count', () => {
     const ways: PackedWay[] = [
-      { coords: LINE, runs: splitIntoRuns([true, false, true, false]) },
-      { coords: LINE, runs: splitIntoRuns([true, true, true, true]) },
+      { coords: LINE, runMeters: [], runs: splitIntoRuns([true, false, true, false]) },
+      { coords: LINE, runMeters: [], runs: splitIntoRuns([true, true, true, true]) },
     ]
     const b = packCoverage(ways)
     expect(b.startIndices[b.startIndices.length - 1]).toBe(b.positions.length / 2)
@@ -138,7 +143,7 @@ describe('packCoverage', () => {
 
 describe('validateCoverage', () => {
   const buffers = wireOf(
-    packCoverage([{ coords: LINE, runs: splitIntoRuns([true, true, false, false]) }]),
+    packCoverage([{ coords: LINE, runMeters: [], runs: splitIntoRuns([true, true, false, false]) }]),
   )
 
   it('accepts a consistent snapshot', () => {

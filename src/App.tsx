@@ -3,6 +3,7 @@ import MapView from './components/MapView.tsx'
 import PanelToggle from './components/PanelToggle.tsx'
 import StatsPanel from './components/StatsPanel.tsx'
 import type { ViewMode } from './components/viewMode.ts'
+import { maskFor, type YearFilter } from './coverage/yearFilter.ts'
 import { useCoverage } from './coverage/useCoverage.ts'
 import { useNetwork } from './network/useNetwork.ts'
 import { useRides } from './rides/useRides.ts'
@@ -10,6 +11,7 @@ import { useUnits } from './units/useUnits.ts'
 
 export default function App() {
   const [mode, setMode] = useState<ViewMode>('coverage')
+  const [year, setYear] = useState<YearFilter>(null)
   // Each view fetches only its own geometry. Coverage mode never needs the
   // network snapshot: the coverage manifest carries every field the stats
   // table shows, so loading it would be 5.3 MB to read four numbers from.
@@ -57,6 +59,7 @@ export default function App() {
         rides={rides.rides}
         coverage={coverage.coverage}
         mode={mode}
+        yearMask={maskFor(year)}
       />
       <PanelToggle open={panelOpen} onToggle={() => setPanelOpen((v) => !v)} />
       {panelOpen && (
@@ -73,6 +76,8 @@ export default function App() {
         coverage={coverage}
         mode={mode}
         onModeChange={setMode}
+        year={year}
+        onYearChange={setYear}
         units={units}
         onToggleUnits={toggleUnits}
         open={panelOpen}

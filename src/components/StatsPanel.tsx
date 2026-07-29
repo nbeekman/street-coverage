@@ -11,7 +11,9 @@ import {
 } from '../units/units.ts'
 import InfoIcon from './InfoIcon.tsx'
 import MapKey from './MapKey.tsx'
+import { filteredTotals, type YearFilter } from '../coverage/yearFilter.ts'
 import { coreTotals, regionRows } from './regionRows.ts'
+import YearSelector from './YearSelector.tsx'
 import UnitsToggle from './UnitsToggle.tsx'
 import ViewToggle from './ViewToggle.tsx'
 import type { ViewMode } from './viewMode.ts'
@@ -23,6 +25,8 @@ type Props = {
   coverage: CoverageState
   mode: ViewMode
   onModeChange: (mode: ViewMode) => void
+  year: YearFilter
+  onYearChange: (year: YearFilter) => void
   units: Units
   onToggleUnits: () => void
   /** Drawer state; only meaningful below the md breakpoint. */
@@ -35,6 +39,8 @@ export default function StatsPanel({
   coverage,
   mode,
   onModeChange,
+  year,
+  onYearChange,
   units,
   onToggleUnits,
   open,
@@ -44,7 +50,16 @@ export default function StatsPanel({
 
   // Rows come from whichever snapshot this mode loaded. Coverage mode never
   // fetches the network, so the table is driven by the coverage manifest.
-  const rows = regionRows(state.regions, coverage.coverage?.manifest ?? null)
+  const base = regionRows(state.regions, coverage.coverage?.manifest ?? null)
+  // With a year selected, covered distance is recomputed from the run buffers
+  // rather than read from the manifest, which only holds all-time figures.
+  const filtered =
+    year !== null && coverage.coverage
+      ? filteredTotals(coverage.coverage.regions, year)
+      : null
+  const rows = filtered
+    ? base.map((r) => ({ ...r, coveredMeters: filtered.byRegion.get(r.id) ?? 0 }))
+    : base
   const core = rows.filter((r) => r.group === 'metro-core')
   const { segments: totalSegments, totalMeters, coveredMeters, percent } = coreTotals(rows)
   const totals = coverage.coverage?.manifest.totals ?? null
@@ -71,6 +86,16 @@ export default function StatsPanel({
             {formatDistance(coveredMeters, units)} of{' '}
             {formatDistance(totalMeters, units)} {unit} across {core.length} metro-core
             regions
+            {/*
+              A filtered headline has to say so. Without it a screenshot of
+              1.53% is indistinguishable from the all-time figure -- exactly
+              the kind of misleading number this project avoids elsewhere.
+            */}
+            {year !== null && coverage.coverage && (
+              <span className="text-amber-300">
+                {' · '}ridden during {coverage.coverage.manifest.years[year]}
+              </span>
+            )}
           </div>
         </div>
         <UnitsToggle units={units} onToggle={onToggleUnits} />
@@ -86,6 +111,15 @@ export default function StatsPanel({
 
         />
         <MapKey mode={mode} />
+        {coverage.coverage && (
+          <div className="mt-2">
+            <YearSelector
+              years={coverage.coverage.manifest.years}
+              filter={year}
+              onChange={onYearChange}
+            />
+          </div>
+        )}
       </div>
 
       {state.status === 'loading' && state.regions.length > 0 && (

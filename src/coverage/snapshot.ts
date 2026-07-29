@@ -12,8 +12,11 @@ import type { Run } from './segments.ts'
  * v2: ships Float32 offsets instead of Float64 positions, halving the largest
  * payload. The browser converted one into the other on load and discarded the
  * Float64; coverage itself is computed offline from data/raw.
+ *
+ * v3: adds a per-run year bitmask and length, so the year filter is a mask
+ * test over runs rather than a recomputation or a second fetch.
  */
-export const COVERAGE_SNAPSHOT_VERSION = 2
+export const COVERAGE_SNAPSHOT_VERSION = 3
 
 /** What the build packs. Float64, because bbox and origin derive from it. */
 export type PackedCoverageBuffers = {
@@ -23,6 +26,10 @@ export type PackedCoverageBuffers = {
   startIndices: Uint32Array
   /** 1 ridden, 0 unridden. One per run. */
   flags: Uint8Array
+  /** Bitmask of year indices per run; 0 for unridden runs. */
+  years: Uint32Array
+  /** Length of each run in metres. */
+  meters: Float32Array
 }
 
 /** What the browser fetches: half the bytes, and what the GPU wants. */
@@ -33,12 +40,21 @@ export type CoverageBuffers = {
   startIndices: Uint32Array
   /** 1 ridden, 0 unridden. One per run. */
   flags: Uint8Array
+  /**
+   * Bitmask of year indices per run; 0 for unridden runs. Indices refer to
+   * CoverageManifest.years, so the meaning travels with the data.
+   */
+  years: Uint32Array
+  /** Length of each run in metres, so any filter's total is one pass. */
+  meters: Float32Array
 }
 
 export type ByteLengths = {
   offsets: number
   startIndices: number
   flags: number
+  years: number
+  meters: number
 }
 
 export type RegionCoverage = {
@@ -81,6 +97,8 @@ export type CoverageManifest = {
   /** Points after gap-filling; see `densifyTrace`. Part of what the hits mean. */
   densifiedPointCount: number
   densifyMeters: number
+  /** Calendar years with rides, ascending. Bit i of a run mask is years[i]. */
+  years: number[]
   regions: RegionCoverage[]
   /** metro-core only, matching the headline denominator. */
   totals: CoverageTotals
@@ -103,6 +121,8 @@ export type PackedWay = {
   /** Flat [lon, lat, ...]. */
   coords: readonly number[]
   runs: readonly Run[]
+  /** Length of each run in metres, index-aligned with `runs`. */
+  runMeters: readonly number[]
 }
 
 export function packCoverage(ways: readonly PackedWay[]): PackedCoverageBuffers {
@@ -118,13 +138,18 @@ export function packCoverage(ways: readonly PackedWay[]): PackedCoverageBuffers 
   const positions = new Float64Array(vertexCount * 2)
   const startIndices = new Uint32Array(runCount + 1)
   const flags = new Uint8Array(runCount)
+  const years = new Uint32Array(runCount)
+  const meters = new Float32Array(runCount)
 
   let run = 0
   let vertex = 0
   for (const way of ways) {
-    for (const r of way.runs) {
+    for (let i = 0; i < way.runs.length; i++) {
+      const r = way.runs[i]
       startIndices[run] = vertex
       flags[run] = r.ridden ? 1 : 0
+      years[run] = r.years
+      meters[run] = way.runMeters[i]
       for (let v = r.startVertex; v <= r.endVertex; v++) {
         positions[vertex * 2] = way.coords[v * 2]
         positions[vertex * 2 + 1] = way.coords[v * 2 + 1]
@@ -135,7 +160,7 @@ export function packCoverage(ways: readonly PackedWay[]): PackedCoverageBuffers 
   }
   startIndices[runCount] = vertex
 
-  return { positions, startIndices, flags }
+  return { positions, startIndices, flags, years, meters }
 }
 
 /** Coordinates of one run, as a plain array. Test and debug helper. */
@@ -162,6 +187,8 @@ export function validateCoverage(
     offsets: buffers.offsets.byteLength,
     startIndices: buffers.startIndices.byteLength,
     flags: buffers.flags.byteLength,
+    years: buffers.years.byteLength,
+    meters: buffers.meters.byteLength,
   }
   for (const key of Object.keys(expected) as (keyof ByteLengths)[]) {
     if (actual[key] !== expected[key]) {

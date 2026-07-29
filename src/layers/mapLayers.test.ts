@@ -53,6 +53,8 @@ function coverage(): LoadedCoverage {
           positions: new Float64Array([0, 0, 1, 1]),
           startIndices: new Uint32Array([0, 2]),
           flags: new Uint8Array([1]),
+          years: new Uint32Array([0b1]),
+          meters: new Float32Array([100]),
         },
         bbox: { minLon: 0, minLat: 0, maxLon: 1, maxLat: 1 },
         origin: [0, 0],
@@ -75,7 +77,7 @@ function rides(): LoadedRides {
   } as unknown as LoadedRides
 }
 
-const base = { regions: [networkRegion('denver')], labelLayerId: LABEL_ID }
+const base = { regions: [networkRegion('denver')], labelLayerId: LABEL_ID, yearMask: 0 }
 
 describe('buildMapLayers z-order', () => {
   it('puts every coverage-mode layer below the labels', () => {

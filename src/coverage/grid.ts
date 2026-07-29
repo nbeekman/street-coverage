@@ -51,8 +51,17 @@ export class PointGrid {
   private readonly cellLat: number
   private readonly points: Float64Array
 
-  constructor(points: Float64Array, radiusMeters: number, bbox: Bbox) {
+  /** Year index per point, parallel to `points`. Empty when years are unused. */
+  private readonly yearIndex: Uint8Array
+
+  constructor(
+    points: Float64Array,
+    radiusMeters: number,
+    bbox: Bbox,
+    yearIndex: Uint8Array = new Uint8Array(0),
+  ) {
     this.points = points
+    this.yearIndex = yearIndex
     const size = cellSizeDegrees(radiusMeters, bbox)
     this.cellLon = size.lon
     this.cellLat = size.lat
@@ -97,6 +106,39 @@ export class PointGrid {
       }
     }
     return false
+  }
+
+  /**
+   * Bitmask of the years in which some point came within the radius.
+   *
+   * Bit i corresponds to year index i, so the caller decides what the indices
+   * mean. Returns 0 when nothing is in range, which reads the same as `false`
+   * from hasPointWithin.
+   *
+   * Uses the same 3x3 scan: the grid guarantees any point within the radius
+   * lies in those cells, so a year cannot be missed that a hit would not be.
+   */
+  yearsWithin(lon: number, lat: number, radiusMeters: number): number {
+    const cx = Math.floor(lon / this.cellLon)
+    const cy = Math.floor(lat / this.cellLat)
+    let mask = 0
+
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dy = -1; dy <= 1; dy++) {
+        const bucket = this.cells.get(PointGrid.pack(cx + dx, cy + dy))
+        if (!bucket) continue
+        for (const v of bucket) {
+          const d = haversineMeters(lon, lat, this.points[v * 2], this.points[v * 2 + 1])
+          if (d <= radiusMeters) {
+            // With no year index every point counts as year 0, so the mask is
+            // simply non-zero on a hit. Written out rather than relying on
+            // `1 << undefined` happening to equal 1.
+            mask |= 1 << (this.yearIndex.length > 0 ? this.yearIndex[v] : 0)
+          }
+        }
+      }
+    }
+    return mask
   }
 
   /** Occupied cell count. Diagnostics and tests. */

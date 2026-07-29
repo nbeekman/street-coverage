@@ -36,6 +36,8 @@ function fakeCoverageRegion(id: string): LoadedCoverageRegion {
       positions: new Float64Array([0, 0, 1, 1, 2, 2, 3, 3]),
       startIndices: new Uint32Array([0, 2, 4]),
       flags: new Uint8Array([1, 0]),
+      years: new Uint32Array([0b1, 0]),
+      meters: new Float32Array([100, 200]),
     },
     bbox: { minLon: 0, minLat: 0, maxLon: 1, maxLat: 1 },
     origin: [0, 0],
@@ -82,23 +84,31 @@ describe('coverage layer memoization', () => {
     expect(coverageMemo(region).data).toBe(coverageMemo(region).data)
   })
 
-  it('returns the same accessors across calls', () => {
+  it('memoizes data but deliberately not the accessors', () => {
+    // Accessors depend on the year filter, so they are rebuilt per call. That
+    // is cheap; updateTriggers decides whether the colour attribute is
+    // recomputed. Only `data` must keep its identity, because that is the
+    // buffer deck.gl would otherwise re-upload.
     const region = fakeCoverageRegion('denver')
-    expect(coverageMemo(region).getColor).toBe(coverageMemo(region).getColor)
-    expect(coverageMemo(region).getWidth).toBe(coverageMemo(region).getWidth)
+    expect(coverageMemo(region).data).toBe(coverageMemo(region).data)
   })
 
-  it('carries identical references into rebuilt layer props', () => {
+  it('carries the identical data reference into rebuilt layer props', () => {
     const region = fakeCoverageRegion('denver')
     expect(buildCoverageLayerProps(region).data).toBe(buildCoverageLayerProps(region).data)
-    expect(buildCoverageLayerProps(region).getWidth).toBe(
-      buildCoverageLayerProps(region).getWidth,
+  })
+
+  it('keeps the same data reference across year filters', () => {
+    // Changing the filter must not look like new geometry, or every year
+    // click would re-upload the whole metro.
+    const region = fakeCoverageRegion('denver')
+    expect(buildCoverageLayerProps(region, 0).data).toBe(
+      buildCoverageLayerProps(region, 0b100).data,
     )
   })
 
   it('colors ridden runs differently from unridden ones', () => {
-    // The accessor is memoized, so it must still close over the right flags.
-    const { getColor } = coverageMemo(fakeCoverageRegion('denver'))
+    const { getColor } = buildCoverageLayerProps(fakeCoverageRegion('denver'))
     expect(getColor(null, { index: 0 })).not.toEqual(getColor(null, { index: 1 }))
   })
 })
