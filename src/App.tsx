@@ -3,7 +3,7 @@ import MapView from './components/MapView.tsx'
 import PanelToggle from './components/PanelToggle.tsx'
 import StatsPanel from './components/StatsPanel.tsx'
 import type { ViewMode } from './components/viewMode.ts'
-import { maskFor, type YearFilter } from './coverage/yearFilter.ts'
+import { calendarYearOf, maskFor, type YearFilter } from './coverage/yearFilter.ts'
 import { useCoverage } from './coverage/useCoverage.ts'
 import { useNetwork } from './network/useNetwork.ts'
 import { useRides } from './rides/useRides.ts'
@@ -61,7 +61,7 @@ export default function App() {
         mode={mode}
         yearMask={maskFor(year)}
         selectedYear={
-          year !== null ? (coverage.coverage?.manifest.years[year] ?? null) : null
+          year !== null ? (calendarYearOf(year, coverage.coverage?.manifest.years ?? [])) : null
         }
       />
       <PanelToggle open={panelOpen} onToggle={() => setPanelOpen((v) => !v)} />

@@ -518,3 +518,41 @@ actionable.
 
 **The real first-load cost is not JavaScript.** It is ~21 MB of binary snapshots and roughly
 600–1,700 ms of decode. That is the next thing worth attacking.
+
+## M6 — timeline scrubber
+
+Cumulative: at 2020 the map shows everything ridden up to and including 2020. The year
+buttons answer the different question of what was covered *during* one year.
+
+**It needed no new data.** "As of year Y" is a mask of every bit up to Y over the same run
+buffers the year filter already uses, so scrubbing is one pass over ~70,000 runs and no
+fetching. The whole milestone was a different mask plus a slider.
+
+| Through | Headline |
+|---|---:|
+| 2017 | 1.23% |
+| 2018 | 1.32% |
+| 2019 | 1.34% |
+| 2020 | 1.59% |
+| 2021 | 2.35% |
+| 2022 | 2.71% |
+| 2024 | 2.71% |
+| 2025 | 2.82% |
+| 2026 | 2.85% |
+
+Verified monotonically increasing across every position, which is the property a cumulative
+view has to have.
+
+### The last frame does not equal all-time, and that is a real defect
+
+2.85% against an all-time 2.86%. The cause, measured rather than guessed: **16 ridden runs,
+1.5 km, 0.012 percentage points** carry no year at all.
+
+A run's year mask is the intersection of its endpoints' years. A stretch whose two ends were
+first ridden in different years therefore has an empty mask — correct for "during 2022", since
+it was never traversed inside one calendar year, but wrong cumulatively, because by 2026 both
+ends have been ridden.
+
+The fix is a per-run cumulative year, `max(firstYear(a), firstYear(b))`, stored rather than
+derived from the mask. Left undone deliberately: a snapshot format change and a rebuild for a
+hundredth of a percentage point. Recorded so the discrepancy is not rediscovered as a mystery.

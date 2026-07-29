@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type Dispatch, type SetStateAction } from 'react'
 import type { CoverageState } from '../coverage/useCoverage.ts'
 import type { NetworkState } from '../network/useNetwork.ts'
 import type { RidesState } from '../rides/useRides.ts'
@@ -11,8 +11,9 @@ import {
 } from '../units/units.ts'
 import InfoIcon from './InfoIcon.tsx'
 import MapKey from './MapKey.tsx'
-import { filteredTotals, type YearFilter } from '../coverage/yearFilter.ts'
+import { calendarYearOf, filteredTotals, type YearFilter } from '../coverage/yearFilter.ts'
 import { coreTotals, regionRows } from './regionRows.ts'
+import Timeline from './Timeline.tsx'
 import YearSelector from './YearSelector.tsx'
 import UnitsToggle from './UnitsToggle.tsx'
 import ViewToggle from './ViewToggle.tsx'
@@ -26,7 +27,7 @@ type Props = {
   mode: ViewMode
   onModeChange: (mode: ViewMode) => void
   year: YearFilter
-  onYearChange: (year: YearFilter) => void
+  onYearChange: Dispatch<SetStateAction<YearFilter>>
   units: Units
   onToggleUnits: () => void
   /** Drawer state; only meaningful below the md breakpoint. */
@@ -67,7 +68,7 @@ export default function StatsPanel({
   // Ride count and distance follow the year filter too, from the per-ride
   // figures in the snapshot rather than re-derived from render coordinates.
   const selectedYear =
-    year !== null ? (coverage.coverage?.manifest.years[year] ?? null) : null
+    year !== null ? (calendarYearOf(year, coverage.coverage?.manifest.years ?? [])) : null
   const rideStats = (() => {
     const loaded = rides.rides
     if (!loaded) return null
@@ -114,7 +115,9 @@ export default function StatsPanel({
             */}
             {year !== null && coverage.coverage && (
               <span className="text-amber-300">
-                {' · '}ridden during {coverage.coverage.manifest.years[year]}
+                {' · '}
+                {year.kind === 'through' ? 'ridden through' : 'ridden during'}{' '}
+                {calendarYearOf(year, coverage.coverage.manifest.years)}
               </span>
             )}
           </div>
@@ -135,6 +138,11 @@ export default function StatsPanel({
         {coverage.coverage && (
           <div className="mt-2">
             <YearSelector
+              years={coverage.coverage.manifest.years}
+              filter={year}
+              onChange={onYearChange}
+            />
+            <Timeline
               years={coverage.coverage.manifest.years}
               filter={year}
               onChange={onYearChange}
@@ -250,7 +258,10 @@ export default function StatsPanel({
             {(rideStats?.count ?? 0).toLocaleString()} rides ·{' '}
             {formatDistance(rideStats?.meters ?? 0, units)} {unit} ridden
             {selectedYear !== null && (
-              <span className="text-amber-300"> in {selectedYear}</span>
+              <span className="text-amber-300">
+                {year?.kind === 'through' ? ' through ' : ' in '}
+                {selectedYear}
+              </span>
             )}
           </div>
           {rides.rides.manifest.outOfRegionCount > 0 && (
