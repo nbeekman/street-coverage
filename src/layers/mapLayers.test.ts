@@ -77,7 +77,7 @@ function rides(): LoadedRides {
   } as unknown as LoadedRides
 }
 
-const base = { regions: [networkRegion('denver')], labelLayerId: LABEL_ID, yearMask: 0 }
+const base = { regions: [networkRegion('denver')], labelLayerId: LABEL_ID, yearMask: 0, selectedYear: null }
 
 describe('buildMapLayers z-order', () => {
   it('puts every coverage-mode layer below the labels', () => {

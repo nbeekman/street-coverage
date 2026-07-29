@@ -1,4 +1,5 @@
 import type { Bbox } from '../geo/bounds.ts'
+import { pathLengthMeters } from '../geo/haversine.ts'
 import type { RejectReason } from './filter.ts'
 import type { Ride } from './types.ts'
 
@@ -14,8 +15,11 @@ import type { Ride } from './types.ts'
  *
  * v3: ships Float32 offsets instead of Float64 positions. The browser
  * converted one into the other on load and discarded the Float64.
+ *
+ * v4: adds per-ride distance, so a year filter can report exact totals rather
+ * than re-deriving them from Float32 render coordinates.
  */
-export const RIDES_SNAPSHOT_VERSION = 3
+export const RIDES_SNAPSHOT_VERSION = 4
 
 /** What the build packs. Float64, because bbox and origin derive from it. */
 export type PackedRidesBuffers = {
@@ -25,6 +29,8 @@ export type PackedRidesBuffers = {
   startIndices: Uint32Array
   /** Ride start time in epoch ms, one per ride. For the M6 timeline. */
   times: Float64Array
+  /** Length of each ride in metres. */
+  meters: Float32Array
 }
 
 /** What the browser fetches. */
@@ -35,6 +41,8 @@ export type RidesBuffers = {
   startIndices: Uint32Array
   /** Ride start time in epoch ms, one per ride. For the M6 timeline. */
   times: Float64Array
+  /** Length of each ride in metres. */
+  meters: Float32Array
 }
 
 export type RidesManifest = {
@@ -56,6 +64,7 @@ export type RidesManifest = {
     offsets: number
     startIndices: number
     times: number
+    meters: number
   }
 }
 
@@ -78,20 +87,24 @@ export function packRides(rides: Ride[]): PackedRidesBuffers {
   const positions = new Float64Array(pointCount * 2)
   const startIndices = new Uint32Array(rides.length + 1)
   const times = new Float64Array(rides.length)
+  const meters = new Float32Array(rides.length)
 
   let p = 0
   for (let i = 0; i < rides.length; i++) {
     startIndices[i] = p
     times[i] = rides[i].startTime
+    const from = p
     for (const pt of rides[i].points) {
       positions[p * 2] = pt.lon
       positions[p * 2 + 1] = pt.lat
       p++
     }
+    // Measured from the Float64 positions, not the Float32 render offsets.
+    meters[i] = pathLengthMeters(positions, from, p)
   }
   startIndices[rides.length] = p
 
-  return { positions, startIndices, times }
+  return { positions, startIndices, times, meters }
 }
 
 /** Flat [lon, lat, ...] for one ride. Test and debug helper. */
@@ -114,6 +127,7 @@ export function validateRides(manifest: RidesManifest, buffers: RidesBuffers): v
     offsets: buffers.offsets.byteLength,
     startIndices: buffers.startIndices.byteLength,
     times: buffers.times.byteLength,
+    meters: buffers.meters.byteLength,
   }
   for (const key of Object.keys(expected) as (keyof typeof expected)[]) {
     if (actual[key] !== expected[key]) {

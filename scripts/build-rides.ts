@@ -77,10 +77,11 @@ async function main(): Promise<void> {
       offsets: offsets.byteLength,
       startIndices: buffers.startIndices.byteLength,
       times: buffers.times.byteLength,
+      meters: buffers.meters.byteLength,
     },
   }
 
-  validateRides(manifest, { offsets, startIndices: buffers.startIndices, times: buffers.times })
+  validateRides(manifest, { offsets, startIndices: buffers.startIndices, times: buffers.times, meters: buffers.meters })
 
   await mkdir(OUT_DIR, { recursive: true })
   await writeFile(join(OUT_DIR, 'manifest.json'), JSON.stringify(manifest, null, 2))
@@ -88,6 +89,7 @@ async function main(): Promise<void> {
   await writeFile(join(OUT_DIR, 'offsets.bin'), Buffer.from(offsets.buffer))
   await writeFile(join(OUT_DIR, 'startIndices.bin'), Buffer.from(buffers.startIndices.buffer))
   await writeFile(join(OUT_DIR, 'times.bin'), Buffer.from(buffers.times.buffer))
+  await writeFile(join(OUT_DIR, 'meters.bin'), Buffer.from(buffers.meters.buffer))
 
   const bytes =
     manifest.byteLengths.offsets + manifest.byteLengths.startIndices + manifest.byteLengths.times

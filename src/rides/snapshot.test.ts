@@ -31,6 +31,7 @@ function wireOf(p: ReturnType<typeof packRides>) {
     offsets: toLngLatOffsets(p.positions, ORIGIN),
     startIndices: p.startIndices,
     times: p.times,
+    meters: p.meters,
   }
 }
 
@@ -51,6 +52,7 @@ function manifestFor(b: ReturnType<typeof wireOf>): RidesManifest {
       offsets: b.offsets.byteLength,
       startIndices: b.startIndices.byteLength,
       times: b.times.byteLength,
+      meters: b.meters.byteLength,
     },
   }
 }

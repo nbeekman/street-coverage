@@ -64,6 +64,27 @@ export default function StatsPanel({
   const { segments: totalSegments, totalMeters, coveredMeters, percent } = coreTotals(rows)
   const totals = coverage.coverage?.manifest.totals ?? null
 
+  // Ride count and distance follow the year filter too, from the per-ride
+  // figures in the snapshot rather than re-derived from render coordinates.
+  const selectedYear =
+    year !== null ? (coverage.coverage?.manifest.years[year] ?? null) : null
+  const rideStats = (() => {
+    const loaded = rides.rides
+    if (!loaded) return null
+    const { times, meters } = loaded.buffers
+    if (selectedYear === null) {
+      return { count: loaded.manifest.rideCount, meters: loaded.manifest.totalMeters }
+    }
+    let count = 0
+    let total = 0
+    for (let i = 0; i < times.length; i++) {
+      if (new Date(times[i]).getUTCFullYear() !== selectedYear) continue
+      count++
+      total += meters[i]
+    }
+    return { count, meters: total }
+  })()
+
   const unit = distanceLabel(units)
 
   return (
@@ -226,8 +247,11 @@ export default function StatsPanel({
       {rides.status === 'ready' && rides.rides && (
         <div className="mt-3 border-t border-white/20 pt-2">
           <div className="text-xs">
-            {rides.rides.manifest.rideCount.toLocaleString()} rides ·{' '}
-            {formatDistance(rides.rides.manifest.totalMeters, units)} {unit} ridden
+            {(rideStats?.count ?? 0).toLocaleString()} rides ·{' '}
+            {formatDistance(rideStats?.meters ?? 0, units)} {unit} ridden
+            {selectedYear !== null && (
+              <span className="text-amber-300"> in {selectedYear}</span>
+            )}
           </div>
           {rides.rides.manifest.outOfRegionCount > 0 && (
             <div className="mt-1 text-xs text-neutral-500">
@@ -256,7 +280,12 @@ export default function StatsPanel({
             state.regions[0]?.manifest.version ??
             '—'}
         </span>
-        <span>{state.decodeMs} ms decode</span>
+        {/*
+          Whichever snapshot this mode actually loaded. Reading the network's
+          figure unconditionally showed 0 ms in coverage mode, where the
+          network is never fetched.
+        */}
+        <span>{(mode === 'coverage' ? coverage.decodeMs : state.decodeMs)} ms decode</span>
         <span>{fps} fps</span>
       </div>
     </div>

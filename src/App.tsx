@@ -60,6 +60,9 @@ export default function App() {
         coverage={coverage.coverage}
         mode={mode}
         yearMask={maskFor(year)}
+        selectedYear={
+          year !== null ? (coverage.coverage?.manifest.years[year] ?? null) : null
+        }
       />
       <PanelToggle open={panelOpen} onToggle={() => setPanelOpen((v) => !v)} />
       {panelOpen && (

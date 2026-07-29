@@ -39,16 +39,18 @@ export async function loadRides(
     return r.arrayBuffer()
   }
 
-  const [pos, starts, times] = await Promise.all([
+  const [pos, starts, times, metersBytes] = await Promise.all([
     get('offsets.bin'),
     get('startIndices.bin'),
     get('times.bin'),
+    get('meters.bin'),
   ])
 
   const buffers: RidesBuffers = {
     offsets: new Float32Array(pos),
     startIndices: new Uint32Array(starts),
     times: new Float64Array(times),
+    meters: new Float32Array(metersBytes),
   }
 
   validateRides(manifest, buffers)
