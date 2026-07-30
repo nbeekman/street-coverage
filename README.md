@@ -202,7 +202,8 @@ positions.
 
 ## Gotchas worth knowing
 
-Each of these cost real time; they are recorded so they only cost it once.
+The ones you are most likely to hit while running this. The full set, with the reasoning and
+the measurements behind each, is in [docs/learnings.md](docs/learnings.md).
 
 - **Denver is `admin_level=6`, not 8** (relation `1411339`) — it is a consolidated
   city-county. Name-based area lookups are ambiguous across OSM, so the registry pins
@@ -230,7 +231,14 @@ npm test
 ```
 
 Covers `src/geo`, `src/network`, `src/layers`, and the Overpass client. The React
-components are deliberately thin and untested in M1.
+components are deliberately thin and untested.
+
+## Further reading
+
+- **[docs/learnings.md](docs/learnings.md)** — what this project cost to learn: the bugs that
+  returned plausible wrong answers, why the architecture is shaped this way, what was tried
+  and dropped, and which limits are decisions rather than defects.
+- **[docs/measurements.md](docs/measurements.md)** — the numbers behind every claim in it.
 
 ## Data
 
