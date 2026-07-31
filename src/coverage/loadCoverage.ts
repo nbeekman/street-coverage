@@ -1,4 +1,5 @@
 import type { Bbox } from '../geo/bounds.ts'
+import { timedOnce } from '../loading/timedOnce.ts'
 import { fetchJson } from '../network/loadSnapshot.ts'
 import {
   validateCoverage,
@@ -93,3 +94,13 @@ export async function loadCoverage(
 
   return { manifest, regions }
 }
+
+/**
+ * The page-wide loader. Coverage mode is re-entered every time the view
+ * toggles back; without the memo that refetched the whole snapshot and made
+ * deck.gl re-upload geometry that was already on screen.
+ *
+ * An absent snapshot throws, and `timedOnce` does not cache rejections, so a
+ * snapshot built while the page is open is picked up on the next switch.
+ */
+export const loadCoverageOnce = timedOnce(loadCoverage)

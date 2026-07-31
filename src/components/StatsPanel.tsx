@@ -171,13 +171,6 @@ export default function StatsPanel({
         )}
       </div>
 
-      {state.status === 'loading' && state.regions.length > 0 && (
-        <div className="mb-2 text-xs text-amber-300">
-          Loading… {state.regions.length} region
-          {state.regions.length === 1 ? '' : 's'} decoded
-        </div>
-      )}
-
       <div className="overflow-x-auto">
       <table className="w-full min-w-[19rem] text-xs tabular-nums">
         <thead className="text-neutral-400">

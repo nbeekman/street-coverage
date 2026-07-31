@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { loadRides, type LoadedRides } from './loadRides.ts'
+import { loadRidesOnce, type LoadedRides } from './loadRides.ts'
 
 export type RidesState = {
   status: 'loading' | 'ready' | 'absent' | 'error'
@@ -11,17 +11,18 @@ export function useRides(enabled: boolean): RidesState {
   const [state, setState] = useState<RidesState>({ status: 'loading', rides: null })
 
   useEffect(() => {
-    // Nothing is fetched until this view needs it. Once loaded it stays
-    // loaded, so switching modes back and forth costs nothing.
+    // Nothing is fetched until this view needs it. The loader memoizes, so
+    // switching back into this view resolves from cache and hands the map the
+    // same object it is already drawing.
     if (!enabled) return
 
     let canceled = false
-    loadRides()
-      .then((rides) => {
+    loadRidesOnce()
+      .then(({ value: rides }) => {
         if (canceled) return
         setState(rides ? { status: 'ready', rides } : { status: 'absent', rides: null })
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         if (canceled) return
         setState({
           status: 'error',

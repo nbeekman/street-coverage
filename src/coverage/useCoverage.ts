@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CoverageAbsent, loadCoverage, type LoadedCoverage } from './loadCoverage.ts'
+import { CoverageAbsent, loadCoverageOnce, type LoadedCoverage } from './loadCoverage.ts'
 
 export type CoverageState = {
   status: 'loading' | 'ready' | 'absent' | 'error'
@@ -16,23 +16,19 @@ export function useCoverage(enabled: boolean): CoverageState {
   })
 
   useEffect(() => {
-    // Nothing is fetched until this view needs it. Once loaded it stays
-    // loaded, so switching modes back and forth costs nothing.
+    // Nothing is fetched until this view needs it. The loader memoizes, so
+    // switching back into this view resolves from cache and hands the map the
+    // same object it is already drawing.
     if (!enabled) return
 
     let canceled = false
-    const started = performance.now()
 
-    async function run() {
-      try {
-        const coverage = await loadCoverage()
+    loadCoverageOnce()
+      .then(({ value: coverage, decodeMs }) => {
         if (canceled) return
-        setState({
-          status: 'ready',
-          coverage,
-          decodeMs: Math.round(performance.now() - started),
-        })
-      } catch (error) {
+        setState({ status: 'ready', coverage, decodeMs })
+      })
+      .catch((error: unknown) => {
         if (canceled) return
         // A missing snapshot means "run the build", not "something broke".
         if (error instanceof CoverageAbsent) {
@@ -43,12 +39,10 @@ export function useCoverage(enabled: boolean): CoverageState {
           status: 'error',
           coverage: null,
           error: error instanceof Error ? error.message : String(error),
-          decodeMs: Math.round(performance.now() - started),
+          decodeMs: 0,
         })
-      }
-    }
+      })
 
-    void run()
     return () => {
       canceled = true
     }

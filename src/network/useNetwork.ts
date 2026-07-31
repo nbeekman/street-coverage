@@ -1,75 +1,59 @@
 import { useEffect, useState } from 'react'
-import { fetchJson, loadRegion, type LoadedRegion } from './loadSnapshot.ts'
-
-type IndexFile = {
-  version: number
-  regions: { id: string; name: string; group: string }[]
-}
+import type { LoadedRegion } from './loadSnapshot.ts'
+import { loadAllRegionsOnce } from './regionLoader.ts'
 
 export type NetworkState = {
   status: 'loading' | 'ready' | 'error'
   regions: LoadedRegion[]
   error?: string
   decodeMs: number
+  /** Regions decoded so far, and how many there are. For the loading screen. */
+  progress: { loaded: number; total: number }
+}
+
+const NOTHING_YET: NetworkState = {
+  status: 'loading',
+  regions: [],
+  decodeMs: 0,
+  progress: { loaded: 0, total: 0 },
 }
 
 export function useNetwork(enabled: boolean): NetworkState {
-  const [state, setState] = useState<NetworkState>({
-    status: 'loading',
-    regions: [],
-    decodeMs: 0,
-  })
+  const [state, setState] = useState<NetworkState>(NOTHING_YET)
 
   useEffect(() => {
-    // Nothing is fetched until this view needs it. Once loaded it stays
-    // loaded, so switching modes back and forth costs nothing.
+    // Nothing is fetched until this view needs it. The loader memoizes, so the
+    // second and every later switch into this view resolves from cache in a
+    // microtask -- the map keeps the regions it already has and never blinks.
     if (!enabled) return
 
     let canceled = false
-    const started = performance.now()
 
-    async function run() {
-      try {
-        const index = await fetchJson<IndexFile>(
-          globalThis.fetch,
-          'network/index.json',
-          'Snapshot index',
-        )
-        if (index.regions.length === 0) {
-          throw new Error('Snapshot index lists zero regions.')
-        }
-
-        const loaded: LoadedRegion[] = []
-        // Render regions as they arrive rather than waiting for all ten.
-        for (const entry of index.regions) {
-          const region = await loadRegion(entry.id)
-          if (canceled) return
-          loaded.push(region)
-          setState({
-            status: 'loading',
-            regions: [...loaded],
-            decodeMs: Math.round(performance.now() - started),
-          })
-        }
-
+    loadAllRegionsOnce((loaded, total) => {
+      // Progress is a counter, not geometry. Committing each region as it
+      // landed is what made the map draw itself one suburb at a time.
+      if (!canceled) {
+        setState((s) => (s.status === 'ready' ? s : { ...s, progress: { loaded, total } }))
+      }
+    })
+      .then(({ value: regions, decodeMs }) => {
         if (canceled) return
         setState({
           status: 'ready',
-          regions: loaded,
-          decodeMs: Math.round(performance.now() - started),
+          regions,
+          decodeMs,
+          progress: { loaded: regions.length, total: regions.length },
         })
-      } catch (error) {
+      })
+      .catch((error: unknown) => {
         if (canceled) return
         setState({
+          ...NOTHING_YET,
           status: 'error',
-          regions: [],
           error: error instanceof Error ? error.message : String(error),
-          decodeMs: Math.round(performance.now() - started),
         })
-      }
-    }
+      })
 
-    void run()
     return () => {
       canceled = true
     }

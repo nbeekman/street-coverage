@@ -250,12 +250,42 @@ identical byte prefixes. Those are no longer shipped; Float32 offsets are ~90% o
 and compress only 18%. **The wire-format change had already taken most of that win, and
 compression could not claim it twice.** Real saving: 1.5 MB.
 
+### Lazy loading is not free unless something remembers
+
+Switching to rides mode painted the network region by region, visibly, and did it on *every*
+switch rather than only the first. Neither cause was in anything rendering-related.
+
+**Progressive rendering suits content that is readable in parts.** The nineteen regions were
+awaited in a loop and committed to state as each one landed — deliberately, to "render regions
+as they arrive rather than waiting for all ten". But a metro network drawing itself a suburb
+at a time reads as a fault, not as progress, and nineteen sequential manifest round-trips were
+serialised for no reason. Loading them concurrently and delivering them together is both
+calmer and faster. Progress belongs on the loading screen as a counter, not on the map as
+geometry.
+
+**"Once loaded it stays loaded" was a comment, not a mechanism.** Each view's hook keys its
+effect on an `enabled` flag, so returning to a view re-ran it and refetched the entire
+snapshot from an empty list. Only React state persisted, and the reload clobbered it on the
+first arrival. Rides mode was refetching 4.8 MB per toggle to hand deck.gl an
+identical-but-new object — which, per the reference-diffing lesson above, re-uploaded every
+trace to redraw what was already on screen.
+
+`timedOnce` memoizes the **promise** rather than the result, so overlapping callers share one
+load. It deliberately does *not* cache rejections: a snapshot built while the page is open
+should be picked up on the next switch, not replaced by a permanent error. It replays the
+original load's duration, because a cache hit costs nothing and reporting `0 ms decode` in the
+panel would misdescribe what the load actually cost — the same class of plausible wrong answer
+as §1.
+
 ---
 
 ## 7. The dev loop will lie to you
 
-**React StrictMode double-invokes effects in development**, so the dev server fetches every
-region twice. Any byte or decode figure measured against `npm run dev` needs halving.
+**React StrictMode double-invokes effects in development.** This used to mean the dev server
+fetched every region twice, and that any byte or decode figure measured against `npm run dev`
+needed halving. No longer true since the loaders were memoized: the second invocation joins
+the in-flight promise, so dev now fetches each file exactly once, same as production. The
+effects still run twice; they just no longer refetch.
 
 **HMR makes probes lie.** A `window.__probe` added to an event handler *after* the event has
 already fired reports `false` forever, because the handler does not re-run. This cost real
@@ -381,6 +411,7 @@ Each of these follows from a decision above, and is the accepted cost of it.
 | Year and timeline filtering | `src/coverage/yearFilter.ts` |
 | Privacy handling | `src/rides/privacy.ts`, `.gitignore` |
 | Render performance | `src/layers/{regionStackLayer,visibility}.ts`, and the memoization in the layer factories |
+| Why a snapshot is fetched once | `src/loading/timedOnce.ts`, used by the three view loaders |
 | Wire format vs build format | `src/network/snapshot.ts` — `PackedBuffers` vs `SnapshotBuffers` |
 | Deploy and its guard | `netlify.toml`, `scripts/preflight-deploy.ts` |
 | Z-order contract | `src/layers/mapLayers.test.ts` |

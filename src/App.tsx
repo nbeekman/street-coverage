@@ -48,9 +48,14 @@ export default function App() {
       ? coverage.coverage !== null || coverage.status === 'absent' || coverage.status === 'error'
       : state.regions.length > 0
   if (!hasGeometry) {
+    // The regions arrive together rather than one at a time, so this is the
+    // only place the wait is visible -- it says how far along it is.
+    const { loaded, total } = state.progress
     return (
       <div className="flex h-full items-center justify-center">
-        <div className="text-neutral-400">Loading network…</div>
+        <div className="text-neutral-400">
+          Loading network…{total > 0 && ` ${loaded} of ${total} regions`}
+        </div>
       </div>
     )
   }

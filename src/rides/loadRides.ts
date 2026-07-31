@@ -1,3 +1,4 @@
+import { timedOnce } from '../loading/timedOnce.ts'
 import { validateRides, type RidesBuffers, type RidesManifest } from './snapshot.ts'
 
 export type LoadedRides = {
@@ -58,3 +59,10 @@ export async function loadRides(
   // Both precomputed at build time; no Float64 reaches the browser.
   return { manifest, buffers, origin: manifest.origin, offsets: buffers.offsets }
 }
+
+/**
+ * The page-wide loader. Rides mode is re-entered every time the view toggles
+ * back, and refetching 4.8 MB to hand deck.gl an identical-but-new object
+ * meant re-uploading every trace to redraw what was already on screen.
+ */
+export const loadRidesOnce = timedOnce(loadRides)
